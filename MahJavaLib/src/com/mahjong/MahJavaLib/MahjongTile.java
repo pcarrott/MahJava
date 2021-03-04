@@ -1,22 +1,85 @@
 package com.mahjong.MahJavaLib;
 
 public class MahjongTile {
+
     public enum TileType {
-        CHARACTERS, DOTS, BAMBOO, RED_DRAGON,
-        GREEN_DRAGON, WHITE_DRAGON, EAST_WIND,
-        NORTH_WIND, WEST_WIND, SOUTH_WIND
+        CHARACTERS, 
+        DOTS, 
+        BAMBOO, 
+        DRAGON,
+        WIND
     }
 
     public enum TileContent {
-        ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE
+        ONE, 
+        TWO,
+        THREE,
+        FOUR,
+        FIVE,
+        SIX,
+        SEVEN,
+        EIGHT,
+        NINE,
+        RED,
+        GREEN,
+        WHITE,
+        EAST,
+        NORTH,
+        WEST,
+        SOUTH
     }
 
     private TileType _type;
     private TileContent _content;
 
-    public MahjongTile(TileType type, TileContent content) {
-        this._type = type;
-        this._content = content;
+    public MahjongTile(TileType tt, TileContent tc) throws IllegalArgumentException {
+        switch (tt) {
+            case CHARACTERS:
+            case DOTS:
+            case BAMBOO:
+                switch(tc) {
+                    case RED:
+                    case GREEN:
+                    case WHITE:
+                    case EAST:
+                    case NORTH:
+                    case WEST:
+                    case SOUTH:
+                        throw new IllegalArgumentException("Illegal Content " + tc + " given Type " + tt);
+
+                    default:
+                        this._type = tt;
+                        this._content = tc;
+                        return;
+                }
+            case DRAGON:
+                switch(tc) {
+                    case RED:
+                    case GREEN:
+                    case WHITE:
+                        this._type = tt;
+                        this._content = tc;
+                        return;
+
+                    default:
+                        throw new IllegalArgumentException("Illegal Content " + tc + " given Type " + tt);
+                }
+            case WIND:
+                switch(tc) {
+                    case EAST:
+                    case NORTH:
+                    case WEST:
+                    case SOUTH:
+                        this._type = tt;
+                        this._content = tc;
+                        return;
+
+                    default:
+                        throw new IllegalArgumentException("Illegal Content " + tc + " given Type " + tt);
+                }
+            default:
+                throw new IllegalArgumentException("Illegal Type: " + tt);
+        }
     }
 
     public TileType getType() {

@@ -6,10 +6,9 @@ import java.util.Random;
 public class MahjongHand {
     private ArrayList<MahjongTile> _hand = new ArrayList<>();
 
-    public MahjongHand() {}
-
-    public MahjongHand(ArrayList<MahjongTile> _hand) {
-        this._hand = _hand;
+    public MahjongHand(ArrayList<MahjongTile> hand) throws IllegalArgumentException {
+        if(hand.size() > 14) {throw new IllegalArgumentException("Hand must contain 14 tiles");}
+        else {this._hand = hand;}
     }
 
     public ArrayList<MahjongTile> getHand() {
@@ -25,7 +24,7 @@ public class MahjongHand {
     }
 
     public void addTile(MahjongTile addedTile) {
-        if (this._hand.size() > 14) {
+        if (this._hand.size() >= 14) {
             throw new IllegalArgumentException("Hand is full (14 tiles)");
         }
         this._hand.add(addedTile);
@@ -42,16 +41,32 @@ public class MahjongHand {
 
     public static MahjongHand generateRandomHand() {
         Random random = new Random();
+        MahjongTile tile = null;
 
         MahjongTile.TileType[] tileTypes = MahjongTile.TileType.values();
         MahjongTile.TileContent[] tileContents = MahjongTile.TileContent.values();
 
         ArrayList<MahjongTile> tiles = new ArrayList<>();
+
         for(int i = 0; i < 14; i++) {
-            tiles.add(new MahjongTile(tileTypes[random.nextInt(tileTypes.length)], tileContents[random.nextInt(tileContents.length)]));
+            try {
+                tile = new MahjongTile(tileTypes[random.nextInt(tileTypes.length)], tileContents[random.nextInt(tileContents.length)]);
+            } catch (IllegalArgumentException e) {
+                //Nothing needs to be done because tile will remain null and therefore the loop will try again until success
+            }
+            if(tile != null) {tiles.add(tile);}
+            else {i--;}
+            tile = null;
         }
 
-        return new MahjongHand(tiles);
+        try{
+            return new MahjongHand(tiles);
+        }
+        catch (IllegalArgumentException e) {
+            //This will never happen because the loop is correctly limited so it will always generate a 14-piece hand
+            //However, if it did happen, it would keep trying until it produced a valid hand
+            return generateRandomHand();
+        }
     }
 
     public static void main(String[] args) {
