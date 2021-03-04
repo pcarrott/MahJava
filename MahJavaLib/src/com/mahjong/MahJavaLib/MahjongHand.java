@@ -40,9 +40,7 @@ public class MahjongHand {
         return "Your Hand is: " + _hand;
     }
 
-    public static void main(String[] args) {
-        //The correct usage of MahjongHand is to generate a full hand a priori, such as:
-
+    public static MahjongHand generateRandomHand() {
         Random random = new Random();
 
         MahjongTile.TileType[] tileTypes = MahjongTile.TileType.values();
@@ -53,7 +51,11 @@ public class MahjongHand {
             tiles.add(new MahjongTile(tileTypes[random.nextInt(tileTypes.length)], tileContents[random.nextInt(tileContents.length)]));
         }
 
-        MahjongHand hand = new MahjongHand(tiles);
+        return new MahjongHand(tiles);
+    }
+
+    public static void main(String[] args) {
+        MahjongHand hand = generateRandomHand();
 
         System.out.println("Correct usage\n" + hand + "\nNumber of pieces in hand is: " + hand.handSize());
     }
