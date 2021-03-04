@@ -1,1 +1,1 @@
-# MahjongEngine
+# MahJava
