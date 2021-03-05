@@ -11,10 +11,10 @@ public class GameController {
     @Autowired
     GameService gameService;
 
-    @MessageMapping("/game/create")
-    @SendTo("/topic/game")
-    public Integer createGame(String username) {
-        return gameService.createGame(username);
+    @MessageMapping("/user/{userId}/game/create")
+    @SendTo("/topic/user/{userId}")
+    public Integer createGame(@PathVariable Integer userId) {
+        return gameService.createGame(userId);
     }
 
     @MessageMapping("/game/join/{gameId}")

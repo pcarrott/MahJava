@@ -6,8 +6,8 @@ import java.util.Random;
 
 @Service
 public class GameService {
-    public Integer createGame(String username) {
-        return new Random(username.length()).nextInt();
+    public Integer createGame(Integer userId) {
+        return new Random(userId).nextInt();
     }
 
     public Integer joinGame(Integer gameId) {

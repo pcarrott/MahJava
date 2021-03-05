@@ -12,6 +12,7 @@ import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
+import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
@@ -32,6 +33,9 @@ public class MahJavaClient implements CommandLineRunner {
         StompSessionHandler sessionHandler = new SessionHandler();
         StompSession session = stompClient.connect(URL, sessionHandler).get();
 
+        final int userId = new Random().nextInt();
+        session.subscribe("/topic/user/" + userId, sessionHandler);
+
         while (true) {
             System.out.println("What do you want to do?");
             System.out.println("1 - Create game");
@@ -44,8 +48,7 @@ public class MahJavaClient implements CommandLineRunner {
                 case "0":
                     System.exit(SpringApplication.exit(context));
                 case "1":
-                    session.subscribe("/topic/game", sessionHandler);
-                    session.send("/app/game/create", "Cenoura");
+                    session.send("/app/user/" + userId + "/game/create", userId);
                     break;
                 case "2":
                     System.out.print("Enter gameId: ");
