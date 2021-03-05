@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.mahjong</groupId>
-	<artifactId>MahJavaServer</artifactId>
+	<artifactId>MahJavaClient</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>MahJavaServer</name>
-	<description>The backend for the dankest Mahjong Engine out there</description>
+	<name>MahJavaClient</name>
+	<description>The frontend for the dankest Mahjong Engine out there</description>
 	<properties>
 		<java.version>11</java.version>
 	</properties>

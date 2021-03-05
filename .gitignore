@@ -34,3 +34,4 @@ build/
 
 ### Properties ###
 /MahJavaServer/src/main/resources/application.properties
+/MahJavaClient/src/main/resources/application.properties
