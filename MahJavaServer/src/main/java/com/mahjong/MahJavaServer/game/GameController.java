@@ -23,16 +23,27 @@ public class GameController {
         return gameService.joinGame(gameId);
     }
 
-    @MessageMapping("/game/draw")
+    @MessageMapping("/game/start")
     @SendTo("/topic/game")
-    public void drawTile() {
-        gameService.drawTile();
+    public void startGame() {
+        gameService.startGame();
     }
 
     @MessageMapping("/game/discard")
     @SendTo("/topic/game")
     public void discardTile() {
         gameService.discardTile();
+    }
+
+    @MessageMapping("/game/skip")
+    public void skipTile() {
+        gameService.skipTile();
+    }
+
+    @MessageMapping("/game/draw")
+    @SendTo("/topic/game")
+    public void drawTile() {
+        gameService.drawTile();
     }
 
     @MessageMapping("/game/delete")

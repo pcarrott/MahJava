@@ -14,9 +14,13 @@ public class GameService {
         return gameId;
     }
 
-    public void drawTile() {}
+    public void startGame() {}
 
     public void discardTile() {}
+
+    public void skipTile() {}
+
+    public void drawTile() {}
 
     public void deleteGame() {}
 }
