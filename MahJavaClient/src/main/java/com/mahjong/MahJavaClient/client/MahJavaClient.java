@@ -34,7 +34,7 @@ public class MahJavaClient implements CommandLineRunner {
         StompSession session = stompClient.connect(URL, sessionHandler).get();
 
         final int userId = new Random().nextInt();
-        session.subscribe("/topic/user/" + userId, sessionHandler);
+        session.subscribe("/queue/user/" + userId, sessionHandler);
 
         while (true) {
             System.out.println("What do you want to do?");
@@ -54,7 +54,7 @@ public class MahJavaClient implements CommandLineRunner {
                     System.out.print("Enter gameId: ");
                     String gameId = new Scanner(System.in).nextLine();
                     session.subscribe("/topic/game/" + gameId, sessionHandler);
-                    session.send("/app/game/join/" + gameId, gameId);
+                    session.send("/app/user/" + userId + "/game/" + gameId + "/join", gameId);
                     break;
                 default:
                     System.out.println("That was not an option...");

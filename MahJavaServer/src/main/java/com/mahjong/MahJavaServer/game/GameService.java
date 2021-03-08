@@ -7,20 +7,32 @@ import java.util.Random;
 @Service
 public class GameService {
     public Integer createGame(Integer userId) {
-        return new Random(userId).nextInt();
+        return new Random().nextInt();
     }
 
-    public Integer joinGame(Integer gameId) {
+    public Integer joinGame(Integer userId, Integer gameId) {
+        return userId;
+    }
+
+    public boolean startGame(Integer gameId) {
+        return true;
+    }
+
+    public boolean discardTile(Integer userId, Integer gameId) {
+        return true;
+    }
+
+    public void skipTile(Integer userId, Integer gameId) {}
+
+    public boolean drawTile(Integer userId, Integer gameId) {
+        return true;
+    }
+
+    public boolean hasAllAnswers(Integer gameId) {
+        return true;
+    }
+
+    public Integer leaveGame(Integer userId, Integer gameId) {
         return gameId;
     }
-
-    public void startGame() {}
-
-    public void discardTile() {}
-
-    public void skipTile() {}
-
-    public void drawTile() {}
-
-    public void leaveGame() {}
 }
