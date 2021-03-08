@@ -46,9 +46,9 @@ public class GameController {
         gameService.drawTile();
     }
 
-    @MessageMapping("/game/delete")
+    @MessageMapping("/game/leave")
     @SendTo("/topic/game")
-    public void deleteGame() {
-        gameService.deleteGame();
+    public void leaveGame() {
+        gameService.leaveGame();
     }
 }

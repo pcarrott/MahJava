@@ -22,5 +22,5 @@ public class GameService {
 
     public void drawTile() {}
 
-    public void deleteGame() {}
+    public void leaveGame() {}
 }
