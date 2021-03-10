@@ -3,11 +3,22 @@ package com.mahjong.MahJavaLib;
 public class MahjongTile {
 
     public enum TileType {
-        CHARACTERS, 
-        DOTS, 
-        BAMBOO, 
+        CHARACTERS,
+        DOTS,
+        BAMBOO,
         DRAGON,
         WIND
+                {
+                    @Override
+                    public TileType next() {
+                        return values()[0]; // restart
+                    }
+                };
+
+        public TileType next() {
+            // No bounds checking required here, because the last instance overrides
+            return values()[ordinal() + 1];
+        }
     }
 
     public enum TileContent {
@@ -27,6 +38,17 @@ public class MahjongTile {
         NORTH,
         WEST,
         SOUTH
+                {
+                    @Override
+                    public TileContent next() {
+                        return values()[0]; // restart
+                    }
+                };
+
+        public TileContent next() {
+            // No bounds checking required here, because the last instance overrides
+            return values()[ordinal() + 1];
+        }
     }
 
     private TileType _type;
