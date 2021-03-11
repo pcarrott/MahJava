@@ -1,7 +1,6 @@
 package com.mahjong.MahJavaLib;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
 public class MahjongGame {
@@ -10,13 +9,12 @@ public class MahjongGame {
         EAST,
         NORTH,
         WEST,
-        SOUTH
-                {
-                    @Override
-                    public PlayerTurn next() {
-                        return values()[0]; // restart
-                    }
-                };
+        SOUTH {
+            @Override
+            public PlayerTurn next() {
+                return values()[0]; // restart
+            }
+        };
 
         public PlayerTurn next() {
             // No bounds checking required here, because the last instance overrides
@@ -30,7 +28,7 @@ public class MahjongGame {
 
     public MahjongGame(ArrayList<MahjongPlayer> players) {
         int i = 0;
-        for(PlayerTurn seatWind = PlayerTurn.EAST; i < 4; seatWind = seatWind.next(), i++) {
+        for (PlayerTurn seatWind = PlayerTurn.EAST; i < 4; seatWind = seatWind.next(), i++) {
             _players.put(seatWind, players.get(i));
             getPlayer(seatWind).setSeatWind(seatWind);
         }
@@ -41,13 +39,21 @@ public class MahjongGame {
         return _players.get(_playerTurn);
     }
 
-    public boolean isBoardWallEmpty() { return this._board.isWallEmpty(); }
+    public boolean isBoardWallEmpty() {
+        return this._board.isWallEmpty();
+    }
 
-    public PlayerTurn getPlayerTurn() { return this._playerTurn; }
+    public PlayerTurn getPlayerTurn() {
+        return this._playerTurn;
+    }
 
-    public HashMap<PlayerTurn, MahjongPlayer> getPlayers() { return this._players; }
+    public HashMap<PlayerTurn, MahjongPlayer> getPlayers() {
+        return this._players;
+    }
 
-    public MahjongPlayer getPlayer(PlayerTurn seatWind) { return this._players.get(seatWind); }
+    public MahjongPlayer getPlayer(PlayerTurn seatWind) {
+        return this._players.get(seatWind);
+    }
 
     @Override
     public String toString() {
