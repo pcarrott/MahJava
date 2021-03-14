@@ -5,7 +5,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.testng.Assert.*;
 
@@ -25,7 +27,7 @@ public class TestMahjongTile {
 
     @DataProvider
     private Object[][] allValidTiles() {
-        return new Object[][] {
+        return new Object[][]{
                 {MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.ONE},
                 {MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.TWO},
                 {MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.THREE},
@@ -80,7 +82,7 @@ public class TestMahjongTile {
 
     @DataProvider
     private Object[][] allInvalidTiles() {
-        return new Object[][] {
+        return new Object[][]{
                 {MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.RED},
                 {MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.GREEN},
                 {MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.WHITE},
@@ -138,7 +140,7 @@ public class TestMahjongTile {
 
     @DataProvider
     private Object[][] allValidTilesForChows() {
-        return new Object[][] {
+        return new Object[][]{
                 {MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.ONE},
                 {MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.TWO},
                 {MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.THREE},
@@ -187,7 +189,7 @@ public class TestMahjongTile {
 
             case TWO:
             case EIGHT:
-                assertEquals(chows.size(),2);
+                assertEquals(chows.size(), 2);
                 break;
 
             default:
@@ -198,7 +200,7 @@ public class TestMahjongTile {
 
     @DataProvider
     private Object[][] allInvalidTilesForChows() {
-        return new Object[][] {
+        return new Object[][]{
                 {MahjongTile.TileType.DRAGON, MahjongTile.TileContent.RED},
                 {MahjongTile.TileType.DRAGON, MahjongTile.TileContent.GREEN},
                 {MahjongTile.TileType.DRAGON, MahjongTile.TileContent.WHITE},
@@ -219,5 +221,29 @@ public class TestMahjongTile {
 
         // Asserts
         assertTrue(chows.isEmpty());
+    }
+
+    @Test
+    public void testTileContentGetters() {
+        ArrayList<MahjongTile.TileContent> numbers = MahjongTile.TileContent.getNumbers();
+        ArrayList<MahjongTile.TileContent> colors = MahjongTile.TileContent.getColors();
+        ArrayList<MahjongTile.TileContent> directions = MahjongTile.TileContent.getDirections();
+
+        ArrayList<MahjongTile.TileContent> tmp = new ArrayList<>();
+        for (int i = 1; i <= 9; ++i) {
+            tmp.add(MahjongTile.TileContent.fromValue(i));
+        }
+        assertTrue(numbers.size() == 9 && numbers.containsAll(tmp));
+
+        assertTrue(colors.size() == 3 && colors.containsAll(
+                Arrays.asList(MahjongTile.TileContent.WHITE,
+                        MahjongTile.TileContent.GREEN,
+                        MahjongTile.TileContent.RED)));
+
+        assertTrue(directions.size() == 4 && directions.containsAll(
+                Arrays.asList(MahjongTile.TileContent.EAST,
+                        MahjongTile.TileContent.WEST,
+                        MahjongTile.TileContent.NORTH,
+                        MahjongTile.TileContent.SOUTH)));
     }
 }

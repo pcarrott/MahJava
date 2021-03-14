@@ -23,6 +23,14 @@ public class MahjongHand {
         // Also, having a way to get the number of all specific tile types in a hand is very useful
         HashMap<MahJavaLib.MahjongTile.TileType, Integer> _numberOfTilesOfType = new HashMap<MahJavaLib.MahjongTile.TileType, Integer>();
 
+        public MahjongHandInfo(){}
+
+        public MahjongHandInfo(MahjongHandInfo info) {
+            this._chows = new ArrayList<>(info._chows);
+            this._pungs = new ArrayList<>(info._pungs);
+            this._kongs = new ArrayList<>(info._kongs);
+            this._numberOfTilesOfType = new HashMap<>(info._numberOfTilesOfType);
+        }
         public MahjongHandInfo(MahjongHand startingHand) throws IllegalArgumentException {
             Integer handSize = startingHand.getHandSize();
             if (handSize != 14) {
@@ -31,7 +39,7 @@ public class MahjongHand {
 
             // Since this will be a destructive operation (to make sure we are not creating multiple different sequences
             // with the same tiles, we have to copy the tiles objects.
-            MahjongHand copyHand = startingHand.clone();
+            MahjongHand copyHand = new MahjongHand(startingHand);
 
             // At the start, no Kongs can be created, since you must declare one before it can be considered a Kong, so
             // there is no need to check for them.
@@ -68,7 +76,6 @@ public class MahjongHand {
                 }
             }
         }
-
     }
 
     public static Boolean isFourCombinationsPlusPair(MahjongHand hand) {
@@ -183,20 +190,19 @@ public class MahjongHand {
                 necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.NINE));
             } else if (tileType.equals(MahJavaLib.MahjongTile.TileType.WIND)) {
                 // For a wind, it needs to have all the possible wind values
-                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.EAST));
-                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.WEST));
-                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.NORTH));
-                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.SOUTH));
+                for (MahjongTile.TileContent tileContent : MahjongTile.TileContent.getDirections()) {
+                    necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, tileContent));
+                }
             } else {
                 // Lastly, for a dragon, it needs to have all their possible values
-                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.RED));
-                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.GREEN));
-                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.WHITE));
+                for (MahjongTile.TileContent tileContent : MahjongTile.TileContent.getColors()) {
+                    necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, tileContent));
+                }
             }
         }
 
         // If any of the necessary tiles are not present in the final hand, then it can't be a Thirteen Orphans
-        if (necessaryTilesToHave.stream().anyMatch((necessaryTile) -> (hand.getHand().get(necessaryTile) == null))) {
+        if (necessaryTilesToHave.stream().anyMatch(necessaryTile -> (hand.getHand().get(necessaryTile) == null))) {
             return false;
         }
 
@@ -220,10 +226,15 @@ public class MahjongHand {
     // should ever be 0. If a get() method call returns null, then that means that no tile of that specific type+content
     // exists.
     private HashMap<MahJavaLib.MahjongTile, Integer> _hand = new HashMap<>();
-    private MahjongHandInfo _info;
+    private MahjongHandInfo _info = new MahjongHandInfo();
 
     public HashMap<MahJavaLib.MahjongTile, Integer> getHand() {
         return this._hand;
+    }
+
+    private MahjongHand(MahjongHand hand){
+        this._hand.putAll(hand.getHand());
+        this._info = new MahjongHandInfo(hand._info);
     }
 
     public MahjongHand(ArrayList<MahJavaLib.MahjongTile> startingHand) throws IllegalArgumentException {
@@ -331,15 +342,6 @@ public class MahjongHand {
             // This will never happen because the loop is correctly limited so it will always generate a 14-tile hand
             // However, if it did happen, it would keep trying until it produced a valid hand
             return generateRandomHand();
-        }
-    }
-
-    @Override
-    public MahjongHand clone() {
-        try {
-            return (MahjongHand) super.clone();
-        } catch (CloneNotSupportedException ex) {
-            throw new RuntimeException("MahjongHand: Clone is not supported (THIS SHOULD NEVER HAPPEN");
         }
     }
 

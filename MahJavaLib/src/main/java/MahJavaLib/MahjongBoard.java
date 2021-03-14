@@ -12,26 +12,23 @@ public class MahjongBoard {
     }
 
     private void generateWall() {
-        int i = 0;
-        for (MahJavaLib.MahjongTile.TileType tt = MahJavaLib.MahjongTile.TileType.CHARACTERS; i < 5; tt = tt.next(), i++) {
-            switch (tt) {
-                case CHARACTERS:
-                case DOTS:
-                case BAMBOO:
-                    for (MahJavaLib.MahjongTile.TileContent tc = MahJavaLib.MahjongTile.TileContent.ONE; tc != MahJavaLib.MahjongTile.TileContent.RED; tc = tc.next()) {
-                        this._wall.put(new MahJavaLib.MahjongTile(tt, tc), 4);
-                    }
-                    break;
-                case DRAGON:
-                    for (MahJavaLib.MahjongTile.TileContent tc = MahJavaLib.MahjongTile.TileContent.RED; tc != MahJavaLib.MahjongTile.TileContent.EAST; tc = tc.next()) {
-                        this._wall.put(new MahJavaLib.MahjongTile(tt, tc), 4);
-                    }
-                    break;
-                case WIND:
-                    for (MahJavaLib.MahjongTile.TileContent tc = MahJavaLib.MahjongTile.TileContent.EAST; tc != MahJavaLib.MahjongTile.TileContent.ONE; tc = tc.next()) {
-                        this._wall.put(new MahJavaLib.MahjongTile(tt, tc), 4);
-                    }
-                    break;
+        // Iterate through all possible tile types and generate their corresponding tiles
+        for (MahJavaLib.MahjongTile.TileType tt : MahjongTile.TileType.values()) {
+            if (!tt.isSpecialType()) {
+                // For the normal tile types, we only want to generate the number contents
+                for (MahjongTile.TileContent tc : MahjongTile.TileContent.getNumbers()) {
+                    this._wall.put(new MahJavaLib.MahjongTile(tt, tc), 4);
+                }
+            } else if (tt == MahjongTile.TileType.DRAGON) {
+                // For dragons, we only want the colors
+                for (MahjongTile.TileContent tc : MahjongTile.TileContent.getColors()) {
+                    this._wall.put(new MahJavaLib.MahjongTile(tt, tc), 4);
+                }
+            } else {
+                // And for winds, the directions
+                for (MahjongTile.TileContent tc : MahjongTile.TileContent.getDirections()) {
+                    this._wall.put(new MahJavaLib.MahjongTile(tt, tc), 4);
+                }
             }
         }
     }
