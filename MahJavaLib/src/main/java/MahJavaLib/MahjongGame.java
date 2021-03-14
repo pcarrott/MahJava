@@ -11,26 +11,24 @@ public class MahjongGame {
         EAST,
         NORTH,
         WEST,
-        SOUTH {
-            @Override
-            public PlayerTurn next() {
-                return values()[0]; // restart
-            }
-        };
+        SOUTH;
 
         public PlayerTurn next() {
-            // No bounds checking required here, because the last instance overrides
-            return values()[ordinal() + 1];
+            PlayerTurn[] turns = PlayerTurn.values();
+            return turns[(this.ordinal() + 1) % turns.length];
         }
     }
+
+
 
     private MahjongBoard _board = new MahjongBoard();
     private PlayerTurn _playerTurn = PlayerTurn.EAST;
     private HashMap<PlayerTurn, MahJavaLib.MahjongPlayer> _players = new HashMap<>();
 
     public MahjongGame(ArrayList<MahJavaLib.MahjongPlayer> players) {
-        int i = 0;
-        for (PlayerTurn seatWind = PlayerTurn.EAST; i < 4; seatWind = seatWind.next(), i++) {
+        PlayerTurn[] turns = PlayerTurn.values();
+        for (int i = 0; i <= turns.length; ++i) {
+            PlayerTurn seatWind = turns[i];
             _players.put(seatWind, players.get(i));
             getPlayer(seatWind).setSeatWind(seatWind);
         }

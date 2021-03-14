@@ -3,6 +3,7 @@ package MahJavaLib;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.stream.Collectors;
 
 public class MahjongTile {
 
@@ -12,11 +13,6 @@ public class MahjongTile {
         BAMBOO,
         DRAGON,
         WIND;
-
-        public TileType next() {
-            TileType[] contents = TileType.values();
-            return contents[this.ordinal() % contents.length];
-        }
 
         public boolean isSpecialType() {
             return (this == DRAGON || this == WIND);
@@ -41,23 +37,32 @@ public class MahjongTile {
         WEST(15),
         SOUTH(16);
 
-        public TileContent next() {
-            TileContent[] contents = TileContent.values();
-            return contents[(this._value - 1) % contents.length];
-        }
-
         Integer _value;
 
-        public boolean isNumber() {
-            return this._value <= NINE._value;
+        public static boolean isNumber(TileContent content) {
+            return content._value >= 1 && content._value <= 9;
         }
 
-        public boolean isColor() {
-            return (this == RED || this == GREEN || this == WHITE);
+        public static boolean isColor(TileContent content) {
+            return content._value >= 10 && content._value <= 12;
         }
 
-        public boolean isDirection() {
-            return this._value >= EAST._value;
+        public static boolean isDirection(TileContent content) {
+            return content._value >= 13 && content._value <= 16;
+        }
+
+
+        // Helper functions that get all values of each main type of content
+        public static ArrayList<TileContent> getNumbers() {
+            return Arrays.stream(TileContent.values()).filter(TileContent::isNumber).collect(Collectors.toCollection(ArrayList::new));
+        }
+
+        public static ArrayList<TileContent> getColors() {
+            return Arrays.stream(TileContent.values()).filter(TileContent::isColor).collect(Collectors.toCollection(ArrayList::new));
+        }
+
+        public static ArrayList<TileContent> getDirections() {
+            return Arrays.stream(TileContent.values()).filter(TileContent::isDirection).collect(Collectors.toCollection(ArrayList::new));
         }
 
         TileContent(Integer val) {
@@ -82,14 +87,14 @@ public class MahjongTile {
 
     public MahjongTile(TileType tt, TileContent tc) throws IllegalArgumentException {
         // All non-special types (Characters, Dots and Bamboos) must be Numbers.
-        if (!tt.isSpecialType() && !tc.isNumber()) {
+        if (!tt.isSpecialType() && !TileContent.isNumber(tc)) {
             throw new IllegalArgumentException("Illegal Content " + tc + " given Type " + tt);
         }
 
         if (tt.isSpecialType()) {
             // If it is of a special type, then it must be either a Dragon (which means the content must be a color)
             // or a Wind (which means the content must be a Direction).
-            if ((tt == TileType.DRAGON && !tc.isColor()) || (tt == TileType.WIND && !tc.isDirection())) {
+            if ((tt == TileType.DRAGON && !TileContent.isColor(tc)) || (tt == TileType.WIND && !TileContent.isDirection(tc))) {
                 throw new IllegalArgumentException("Illegal Content " + tc + " given Type " + tt);
             }
         }
@@ -134,7 +139,7 @@ public class MahjongTile {
         ArrayList<ArrayList<MahjongTile>> possibleChows = new ArrayList<>();
 
         // It is impossible to make a Chow with a Special tile
-        if (this._type.isSpecialType() || !this._content.isNumber()) {
+        if (this._type.isSpecialType() || !TileContent.isNumber(_content)) {
             return possibleChows;
         }
 
@@ -144,9 +149,9 @@ public class MahjongTile {
         // - N, N + 1, N + 2
         // We go through all the possible Chow combinations in a sliding-window like fashion, where the requested tile
         // starts as the bigger value tile, and then we shift until it is the smallest value tile
-        Integer smallerValue = this._content._value - 2;
-        Integer middleValue = this._content._value - 1;
-        Integer biggerValue = this._content._value;
+        int smallerValue = this._content._value - 2;
+        int middleValue = this._content._value - 1;
+        int biggerValue = this._content._value;
 
         for (int i = 0; i < 3; ++i) {
             // If the value is still a valid number, then that must mean it is a valid Chow combination

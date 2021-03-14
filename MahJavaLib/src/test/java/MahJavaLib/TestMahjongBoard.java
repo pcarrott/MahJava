@@ -21,13 +21,10 @@ public class TestMahjongBoard {
 
     @Test
     public void testConstructor() {
-        // Arrange
-
-        // Act
         this._board = new MahjongBoard();
 
-        // Assert
-        assertEquals(this._board.getWall().size(), 5);
+        // There should be 9*3 normal pieces + 3 dragons + 4 winds = 34
+        assertEquals(this._board.getWall().size(), 34);
     }
 
     @Test
