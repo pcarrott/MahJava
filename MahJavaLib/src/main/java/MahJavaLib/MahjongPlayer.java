@@ -1,4 +1,7 @@
-package com.mahjong.MahJavaLib;
+package MahJavaLib;
+
+import MahJavaLib.MahjongGame;
+import MahJavaLib.MahjongHand;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -14,8 +17,8 @@ public class MahjongPlayer {
     //private MahjongGame _game;
     private MahjongHand _hand;
     private MahjongGame.PlayerTurn _seatWind = MahjongGame.PlayerTurn.EAST;
-    private ArrayList<MahjongTile> _discardPile = new ArrayList<>();
-    private MahjongTile _discardedTile;
+    private ArrayList<MahJavaLib.MahjongTile> _discardPile = new ArrayList<>();
+    private MahJavaLib.MahjongTile _discardedTile;
 
     public MahjongPlayer() throws IllegalArgumentException {
     }
@@ -27,21 +30,21 @@ public class MahjongPlayer {
         //else throw IllegalArgumentException
     }*/
 
-    public void discardTile(MahjongTile tile) {
+    public void discardTile(MahJavaLib.MahjongTile tile) {
         //if(!MahjongHand.containsTile(tile)) throws IllegalArgumentException
         //MahjongHand.discardTile(tile)
         this._discardPile.add(tile);
     }
 
-    public void addTile(MahjongTile tile, Optional<CombinationType> combinationType, ArrayList<MahjongTile> combination) {
+    public void addTile(MahJavaLib.MahjongTile tile, Optional<CombinationType> combinationType, ArrayList<MahJavaLib.MahjongTile> combination) {
         //this._hand.addTile(tile);
     }
 
-    public void receiveDiscardedTile(MahjongTile tile) {
+    public void receiveDiscardedTile(MahJavaLib.MahjongTile tile) {
         this._discardedTile = tile;
     }
 
-    public boolean drawTileRequest(Optional<CombinationType> combinationType, ArrayList<MahjongTile> combination) {
+    public boolean drawTileRequest(Optional<CombinationType> combinationType, ArrayList<MahJavaLib.MahjongTile> combination) {
         //return this._game.isDrawTileRequestValid(combinationType, combination);
         return true;
     }
