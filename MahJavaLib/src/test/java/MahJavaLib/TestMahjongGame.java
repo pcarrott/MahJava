@@ -1,4 +1,4 @@
-package test.mahjong.MahJavaLib;
+package MahJavaLib;
 
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -6,7 +6,7 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
 
-public class TestMahjongPlayer {
+public class TestMahjongGame {
 
     @BeforeMethod
     public void setUp() {
@@ -17,34 +17,30 @@ public class TestMahjongPlayer {
     }
 
     @Test
-    public void testDiscardTile() {
+    public void testNextPlayer() {
     }
 
     @Test
-    public void testAddTile() {
+    public void testIsBoardWallEmpty() {
     }
 
     @Test
-    public void testReceiveDiscardedTile() {
+    public void testGetPlayerTurn() {
     }
 
     @Test
-    public void testDrawTileRequest() {
+    public void testGetPlayers() {
     }
 
     @Test
-    public void testDrawTile() {
-    }
-
-    @Test
-    public void testGetSeatWind() {
-    }
-
-    @Test
-    public void testSetSeatWind() {
+    public void testGetPlayer() {
     }
 
     @Test
     public void testTestToString() {
+    }
+
+    @Test
+    public void testMain() {
     }
 }

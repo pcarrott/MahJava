@@ -1,11 +1,11 @@
-package com.mahjong.MahJavaLib;
+package MahJavaLib;
 
 import java.util.*;
 
 public class MahjongBoard {
 
 
-    private HashMap<MahjongTile, Integer> _wall = new HashMap<>();
+    private HashMap<MahJavaLib.MahjongTile, Integer> _wall = new HashMap<>();
 
     public MahjongBoard() {
         generateWall();
@@ -13,30 +13,30 @@ public class MahjongBoard {
 
     private void generateWall() {
         int i = 0;
-        for (MahjongTile.TileType tt = MahjongTile.TileType.CHARACTERS; i < 5; tt = tt.next(), i++) {
+        for (MahJavaLib.MahjongTile.TileType tt = MahJavaLib.MahjongTile.TileType.CHARACTERS; i < 5; tt = tt.next(), i++) {
             switch (tt) {
                 case CHARACTERS:
                 case DOTS:
                 case BAMBOO:
-                    for (MahjongTile.TileContent tc = MahjongTile.TileContent.ONE; tc != MahjongTile.TileContent.RED; tc = tc.next()) {
-                        this._wall.put(new MahjongTile(tt, tc), 4);
+                    for (MahJavaLib.MahjongTile.TileContent tc = MahJavaLib.MahjongTile.TileContent.ONE; tc != MahJavaLib.MahjongTile.TileContent.RED; tc = tc.next()) {
+                        this._wall.put(new MahJavaLib.MahjongTile(tt, tc), 4);
                     }
                     break;
                 case DRAGON:
-                    for (MahjongTile.TileContent tc = MahjongTile.TileContent.RED; tc != MahjongTile.TileContent.EAST; tc = tc.next()) {
-                        this._wall.put(new MahjongTile(tt, tc), 4);
+                    for (MahJavaLib.MahjongTile.TileContent tc = MahJavaLib.MahjongTile.TileContent.RED; tc != MahJavaLib.MahjongTile.TileContent.EAST; tc = tc.next()) {
+                        this._wall.put(new MahJavaLib.MahjongTile(tt, tc), 4);
                     }
                     break;
                 case WIND:
-                    for (MahjongTile.TileContent tc = MahjongTile.TileContent.EAST; tc != MahjongTile.TileContent.ONE; tc = tc.next()) {
-                        this._wall.put(new MahjongTile(tt, tc), 4);
+                    for (MahJavaLib.MahjongTile.TileContent tc = MahJavaLib.MahjongTile.TileContent.EAST; tc != MahJavaLib.MahjongTile.TileContent.ONE; tc = tc.next()) {
+                        this._wall.put(new MahJavaLib.MahjongTile(tt, tc), 4);
                     }
                     break;
             }
         }
     }
 
-    public Map<MahjongTile, Integer> getWall() {
+    public Map<MahJavaLib.MahjongTile, Integer> getWall() {
         return this._wall;
     }
 
@@ -44,13 +44,13 @@ public class MahjongBoard {
         return this._wall.isEmpty();
     }
 
-    public MahjongTile removeTileFromWall() throws IllegalStateException {
+    public MahJavaLib.MahjongTile removeTileFromWall() throws IllegalStateException {
         if (this._wall.isEmpty()) {
             throw new IllegalStateException();
         }
 
         try {
-            MahjongTile tile = getRandomTile();
+            MahJavaLib.MahjongTile tile = getRandomTile();
             Integer value = this._wall.get(tile);
 
             this._wall.replace(tile, --value);
@@ -66,10 +66,10 @@ public class MahjongBoard {
         }
     }
 
-    private MahjongTile getRandomTile() throws IllegalStateException {
-        ArrayList<MahjongTile> contents = new ArrayList<>(getWall().keySet());
+    private MahJavaLib.MahjongTile getRandomTile() throws IllegalStateException {
+        ArrayList<MahJavaLib.MahjongTile> contents = new ArrayList<>(getWall().keySet());
         Random r = new Random();
-        MahjongTile tile = contents.get(r.nextInt(contents.size()));
+        MahJavaLib.MahjongTile tile = contents.get(r.nextInt(contents.size()));
         if (this._wall.get(tile) <= 0) {
             throw new IllegalStateException();
         }
@@ -84,7 +84,7 @@ public class MahjongBoard {
     public static void main(String[] args) {
         MahjongBoard board = new MahjongBoard();
 
-        MahjongTile removedTile;
+        MahJavaLib.MahjongTile removedTile;
         int i = 0;
 
         try {

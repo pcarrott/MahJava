@@ -1,4 +1,6 @@
-package com.mahjong.MahJavaLib;
+package MahJavaLib;
+
+import MahJavaLib.MahjongBoard;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,9 +26,9 @@ public class MahjongGame {
 
     private MahjongBoard _board = new MahjongBoard();
     private PlayerTurn _playerTurn = PlayerTurn.EAST;
-    private HashMap<PlayerTurn, MahjongPlayer> _players = new HashMap<>();
+    private HashMap<PlayerTurn, MahJavaLib.MahjongPlayer> _players = new HashMap<>();
 
-    public MahjongGame(ArrayList<MahjongPlayer> players) {
+    public MahjongGame(ArrayList<MahJavaLib.MahjongPlayer> players) {
         int i = 0;
         for (PlayerTurn seatWind = PlayerTurn.EAST; i < 4; seatWind = seatWind.next(), i++) {
             _players.put(seatWind, players.get(i));
@@ -34,7 +36,7 @@ public class MahjongGame {
         }
     }
 
-    public MahjongPlayer nextPlayer() {
+    public MahJavaLib.MahjongPlayer nextPlayer() {
         this._playerTurn = this._playerTurn.next();
         return _players.get(_playerTurn);
     }
@@ -47,11 +49,11 @@ public class MahjongGame {
         return this._playerTurn;
     }
 
-    public HashMap<PlayerTurn, MahjongPlayer> getPlayers() {
+    public HashMap<PlayerTurn, MahJavaLib.MahjongPlayer> getPlayers() {
         return this._players;
     }
 
-    public MahjongPlayer getPlayer(PlayerTurn seatWind) {
+    public MahJavaLib.MahjongPlayer getPlayer(PlayerTurn seatWind) {
         return this._players.get(seatWind);
     }
 
@@ -65,11 +67,11 @@ public class MahjongGame {
     }
 
     public static void main(String[] args) {
-        ArrayList<MahjongPlayer> players = new ArrayList<>();
-        players.add(new MahjongPlayer());
-        players.add(new MahjongPlayer());
-        players.add(new MahjongPlayer());
-        players.add(new MahjongPlayer());
+        ArrayList<MahJavaLib.MahjongPlayer> players = new ArrayList<>();
+        players.add(new MahJavaLib.MahjongPlayer());
+        players.add(new MahJavaLib.MahjongPlayer());
+        players.add(new MahJavaLib.MahjongPlayer());
+        players.add(new MahJavaLib.MahjongPlayer());
 
         MahjongGame game = new MahjongGame(players);
 

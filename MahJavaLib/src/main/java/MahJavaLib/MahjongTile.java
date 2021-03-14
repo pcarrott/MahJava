@@ -1,4 +1,4 @@
-package com.mahjong.MahJavaLib;
+package MahJavaLib;
 
 import java.util.ArrayList;
 import java.util.Arrays;

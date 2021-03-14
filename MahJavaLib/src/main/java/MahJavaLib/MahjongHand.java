@@ -1,4 +1,4 @@
-package com.mahjong.MahJavaLib;
+package MahJavaLib;
 
 import java.util.*;
 import java.util.function.Function;
@@ -16,12 +16,12 @@ public class MahjongHand {
     public static class MahjongHandInfo {
         // Record all the important combinations you can make in a Mahjong hand
         // @TODO: create the Combination enum, and make this a HashMap<Combination, ArrayList<...>>
-        ArrayList<ArrayList<MahjongTile>> _chows = new ArrayList<>();
-        ArrayList<ArrayList<MahjongTile>> _pungs = new ArrayList<>();
-        ArrayList<ArrayList<MahjongTile>> _kongs = new ArrayList<>();
+        ArrayList<ArrayList<MahJavaLib.MahjongTile>> _chows = new ArrayList<>();
+        ArrayList<ArrayList<MahJavaLib.MahjongTile>> _pungs = new ArrayList<>();
+        ArrayList<ArrayList<MahJavaLib.MahjongTile>> _kongs = new ArrayList<>();
 
         // Also, having a way to get the number of all specific tile types in a hand is very useful
-        HashMap<MahjongTile.TileType, Integer> _numberOfTilesOfType = new HashMap<MahjongTile.TileType, Integer>();
+        HashMap<MahJavaLib.MahjongTile.TileType, Integer> _numberOfTilesOfType = new HashMap<MahJavaLib.MahjongTile.TileType, Integer>();
 
         public MahjongHandInfo(MahjongHand startingHand) throws IllegalArgumentException {
             Integer handSize = startingHand.getHandSize();
@@ -38,7 +38,7 @@ public class MahjongHand {
 
             // We start by checking for Pungs (we will also take advantage of this for loop to also record the number
             // of tiles of each type)
-            for (Map.Entry<MahjongTile, Integer> entry : copyHand.getHand().entrySet()) {
+            for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : copyHand.getHand().entrySet()) {
                 // The behaviour of merge is the following: if the key doesn't exist, then it stores the supplied value;
                 // else it runs the given function (in this case sum) with the value supplied and the stored value
                 // as its arguments, and stores the result with the key. Weird name though.
@@ -53,15 +53,15 @@ public class MahjongHand {
             }
 
             // Then we check in the remaining tiles for Chows
-            for (Map.Entry<MahjongTile, Integer> entry : copyHand.getHand().entrySet()) {
-                ArrayList<ArrayList<MahjongTile>> possibleChows = entry.getKey().getPossibleChowCombinations();
-                for (ArrayList<MahjongTile> chow : possibleChows) {
+            for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : copyHand.getHand().entrySet()) {
+                ArrayList<ArrayList<MahJavaLib.MahjongTile>> possibleChows = entry.getKey().getPossibleChowCombinations();
+                for (ArrayList<MahJavaLib.MahjongTile> chow : possibleChows) {
                     boolean allTilesInChowExist = chow.stream().allMatch(tile -> copyHand.getHand().get(tile) != null);
                     // If we can make a Chow, then we will add it to our information, and remove the tiles that make
                     // this a recorded chow, so we don't make mistakes.
                     if (allTilesInChowExist) {
                         this._chows.add(chow);
-                        for (MahjongTile tile : chow) {
+                        for (MahJavaLib.MahjongTile tile : chow) {
                             copyHand.removeTile(tile);
                         }
                     }
@@ -83,7 +83,7 @@ public class MahjongHand {
 
         // If we got here, then we know that there are at least 4 combinations present in the hand
         // Now we just need to find the remaining pair
-        for (Map.Entry<MahjongTile, Integer> entry : hand.getHand().entrySet()) {
+        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
             if (entry.getValue() == 2) {
                 return true;
             }
@@ -93,7 +93,7 @@ public class MahjongHand {
 
     public static Boolean isSevenPairs(MahjongHand hand) {
         // A "Seven Pairs" hand is, as the name implies, a hand solely consisting of seven pairs.
-        for (Map.Entry<MahjongTile, Integer> entry : hand.getHand().entrySet()) {
+        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
             // This one is as easy as it gets: we go through all the hand entries, and check if we have
             // every tile a even number of times (we can only have up to 4 tiles, and 0 can never be in the hand
             // so this is the same as checking if the value is different than 2 or 4).
@@ -116,11 +116,11 @@ public class MahjongHand {
         }
 
         // Get the assumed type of the Nine Gates hand (basically get any tile and choose its type)
-        MahjongTile.TileType nineGatesType = hand._info._pungs.get(0).get(0).getType();
+        MahJavaLib.MahjongTile.TileType nineGatesType = hand._info._pungs.get(0).get(0).getType();
 
         // Check if both Pungs are one Pung of 1s and one Pung of 9s of the same type
-        if (hand.getHand().get(new MahjongTile(nineGatesType, MahjongTile.TileContent.ONE)) != 3 ||
-                hand.getHand().get(new MahjongTile(nineGatesType, MahjongTile.TileContent.NINE)) != 3) {
+        if (hand.getHand().get(new MahJavaLib.MahjongTile(nineGatesType, MahJavaLib.MahjongTile.TileContent.ONE)) != 3 ||
+                hand.getHand().get(new MahJavaLib.MahjongTile(nineGatesType, MahJavaLib.MahjongTile.TileContent.NINE)) != 3) {
             return false;
         }
 
@@ -132,8 +132,8 @@ public class MahjongHand {
         ArrayList<Integer> values = new ArrayList<>();
         values.ensureCapacity(hand.getHandSize());
 
-        for (Map.Entry<MahjongTile, Integer> entry : hand.getHand().entrySet()) {
-            MahjongTile tile = entry.getKey();
+        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
+            MahJavaLib.MahjongTile tile = entry.getKey();
             // All tiles MUST be of the same type
             if (tile.getType() != nineGatesType) {
                 return false;
@@ -156,7 +156,7 @@ public class MahjongHand {
         }
 
         // Finally, we only need to check if there is a single pair in our hand
-        for (Map.Entry<MahjongTile, Integer> entry : hand.getHand().entrySet()) {
+        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
             if (entry.getValue() == 2) {
                 return true;
             }
@@ -174,24 +174,24 @@ public class MahjongHand {
             return false;
         }
 
-        ArrayList<MahjongTile> necessaryTilesToHave = new ArrayList<>();
+        ArrayList<MahJavaLib.MahjongTile> necessaryTilesToHave = new ArrayList<>();
 
-        for (MahjongTile.TileType tileType : MahjongTile.TileType.values()) {
+        for (MahJavaLib.MahjongTile.TileType tileType : MahJavaLib.MahjongTile.TileType.values()) {
             if (!tileType.isSpecialType()) {
                 // For a non-special type, the hand needs to have both a One and a Nine
-                necessaryTilesToHave.add(new MahjongTile(tileType, MahjongTile.TileContent.ONE));
-                necessaryTilesToHave.add(new MahjongTile(tileType, MahjongTile.TileContent.NINE));
-            } else if (tileType.equals(MahjongTile.TileType.WIND)) {
+                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.ONE));
+                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.NINE));
+            } else if (tileType.equals(MahJavaLib.MahjongTile.TileType.WIND)) {
                 // For a wind, it needs to have all the possible wind values
-                necessaryTilesToHave.add(new MahjongTile(tileType, MahjongTile.TileContent.EAST));
-                necessaryTilesToHave.add(new MahjongTile(tileType, MahjongTile.TileContent.WEST));
-                necessaryTilesToHave.add(new MahjongTile(tileType, MahjongTile.TileContent.NORTH));
-                necessaryTilesToHave.add(new MahjongTile(tileType, MahjongTile.TileContent.SOUTH));
+                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.EAST));
+                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.WEST));
+                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.NORTH));
+                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.SOUTH));
             } else {
                 // Lastly, for a dragon, it needs to have all their possible values
-                necessaryTilesToHave.add(new MahjongTile(tileType, MahjongTile.TileContent.RED));
-                necessaryTilesToHave.add(new MahjongTile(tileType, MahjongTile.TileContent.GREEN));
-                necessaryTilesToHave.add(new MahjongTile(tileType, MahjongTile.TileContent.WHITE));
+                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.RED));
+                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.GREEN));
+                necessaryTilesToHave.add(new MahJavaLib.MahjongTile(tileType, MahJavaLib.MahjongTile.TileContent.WHITE));
             }
         }
 
@@ -201,7 +201,7 @@ public class MahjongHand {
         }
 
         // If it has all the necessary tiles, then we also need to check if we have a pair
-        for (Map.Entry<MahjongTile, Integer> entry : hand.getHand().entrySet()) {
+        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
             if (entry.getValue() == 2) {
                 return true;
             }
@@ -219,18 +219,18 @@ public class MahjongHand {
     // the entry containing that tile should be fully removed from the hashmap, to save space. This means that no Value
     // should ever be 0. If a get() method call returns null, then that means that no tile of that specific type+content
     // exists.
-    private HashMap<MahjongTile, Integer> _hand = new HashMap<>();
+    private HashMap<MahJavaLib.MahjongTile, Integer> _hand = new HashMap<>();
     private MahjongHandInfo _info;
 
-    public HashMap<MahjongTile, Integer> getHand() {
+    public HashMap<MahJavaLib.MahjongTile, Integer> getHand() {
         return this._hand;
     }
 
-    public MahjongHand(ArrayList<MahjongTile> startingHand) throws IllegalArgumentException {
+    public MahjongHand(ArrayList<MahJavaLib.MahjongTile> startingHand) throws IllegalArgumentException {
         if (startingHand.size() != 14) {
             throw new IllegalArgumentException("MahjongHand: Hand must contain 14 tiles, contains: " + startingHand.size());
         } else {
-            for (MahjongTile tile : startingHand) {
+            for (MahJavaLib.MahjongTile tile : startingHand) {
                 this.addTile(tile);
             }
             this._info = new MahjongHandInfo(this);
@@ -239,13 +239,13 @@ public class MahjongHand {
 
     public int getHandSize() {
         Integer count = 0;
-        for (Map.Entry<MahjongTile, Integer> entry : this._hand.entrySet()) {
+        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : this._hand.entrySet()) {
             count += entry.getValue();
         }
         return count;
     }
 
-    public void addTile(MahjongTile tileToAdd) throws IllegalArgumentException {
+    public void addTile(MahJavaLib.MahjongTile tileToAdd) throws IllegalArgumentException {
         Integer count = this._hand.get(tileToAdd);
         if (count == null) {
             this._hand.put(tileToAdd, 1);
@@ -257,7 +257,7 @@ public class MahjongHand {
         }
     }
 
-    private void removeTile(MahjongTile tile) {
+    private void removeTile(MahJavaLib.MahjongTile tile) {
         Integer count = this._hand.get(tile);
         if (count != null) {
             count -= 1;
@@ -269,7 +269,7 @@ public class MahjongHand {
         }
     }
 
-    public void discardTile(MahjongTile tileToDiscard) {
+    public void discardTile(MahJavaLib.MahjongTile tileToDiscard) {
         // Right now the only thing this does is simply remove the tile from the internal HashMap.
         // However, discarding a tile can have other game-changing consequences, that will have to be recorded.
         // @TODO: encode those consequences somewhere in someway
