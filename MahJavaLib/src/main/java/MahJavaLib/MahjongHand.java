@@ -100,19 +100,19 @@ public class MahjongHand {
         }
     }
 
-    public static Boolean isFourCombinationsPlusPair(MahjongHand hand) {
+    public Boolean isFourCombinationsPlusPair() {
         // This hand is a normal winning hand of Mahjong, that consists of:
         // - 4 Chow/Pung/Kongs + 1 pair
 
         // If there is less then 4 total combinations, we can simply move on; we know for sure that
         // this is not a hand of this type
-        if (hand._info._chows.size() + hand._info._pungs.size() + hand._info._kongs.size() < 4) {
+        if (this._info._chows.size() + this._info._pungs.size() + this._info._kongs.size() < 4) {
             return false;
         }
 
         // If we got here, then we know that there are at least 4 combinations present in the hand
         // Now we just need to find the remaining pair
-        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
+        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : this.getHand().entrySet()) {
             if (entry.getValue() == 2) {
                 return true;
             }
@@ -120,9 +120,9 @@ public class MahjongHand {
         return false;
     }
 
-    public static Boolean isSevenPairs(MahjongHand hand) {
+    public Boolean isSevenPairs() {
         // A "Seven Pairs" hand is, as the name implies, a hand solely consisting of seven pairs.
-        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
+        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : this.getHand().entrySet()) {
             // This one is as easy as it gets: we go through all the hand entries, and check if we have
             // every tile a even number of times (we can only have up to 4 tiles, and 0 can never be in the hand
             // so this is the same as checking if the value is different than 2 or 4).
@@ -134,72 +134,72 @@ public class MahjongHand {
         return true;
     }
 
-    public static Boolean isNineGates(MahjongHand hand) {
-        // A "Nine Gates" hand is a special hand and consists of: a Pung of 1, Pung of 9, and the sequence of all the
-        // numbers in between, all of them of the same type + 1 pair with any available tile
-        // The hand must also be closed, and no Kongs are allowed.
+//    public static Boolean isNineGates(MahjongHand hand) {
+//        // A "Nine Gates" hand is a special hand and consists of: a Pung of 1, Pung of 9, and the sequence of all the
+//        // numbers in between, all of them of the same type + 1 pair with any available tile
+//        // The hand must also be closed, and no Kongs are allowed.
+//
+//        // First check that we have only two pungs and no kongs (no more than 14 tiles total in hand)
+//        if (hand._info._pungs.size() != 2 || hand._info._kongs.size() != 0 || hand.getHandSize() != 14) {
+//            return false;
+//        }
+//
+//        // Get the assumed type of the Nine Gates hand (basically get any tile and choose its type)
+//        MahJavaLib.MahjongTile.TileType nineGatesType = hand._info._pungs.get(0).get(0).getType();
+//
+//        // Check if both Pungs are one Pung of 1s and one Pung of 9s of the same type
+//        if (hand.getHand().get(new MahJavaLib.MahjongTile(nineGatesType, MahJavaLib.MahjongTile.TileContent.ONE)) != 3 ||
+//                hand.getHand().get(new MahJavaLib.MahjongTile(nineGatesType, MahJavaLib.MahjongTile.TileContent.NINE)) != 3) {
+//            return false;
+//        }
+//
+//        // For the intermediate sequence, we shall iterate through all the tiles in hand, check if their type is
+//        // the same as both Pungs checked above, and if they are not a part of the Pung (which means they must be a part
+//        // of the sequence, store the Content value in an array.
+//        // Then we sort this array, and check if it is equal to a range of [2, 8]; which means that we have at least
+//        // one of each Number tiles of the same type.
+//        ArrayList<Integer> values = new ArrayList<>();
+//        values.ensureCapacity(hand.getHandSize());
+//
+//        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
+//            MahJavaLib.MahjongTile tile = entry.getKey();
+//            // All tiles MUST be of the same type
+//            if (tile.getType() != nineGatesType) {
+//                return false;
+//            }
+//
+//            // Ignore the 1s and 9s, we already checked their pre-conditions
+//            if (tile.getContent()._value > 1 && tile.getContent()._value < 9) {
+//                values.add(tile.getContent()._value);
+//            }
+//        }
+//        // 2021 and Java still does not allow you to create a Range stream of ints to ArrayList<Integers> :)
+//        ArrayList<Integer> range = new ArrayList<>();
+//        for (Integer i = 2; i < 9; ++i) {
+//            range.add(i);
+//        }
+//
+//        Collections.sort(values);
+//        if (!values.equals(range)) {
+//            return false;
+//        }
+//
+//        // Finally, we only need to check if there is a single pair in our hand
+//        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
+//            if (entry.getValue() == 2) {
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
 
-        // First check that we have only two pungs and no kongs (no more than 14 tiles total in hand)
-        if (hand._info._pungs.size() != 2 || hand._info._kongs.size() != 0 || hand.getHandSize() != 14) {
-            return false;
-        }
-
-        // Get the assumed type of the Nine Gates hand (basically get any tile and choose its type)
-        MahJavaLib.MahjongTile.TileType nineGatesType = hand._info._pungs.get(0).get(0).getType();
-
-        // Check if both Pungs are one Pung of 1s and one Pung of 9s of the same type
-        if (hand.getHand().get(new MahJavaLib.MahjongTile(nineGatesType, MahJavaLib.MahjongTile.TileContent.ONE)) != 3 ||
-                hand.getHand().get(new MahJavaLib.MahjongTile(nineGatesType, MahJavaLib.MahjongTile.TileContent.NINE)) != 3) {
-            return false;
-        }
-
-        // For the intermediate sequence, we shall iterate through all the tiles in hand, check if their type is
-        // the same as both Pungs checked above, and if they are not a part of the Pung (which means they must be a part
-        // of the sequence, store the Content value in an array.
-        // Then we sort this array, and check if it is equal to a range of [2, 8]; which means that we have at least
-        // one of each Number tiles of the same type.
-        ArrayList<Integer> values = new ArrayList<>();
-        values.ensureCapacity(hand.getHandSize());
-
-        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
-            MahJavaLib.MahjongTile tile = entry.getKey();
-            // All tiles MUST be of the same type
-            if (tile.getType() != nineGatesType) {
-                return false;
-            }
-
-            // Ignore the 1s and 9s, we already checked their pre-conditions
-            if (tile.getContent()._value > 1 && tile.getContent()._value < 9) {
-                values.add(tile.getContent()._value);
-            }
-        }
-        // 2021 and Java still does not allow you to create a Range stream of ints to ArrayList<Integers> :)
-        ArrayList<Integer> range = new ArrayList<>();
-        for (Integer i = 2; i < 9; ++i) {
-            range.add(i);
-        }
-
-        Collections.sort(values);
-        if (!values.equals(range)) {
-            return false;
-        }
-
-        // Finally, we only need to check if there is a single pair in our hand
-        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
-            if (entry.getValue() == 2) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static Boolean isThirteenOrphans(MahjongHand hand) {
+    public Boolean isThirteenOrphans() {
         // A "Thirteen Orphans" hand is a special hand that consists of one of each 1s, 9s, Dragons, Winds, and a pair
         // with any of them
 
         // Hand can only have 14 tiles (no Kongs are allowed)
-        if (hand.getHandSize() != 14) {
+        if (this.getHandSize() != 14) {
             return false;
         }
 
@@ -224,12 +224,12 @@ public class MahjongHand {
         }
 
         // If any of the necessary tiles are not present in the final hand, then it can't be a Thirteen Orphans
-        if (necessaryTilesToHave.stream().anyMatch(necessaryTile -> (hand.getHand().get(necessaryTile) == null))) {
+        if (necessaryTilesToHave.stream().anyMatch(necessaryTile -> (this.getHand().get(necessaryTile) == null))) {
             return false;
         }
 
         // If it has all the necessary tiles, then we also need to check if we have a pair
-        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
+        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : this.getHand().entrySet()) {
             if (entry.getValue() == 2) {
                 return true;
             }
@@ -313,14 +313,11 @@ public class MahjongHand {
         // In Mahjong, a hand is a winning hand if at least one of the following conditions applies:
         // - A hand has 4 Chow/Pung/Kongs + 1 pair
         // - A hand has 7 pairs
-        // - It is a "Nine Gates" hand
         // - It is a "Thirteen Orphans" hand
         // Any other hand is a not-winning hand.
-
         ArrayList<Function<MahjongHand, Boolean>> winningConditions = new ArrayList<>(Arrays.asList(
                 MahjongHand::isFourCombinationsPlusPair,
                 MahjongHand::isSevenPairs,
-                MahjongHand::isNineGates,
                 MahjongHand::isThirteenOrphans));
 
         return winningConditions.stream().anyMatch((func) -> (func.apply(this)));

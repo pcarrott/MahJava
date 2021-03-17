@@ -18,13 +18,12 @@ public class TestMahjongHand {
     private MahjongHand thirteenOrphans;
     private MahjongHand sevenPairs;
     private MahjongHand nineGates;
-    
+
     @BeforeMethod
     public void setUp() {
         ArrayList<MahjongTile> fourCombsPlusPair = new ArrayList<>();
         ArrayList<MahjongTile> thirteenOrphans = new ArrayList<>();
         ArrayList<MahjongTile> sevenPairs = new ArrayList<>();
-        ArrayList<MahjongTile> nineGates = new ArrayList<>();
 
         // Populate all the hands with a correct configuration
         // First, 4 Combinations + 1 Pair
@@ -37,8 +36,8 @@ public class TestMahjongHand {
         // Add 55 of Bamboo
         fourCombsPlusPair.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.fromValue(5)));
         fourCombsPlusPair.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.fromValue(5)));
-        
-        
+
+
         // Next the Seven Pairs
         for (MahjongTile.TileType tp : MahjongTile.TileType.values()) {
             // Add 11 of every type (3 types * 2 = 6)
@@ -53,21 +52,6 @@ public class TestMahjongHand {
                 }
             }
         }
-
-        // Next the Nine Gates
-        // Add 1 Pung each of 1 and 9 of Bamboo
-        for (int i = 0; i < 3; i++) {
-            nineGates.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.ONE));
-            nineGates.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.NINE));
-        }
-
-        // Add the full sequence between 2 and 8 inclusive
-        for (int i = 2; i <= 8; ++i) {
-            nineGates.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.fromValue(i)));
-        }
-        // Add an extra 2 of Bamboo for the pair
-        nineGates.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.TWO));
-
 
         // And finally, the Thirteen Orphans
         for (MahjongTile.TileType tp : MahjongTile.TileType.values()) {
@@ -89,7 +73,7 @@ public class TestMahjongHand {
 
         this.fourCombsPlusPair = new MahjongHand(fourCombsPlusPair);
         this.sevenPairs = new MahjongHand(sevenPairs);
-        this.nineGates = new MahjongHand(nineGates);
+//        this.nineGates = new MahjongHand(nineGates);
         this.thirteenOrphans = new MahjongHand(thirteenOrphans);
     }
 
@@ -99,19 +83,17 @@ public class TestMahjongHand {
 
     @Test
     public void testIsFourCombinationsPlusPair() {
-        assertTrue(MahjongHand.isFourCombinationsPlusPair(this.fourCombsPlusPair));
-        assertEquals(Stream.of(this.nineGates,
-                this.thirteenOrphans,
+        assertTrue(this.fourCombsPlusPair.isFourCombinationsPlusPair());
+        assertEquals(Stream.of(this.thirteenOrphans,
                 this.sevenPairs,
                 this.fourCombsPlusPair)
-                .filter(MahjongHand::isFourCombinationsPlusPair).count(), 2);
+                .filter(MahjongHand::isFourCombinationsPlusPair).count(), 1);
     }
 
     @Test
     public void testIsSevenPairs() {
-        assertTrue(MahjongHand.isSevenPairs(this.sevenPairs));
-        assertEquals(Stream.of(this.nineGates,
-                this.thirteenOrphans,
+        assertTrue(this.sevenPairs.isSevenPairs());
+        assertEquals(Stream.of(this.thirteenOrphans,
                 this.sevenPairs,
                 this.fourCombsPlusPair)
                 .filter(MahjongHand::isSevenPairs).count(), 1);
@@ -119,20 +101,9 @@ public class TestMahjongHand {
 
 
     @Test
-    public void testIsNineGates() {
-        assertTrue(MahjongHand.isNineGates(this.nineGates));
-        assertEquals(Stream.of(this.nineGates,
-                this.thirteenOrphans,
-                this.sevenPairs,
-                this.fourCombsPlusPair)
-                .filter(MahjongHand::isNineGates).count(), 1);
-    }
-
-    @Test
     public void testIsThirteenOrphans() {
-        assertTrue(MahjongHand.isThirteenOrphans(this.thirteenOrphans));
-        assertEquals(Stream.of(this.nineGates,
-                this.thirteenOrphans,
+        assertTrue(this.thirteenOrphans.isThirteenOrphans());
+        assertEquals(Stream.of(this.thirteenOrphans,
                 this.sevenPairs,
                 this.fourCombsPlusPair)
                 .filter(MahjongHand::isThirteenOrphans).count(), 1);
@@ -140,8 +111,7 @@ public class TestMahjongHand {
 
     @Test
     public void testIsWinningHand() {
-        assertTrue(Stream.of(this.nineGates,
-                this.thirteenOrphans,
+        assertTrue(Stream.of(this.thirteenOrphans,
                 this.sevenPairs,
                 this.fourCombsPlusPair)
                 .allMatch(MahjongHand::isWinningHand));
