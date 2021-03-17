@@ -246,4 +246,12 @@ public class TestMahjongTile {
                         MahjongTile.TileContent.NORTH,
                         MahjongTile.TileContent.SOUTH)));
     }
+
+    @Test
+    public void testEquality() {
+        MahjongTile oneOfBamboo = new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.ONE);
+        MahjongTile anotherOneOfBamboo = new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.ONE);
+        assertEquals(oneOfBamboo, anotherOneOfBamboo);
+        assertEquals(oneOfBamboo.hashCode(), anotherOneOfBamboo.hashCode());
+    }
 }

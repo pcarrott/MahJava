@@ -124,6 +124,22 @@ public class MahjongTile {
         return _type + " - " + _content;
     }
 
+    // These two Overrides (`equals` and `hashCode`) are needed so two different MahjongTile objects
+    // that have the same Type and Content, are recognized as the same on a HashMap
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof MahjongTile)) {
+            return false;
+        }
+        MahjongTile other = (MahjongTile) o;
+        return this._type.equals(other._type) && this._content.equals(other._content);
+    }
+
+    @Override
+    public int hashCode() {
+        return this._type.hashCode() ^ this._content.hashCode();
+    }
+
     static class MahjongTileComparator implements Comparator<MahjongTile> {
         @Override
         public int compare(MahjongTile a, MahjongTile b) {
