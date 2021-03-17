@@ -21,7 +21,7 @@ public class MahjongHand {
         ArrayList<ArrayList<MahJavaLib.MahjongTile>> _kongs = new ArrayList<>();
 
         // Also, having a way to get the number of all specific tile types in a hand is very useful
-        HashMap<MahJavaLib.MahjongTile.TileType, Integer> _numberOfTilesOfType = new HashMap<MahJavaLib.MahjongTile.TileType, Integer>();
+        HashMap<MahJavaLib.MahjongTile.TileType, Integer> _numberOfTilesOfType = new HashMap<>();
 
         public MahjongHandInfo(){}
 
@@ -46,33 +46,55 @@ public class MahjongHand {
 
             // We start by checking for Pungs (we will also take advantage of this for loop to also record the number
             // of tiles of each type)
+
             for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : copyHand.getHand().entrySet()) {
                 // The behaviour of merge is the following: if the key doesn't exist, then it stores the supplied value;
                 // else it runs the given function (in this case sum) with the value supplied and the stored value
                 // as its arguments, and stores the result with the key. Weird name though.
                 this._numberOfTilesOfType.merge(entry.getKey().getType(), 1, Integer::sum);
-
                 if (entry.getValue() >= 3) {
                     _pungs.add(new ArrayList<>(Collections.nCopies(3, entry.getKey())));
-                    for (int i = 0; i < 3; ++i) {
-                        copyHand.removeTile(entry.getKey());
-                    }
                 }
             }
 
-            // Then we check in the remaining tiles for Chows
-            for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : copyHand.getHand().entrySet()) {
-                ArrayList<ArrayList<MahJavaLib.MahjongTile>> possibleChows = entry.getKey().getPossibleChowCombinations();
-                for (ArrayList<MahJavaLib.MahjongTile> chow : possibleChows) {
-                    boolean allTilesInChowExist = chow.stream().allMatch(tile -> copyHand.getHand().get(tile) != null);
-                    // If we can make a Chow, then we will add it to our information, and remove the tiles that make
-                    // this a recorded chow, so we don't make mistakes.
-                    if (allTilesInChowExist) {
-                        this._chows.add(chow);
-                        for (MahJavaLib.MahjongTile tile : chow) {
-                            copyHand.removeTile(tile);
+            // Remove all done pung tiles, so we don't record the same piece twice
+            for (ArrayList<MahjongTile> pung : _pungs) {
+                for (MahjongTile tile : pung) {
+                    copyHand.removeTile(tile);
+                }
+            }
+
+            // Theoretically, we would like to simply iterate through all the available tiles, check if there is a
+            // chow that can be made with it, and if so, record that chow and remove all its pieces from the hand.
+            // Unfortunately, because of this last removal step, it would invalidate the iterator, which would throw us
+            // a ConcurrentException. So, instead of that, we will iterate through all the available tiles until we get
+            // to a tile that can form a Chow. Then we will stop the iteration, record and remove all the Chow's pieces
+            // and start the iteration again. If we got to the end of the hand, then it means that there are no more
+            // possible Chows in the hand, and so we can break out of this loop.
+            while (true) {
+                boolean chowInHand = false;
+                outerFor:
+                for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : copyHand.getHand().entrySet()) {
+                    ArrayList<ArrayList<MahJavaLib.MahjongTile>> possibleChows = entry.getKey().getPossibleChowCombinations();
+                    for (ArrayList<MahJavaLib.MahjongTile> chow : possibleChows) {
+                        chowInHand = chow.stream().allMatch(tile -> copyHand.getHand().get(tile) != null);
+                        // If we can make a Chow, then we will add it to our information, and remove the tiles that make
+                        // this a recorded chow, so we don't make mistakes.
+                        if (chowInHand) {
+                            this._chows.add(chow);
+                            for (MahjongTile chowTile : chow) {
+                                copyHand.removeTile(chowTile);
+                            }
+
+                            // We need to exit the full hand iteration
+                            break outerFor;
                         }
                     }
+                }
+
+                if (!chowInHand) {
+                    // Got to the end of the hand and there are no more chows
+                    break;
                 }
             }
         }
@@ -225,7 +247,7 @@ public class MahjongHand {
     // the entry containing that tile should be fully removed from the hashmap, to save space. This means that no Value
     // should ever be 0. If a get() method call returns null, then that means that no tile of that specific type+content
     // exists.
-    private HashMap<MahJavaLib.MahjongTile, Integer> _hand = new HashMap<>();
+    private final HashMap<MahJavaLib.MahjongTile, Integer> _hand = new HashMap<>();
     private MahjongHandInfo _info = new MahjongHandInfo();
 
     public HashMap<MahJavaLib.MahjongTile, Integer> getHand() {
@@ -287,7 +309,7 @@ public class MahjongHand {
         this.removeTile(tileToDiscard);
     }
 
-    private boolean isWinningHand() {
+    public boolean isWinningHand() {
         // In Mahjong, a hand is a winning hand if at least one of the following conditions applies:
         // - A hand has 4 Chow/Pung/Kongs + 1 pair
         // - A hand has 7 pairs
@@ -304,9 +326,9 @@ public class MahjongHand {
         return winningConditions.stream().anyMatch((func) -> (func.apply(this)));
     }
 
-    public Integer calculateHandValue() {
-        return 0;
-    }
+//    public Integer calculateHandValue() {
+//        return 0;
+//    }
 
     @Override
     public String toString() {
@@ -345,8 +367,4 @@ public class MahjongHand {
         }
     }
 
-    public static void main(String[] args) {
-        MahjongHand hand = generateRandomHand();
-        System.out.println("Correct usage\n" + hand + "\nNumber of tiles in hand is: " + hand.getHandSize());
-    }
 };
