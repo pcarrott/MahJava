@@ -39,6 +39,7 @@ public class TestHandInfo {
         HandInfo info = new HandInfo(tiles);
         List<List<CombinationType>> winningHands = info.getWinningHands();
 
+        assertEquals(winningHands.size(), 1);
         assertEquals(winningHands.get(0).get(0), CombinationType.PUNG); // 1B,1B,1B
         assertEquals(winningHands.get(0).get(1), CombinationType.PUNG); // 3D,3D,3D
         assertEquals(winningHands.get(0).get(2), CombinationType.PUNG); // 5C,5C,5C
@@ -75,6 +76,7 @@ public class TestHandInfo {
         HandInfo info = new HandInfo(tiles);
         List<List<CombinationType>> winningHands = info.getWinningHands();
 
+        assertEquals(winningHands.size(), 1);
         assertEquals(winningHands.get(0).get(0), CombinationType.PUNG); // 1B,1B,1B
         assertEquals(winningHands.get(0).get(1), CombinationType.CHOW); // 1D,2D,3D
         assertEquals(winningHands.get(0).get(2), CombinationType.PUNG); // 5C,5C,5C
@@ -115,6 +117,12 @@ public class TestHandInfo {
         HandInfo info = new HandInfo(tiles);
         List<List<CombinationType>> winningHands = info.getWinningHands();
 
+        System.out.println("Your tiles:");
+        System.out.println(tiles);
+        System.out.println("Your winning combination:");
+        System.out.println(winningHands);
+
+        assertEquals(winningHands.size(), 1);
         assertEquals(winningHands.get(0).get(0), CombinationType.PUNG); // 1B,1B,1B
         assertEquals(winningHands.get(0).get(1), CombinationType.CHOW); // 1D,2D,3D
         assertEquals(winningHands.get(0).get(2), CombinationType.CHOW); // 1D,2D,3D
@@ -148,6 +156,12 @@ public class TestHandInfo {
         HandInfo info = new HandInfo(tiles);
         List<List<CombinationType>> winningHands = info.getWinningHands();
 
+        System.out.println("Your tiles:");
+        System.out.println(tiles);
+        System.out.println("Your winning combination:");
+        System.out.println(winningHands);
+
+        assertEquals(winningHands.size(), 1);
         assertEquals(winningHands.get(0).get(0), CombinationType.PUNG); // 1B,1B,1B
         assertEquals(winningHands.get(0).get(1), CombinationType.CHOW); // 1D,2D,3D
         assertEquals(winningHands.get(0).get(2), CombinationType.CHOW); // 2D,3D,4D
@@ -175,7 +189,7 @@ public class TestHandInfo {
             tiles.add(new MahjongTile(MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.fromValue(i)));
         }
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             tiles.add(new MahjongTile(MahjongTile.TileType.DRAGON, MahjongTile.TileContent.RED));
         }
 
@@ -184,6 +198,12 @@ public class TestHandInfo {
         HandInfo info = new HandInfo(tiles);
         List<List<CombinationType>> winningHands = info.getWinningHands();
 
+        System.out.println("Your tiles:");
+        System.out.println(tiles);
+        System.out.println("Your winning combination:");
+        System.out.println(winningHands);
+
+        assertEquals(winningHands.size(), 1);
         assertEquals(winningHands.get(0).get(0), CombinationType.CHOW); // 1D,2D,3D
         assertEquals(winningHands.get(0).get(1), CombinationType.PAIR); // 3D,3D
         assertEquals(winningHands.get(0).get(2), CombinationType.CHOW); // 3D,4D,5D
@@ -224,6 +244,13 @@ public class TestHandInfo {
         // Generated tiles: [1B,1B,1B,2B,2B,2B,3B,3B,3B,4B,5B,6B,7B,7B]
         HandInfo info = new HandInfo(tiles);
         List<List<CombinationType>> winningHands = info.getWinningHands();
+
+        System.out.println("Your tiles:");
+        System.out.println(tiles);
+        System.out.println("Your winning combination:");
+        System.out.println(winningHands);
+
+        assertEquals(winningHands.size(), 2);
 
         assertEquals(winningHands.get(0).get(0), CombinationType.PUNG); // 1B,1B,1B
         assertEquals(winningHands.get(0).get(1), CombinationType.PUNG); // 2B,2B,2B

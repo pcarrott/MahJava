@@ -119,6 +119,13 @@ public class MahjongTile {
         this._content = _content;
     }
 
+    public boolean isNext(MahjongTile tile) {
+        return this._type == tile._type &&
+                !this._type.isSpecialType() &&
+                this._content._value < 9 &&
+                this._content._value + 1 == tile._content._value;
+    }
+
     @Override
     public String toString() {
         return _type + " - " + _content;
