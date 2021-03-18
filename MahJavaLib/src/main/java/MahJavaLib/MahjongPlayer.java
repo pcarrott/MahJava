@@ -10,6 +10,7 @@ public class MahjongPlayer {
 
     public enum CombinationType {
         CHOW,
+        PAIR,
         PUNG,
         KONG
     }
