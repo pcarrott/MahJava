@@ -42,7 +42,7 @@ public class HandInfo {
             int currentIndex,
             Map<Integer, Map<CombinationType, CombinationType>> indexToCombination) {
 
-        // No more tiles. We have a Mahjong!
+        // No more tiles. We have a Mahjong! We return
         if (currentIndex < 0) {
             return Arrays.asList(new ArrayList<>());
         }
