@@ -9,12 +9,12 @@ public class HandInfo {
     static final int MAX_TILES = 14;
     static final int MAX_CHOWS_PER_TILE = 4;
 
+    private Map<Integer, Map<CombinationType, CombinationType>> indexToCombinations = new HashMap<>();
     private final List<List<CombinationType>> winningHands;
     private List<Deque<Integer>> chowTable;
 
     // The list of tiles is assumed to be sorted
     public HandInfo(List<MahjongTile> tiles) {
-        Map<Integer, Map<CombinationType, CombinationType>> indexToCombination = new HashMap<>();
         this.createChowTable();
 
         MahjongTile previousTile = tiles.get(0);
@@ -37,16 +37,16 @@ public class HandInfo {
                     hops++;
                 }
 
-                indexToCombination.put(
+                this.indexToCombinations.put(
                     i,
                     new HashMap<>(Map.ofEntries(Map.entry(CombinationType.PAIR, CombinationType.PAIR)))
                 );
 
                 if (sequenceCount > 1 && hops > 1)
-                    indexToCombination.get(i).put(CombinationType.CHOW, CombinationType.CHOW);
+                    this.indexToCombinations.get(i).put(CombinationType.CHOW, CombinationType.CHOW);
 
                 if (duplicateCount > 0)
-                    indexToCombination.get(i).put(CombinationType.PUNG, CombinationType.PUNG);
+                    this.indexToCombinations.get(i).put(CombinationType.PUNG, CombinationType.PUNG);
 
                 duplicateCount++;
 
@@ -57,7 +57,7 @@ public class HandInfo {
                     this.chowTable.get(i).add(i - 1 - d);
 
                 if (sequenceCount > 0)
-                    indexToCombination.put(
+                    this.indexToCombinations.put(
                         i,
                         new HashMap<>(Map.ofEntries(Map.entry(CombinationType.CHOW, CombinationType.CHOW)))
                     );
@@ -73,33 +73,29 @@ public class HandInfo {
             previousTile = currentTile;
         }
 
-        this.winningHands = computeWinningHands(tiles.size() - 1, false, indexToCombination);
+        this.winningHands = computeWinningHands(tiles.size() - 1, false);
     }
 
-    private List<List<CombinationType>> computeWinningHands(
-            int currentIndex,
-            boolean foundPair,
-            Map<Integer, Map<CombinationType, CombinationType>> indexToCombination) {
-
+    private List<List<CombinationType>> computeWinningHands(int currentIndex, boolean foundPair) {
         // No more tiles. We have a Mahjong!
         // We return an empty list inside the list of winning hands
         if (currentIndex < 0)
             return Collections.singletonList(new ArrayList<>());
 
         // If null, there is no Mahjong
-        Map<CombinationType, CombinationType> possibleCombinations = indexToCombination.get(currentIndex);
+        Map<CombinationType, CombinationType> possibleCombinations = this.indexToCombinations.get(currentIndex);
         if (possibleCombinations == null)
             return new ArrayList<>();
 
         if (possibleCombinations.isEmpty())
-            return computeWinningHands(currentIndex - 1, foundPair, indexToCombination);
+            return computeWinningHands(currentIndex - 1, foundPair);
 
         List<List<CombinationType>> winningHands = new ArrayList<>();
 
         CombinationType pair = possibleCombinations.get(CombinationType.PAIR);
         if (!foundPair && pair != null) {
             List<List<CombinationType>> possibleWinningHands =
-                    computeWinningHands(currentIndex - 2, true, indexToCombination);
+                    computeWinningHands(currentIndex - 2, true);
 
             possibleWinningHands.forEach(hand -> hand.add(CombinationType.PAIR));
             winningHands.addAll(possibleWinningHands);
@@ -108,27 +104,47 @@ public class HandInfo {
         CombinationType pung = possibleCombinations.get(CombinationType.PUNG);
         if (pung != null) {
             List<List<CombinationType>> possibleWinningHands =
-                    computeWinningHands(currentIndex - 3, foundPair, indexToCombination);
+                    computeWinningHands(currentIndex - 3, foundPair);
 
             possibleWinningHands.forEach(hand -> hand.add(CombinationType.PUNG));
             winningHands.addAll(possibleWinningHands);
         }
 
-        // CombinationType kong = possibleCombinations.get(CombinationType.KONG);
-        // if (kong != null) {
-        //
-        // }
-
-        // Needs to be the last because of the return statement
-        // All other combinations were checked already so this is alright
         CombinationType chow = possibleCombinations.get(CombinationType.CHOW);
         if (chow != null) {
-            Map<Integer, Map<CombinationType, CombinationType>> newIndexToCombination =
-                    copyIndexToCombination(indexToCombination);
+            Map<Integer, Map<CombinationType, CombinationType>> oldITC = this.indexToCombinations;
+            Map<Integer, Map<CombinationType, CombinationType>> newITC = copyITC(this.indexToCombinations);
 
-            winningHands = expandPossibleChows(
-                    2, currentIndex, currentIndex - 1, foundPair,
-                    winningHands, newIndexToCombination);
+            Deque<Integer> possibleChowsL1 = chowTable.get(currentIndex);
+            chowLoop:
+            for (Integer currentChowL1 : possibleChowsL1) {
+                Map<Integer, Map<CombinationType, CombinationType>> itcL1 = copyITC(newITC);
+                setAsChowTile(currentChowL1, itcL1);
+
+                Deque<Integer> possibleChowsL2 = chowTable.get(currentChowL1);
+                for (Integer currentChowL2 : possibleChowsL2) {
+                    this.indexToCombinations = copyITC(itcL1);
+                    setAsChowTile(currentChowL2, this.indexToCombinations);
+
+                    int freeIndex;
+                    if (currentIndex - 1 > currentChowL1) {
+                        freeIndex = currentIndex - 1;
+                    } else if (currentChowL1 - 1 > currentChowL2) {
+                        freeIndex = currentChowL1 - 1;
+                    } else {
+                        freeIndex = currentChowL2 - 1;
+                    }
+
+                    List<List<CombinationType>> possibleWinningHands = computeWinningHands(freeIndex, foundPair);
+                    if (!possibleWinningHands.isEmpty()) {
+                        possibleWinningHands.forEach(hand -> hand.add(CombinationType.CHOW));
+                        winningHands.addAll(possibleWinningHands);
+                        break chowLoop;
+                    }
+                }
+            }
+
+            this.indexToCombinations = oldITC;
         }
 
         return winningHands;
@@ -143,66 +159,37 @@ public class HandInfo {
         this.chowTable = chowTable;
     }
 
-    private Map<Integer, Map<CombinationType, CombinationType>> copyIndexToCombination(
-            Map<Integer, Map<CombinationType, CombinationType>> indexToCombination) {
+    private Map<Integer, Map<CombinationType, CombinationType>> copyITC(
+        Map<Integer, Map<CombinationType, CombinationType>> itc) {
 
-        Map<Integer, Map<CombinationType, CombinationType>> newIndexToCombination = new HashMap<>();
-        for (Map.Entry<Integer, Map<CombinationType, CombinationType>> entry : indexToCombination.entrySet()) {
+        Map<Integer, Map<CombinationType, CombinationType>> newITC = new HashMap<>();
+        for (Map.Entry<Integer, Map<CombinationType, CombinationType>> entry : itc.entrySet()) {
             Map<CombinationType, CombinationType> value = new HashMap<>();
             for (Map.Entry<CombinationType, CombinationType> combination : entry.getValue().entrySet()) {
                 value.put(combination.getKey(), combination.getValue());
             }
-            newIndexToCombination.put(entry.getKey(), value);
+            newITC.put(entry.getKey(), value);
         }
-        return newIndexToCombination;
+        return newITC;
     }
 
-    private List<List<CombinationType>> expandPossibleChows(
-            int level,
-            int index,
-            int freeIndex,
-            boolean foundPair,
-            List<List<CombinationType>> winningHands,
-            Map<Integer, Map<CombinationType, CombinationType>> indexToCombination) {
+    private void setAsChowTile(int index, Map<Integer, Map<CombinationType, CombinationType>> itc) {
+        Map<CombinationType, CombinationType> indexCombinations = itc.get(index);
 
-        if (level < 1) {
-            List<List<CombinationType>> possibleWinningHands =
-                    computeWinningHands(freeIndex, foundPair, indexToCombination);
-            if (!possibleWinningHands.isEmpty()) {
-                possibleWinningHands.forEach(hand -> hand.add(CombinationType.CHOW));
-                winningHands.addAll(possibleWinningHands);
-                return winningHands;
-            }
-        }
+        if (indexCombinations == null)
+            itc.put(index, new HashMap<>());
+        else
+            indexCombinations.clear();
 
-        Deque<Integer> possibleChows = this.chowTable.get(index);
-        for (Integer currentChow : possibleChows) {
-            Map<CombinationType, CombinationType> currentChowCombinations =
-                    indexToCombination.get(currentChow);
+        itc.computeIfPresent(index + 1, (k, v) -> {
+            v.remove(CombinationType.PAIR);
+            return v;
+        });
 
-            if (currentChowCombinations == null)
-                indexToCombination.put(currentChow, new HashMap<>());
-            else
-                currentChowCombinations.clear();
-
-            indexToCombination.computeIfPresent(currentChow + 1, (k, v) -> {
-                v.remove(CombinationType.PAIR);
-                return v;
-            });
-            indexToCombination.computeIfPresent(currentChow + 2, (k, v) -> {
-                v.remove(CombinationType.PUNG);
-                return v;
-            });
-
-            if (freeIndex == currentChow)
-                freeIndex = currentChow - 1;
-
-            return expandPossibleChows(
-                    level - 1, currentChow, freeIndex, foundPair,
-                    winningHands, indexToCombination);
-        }
-
-        return winningHands;
+        itc.computeIfPresent(index + 2, (k, v) -> {
+            v.remove(CombinationType.PUNG);
+            return v;
+        });
     }
 
     public List<List<CombinationType>> getWinningHands() {
