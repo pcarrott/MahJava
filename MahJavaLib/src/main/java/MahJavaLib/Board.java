@@ -3,39 +3,44 @@ package MahJavaLib;
 import java.util.*;
 
 import MahJavaLib.Tile.*;
+import MahJavaLib.exceptions.WallIsEmptyException;
 
 public class Board {
 
 
-    private HashMap<Tile, Integer> _wall = new HashMap<>();
+    private Deque<Tile> _wall;
 
     public Board() {
-        generateWall();
+        this._wall = generateWall();
     }
 
-    private void generateWall() {
+    private Deque<Tile> generateWall() {
+        List<Tile> list = new ArrayList<>();
         // Iterate through all possible tile types and generate their corresponding tiles
         for (TileType tt : TileType.values()) {
             if (!tt.isSpecialType()) {
                 // For the normal tile types, we only want to generate the number contents
-                for (TileContent tc : TileContent.getNumbers()) {
-                    this._wall.put(new Tile(tt, tc), 4);
-                }
+                TileContent.getNumbers().forEach(tc -> addFourTileCopies(list, new Tile(tt, tc)));
             } else if (tt == TileType.DRAGON) {
                 // For dragons, we only want the colors
-                for (TileContent tc : TileContent.getColors()) {
-                    this._wall.put(new Tile(tt, tc), 4);
-                }
+                TileContent.getColors().forEach(tc -> addFourTileCopies(list, new Tile(tt, tc)));
             } else {
                 // And for winds, the directions
-                for (TileContent tc : TileContent.getDirections()) {
-                    this._wall.put(new Tile(tt, tc), 4);
-                }
+                TileContent.getDirections().forEach(tc -> addFourTileCopies(list, new Tile(tt, tc)));
             }
+        }
+
+        Collections.shuffle(list);
+        return new ArrayDeque<>(list);
+    }
+
+    private static void addFourTileCopies(List<Tile> list, Tile e) {
+        for (int i = 0; i < 4; i++) {
+            list.add(e);
         }
     }
 
-    public Map<Tile, Integer> getWall() {
+    public Deque<Tile> getWall() {
         return this._wall;
     }
 
@@ -43,36 +48,20 @@ public class Board {
         return this._wall.isEmpty();
     }
 
-    public Tile removeTileFromWall() throws IllegalStateException {
+    public Tile removeFirstTileFromWall() throws WallIsEmptyException {
         if (this._wall.isEmpty()) {
-            throw new IllegalStateException();
+            throw new WallIsEmptyException();
         }
 
-        try {
-            Tile tile = getRandomTile();
-            Integer value = this._wall.get(tile);
-
-            this._wall.replace(tile, --value);
-            if (value <= 0) {
-                this._wall.remove(tile);
-            }
-            System.out.println("Tile value in wall - " + this._wall.get(tile) + "; value = " + value);
-            return tile;
-
-        } catch (IllegalStateException e) {
-            //Try to get a random tile until success. Doesn't take many tries as 0-value tiles are removed from wall
-            return getRandomTile();
-        }
+        return this._wall.removeFirst();
     }
 
-    private Tile getRandomTile() throws IllegalStateException {
-        ArrayList<Tile> contents = new ArrayList<>(getWall().keySet());
-        Random r = new Random();
-        Tile tile = contents.get(r.nextInt(contents.size()));
-        if (this._wall.get(tile) <= 0) {
-            throw new IllegalStateException();
+    public Tile removeLastTileFromWall() throws WallIsEmptyException {
+        if (this._wall.isEmpty()) {
+            throw new WallIsEmptyException();
         }
-        return tile;
+
+        return this._wall.removeLast();
     }
 
     @Override

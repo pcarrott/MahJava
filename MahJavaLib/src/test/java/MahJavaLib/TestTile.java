@@ -179,7 +179,7 @@ public class TestTile {
         this._tile = new Tile(tt, tc);
 
         // Act
-        ArrayList<ArrayList<Tile>> chows = this._tile.getPossibleChowCombinations();
+        ArrayList<ArrayList<Tile>> chows = (ArrayList<ArrayList<Tile>>) this._tile.getPossibleChowCombinations();
 
         // Asserts
         switch (tc) {
@@ -218,7 +218,7 @@ public class TestTile {
         this._tile = new Tile(tt, tc);
 
         // Act
-        ArrayList<ArrayList<Tile>> chows = this._tile.getPossibleChowCombinations();
+        ArrayList<ArrayList<Tile>> chows = (ArrayList<ArrayList<Tile>>) this._tile.getPossibleChowCombinations();
 
         // Asserts
         assertTrue(chows.isEmpty());
@@ -226,9 +226,9 @@ public class TestTile {
 
     @Test
     public void testTileContentGetters() {
-        ArrayList<TileContent> numbers = TileContent.getNumbers();
-        ArrayList<TileContent> colors = TileContent.getColors();
-        ArrayList<TileContent> directions = TileContent.getDirections();
+        ArrayList<TileContent> numbers = (ArrayList<TileContent>) TileContent.getNumbers();
+        ArrayList<TileContent> colors = (ArrayList<TileContent>) TileContent.getColors();
+        ArrayList<TileContent> directions = (ArrayList<TileContent>) TileContent.getDirections();
 
         ArrayList<TileContent> tmp = new ArrayList<>();
         for (int i = 1; i <= 9; ++i) {

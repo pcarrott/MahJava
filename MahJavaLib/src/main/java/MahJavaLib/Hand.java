@@ -25,7 +25,8 @@ public class Hand {
         // Also, having a way to get the number of all specific tile types in a hand is very useful
         HashMap<TileType, Integer> _numberOfTilesOfType = new HashMap<>();
 
-        public MahjongHandInfo(){}
+        public MahjongHandInfo() {
+        }
 
         public MahjongHandInfo(MahjongHandInfo info) {
             this._chows = new ArrayList<>(info._chows);
@@ -33,6 +34,7 @@ public class Hand {
             this._kongs = new ArrayList<>(info._kongs);
             this._numberOfTilesOfType = new HashMap<>(info._numberOfTilesOfType);
         }
+
         public MahjongHandInfo(Hand startingHand) throws IllegalArgumentException {
             Integer handSize = startingHand.getHandSize();
             if (handSize != 14) {
@@ -77,7 +79,7 @@ public class Hand {
                 boolean chowInHand = false;
                 outerFor:
                 for (Map.Entry<Tile, Integer> entry : copyHand.getHand().entrySet()) {
-                    ArrayList<ArrayList<Tile>> possibleChows = entry.getKey().getPossibleChowCombinations();
+                    ArrayList<ArrayList<Tile>> possibleChows = (ArrayList<ArrayList<Tile>>) entry.getKey().getPossibleChowCombinations();
                     for (ArrayList<Tile> chow : possibleChows) {
                         chowInHand = chow.stream().allMatch(tile -> copyHand.getHand().get(tile) != null);
                         // If we can make a Chow, then we will add it to our information, and remove the tiles that make
@@ -256,7 +258,7 @@ public class Hand {
         return this._hand;
     }
 
-    private Hand(Hand hand){
+    private Hand(Hand hand) {
         this._hand.putAll(hand.getHand());
         this._info = new MahjongHandInfo(hand._info);
     }

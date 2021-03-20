@@ -1,8 +1,11 @@
 package MahJavaLib;
 
+import MahJavaLib.exceptions.InvalidTileContentValueException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Tile {
@@ -53,15 +56,15 @@ public class Tile {
 
 
         // Helper functions that get all values of each main type of content
-        public static ArrayList<TileContent> getNumbers() {
+        public static List<TileContent> getNumbers() {
             return Arrays.stream(TileContent.values()).filter(TileContent::isNumber).collect(Collectors.toCollection(ArrayList::new));
         }
 
-        public static ArrayList<TileContent> getColors() {
+        public static List<TileContent> getColors() {
             return Arrays.stream(TileContent.values()).filter(TileContent::isColor).collect(Collectors.toCollection(ArrayList::new));
         }
 
-        public static ArrayList<TileContent> getDirections() {
+        public static List<TileContent> getDirections() {
             return Arrays.stream(TileContent.values()).filter(TileContent::isDirection).collect(Collectors.toCollection(ArrayList::new));
         }
 
@@ -78,7 +81,7 @@ public class Tile {
                 }
             }
 
-            throw new RuntimeException("TileContent: Invalid value: " + val);
+            throw new InvalidTileContentValueException("TileContent: Invalid value: " + val);
         }
     }
 
@@ -91,12 +94,10 @@ public class Tile {
             throw new IllegalArgumentException("Illegal Content " + tc + " given Type " + tt);
         }
 
-        if (tt.isSpecialType()) {
-            // If it is of a special type, then it must be either a Dragon (which means the content must be a color)
-            // or a Wind (which means the content must be a Direction).
-            if ((tt == TileType.DRAGON && !TileContent.isColor(tc)) || (tt == TileType.WIND && !TileContent.isDirection(tc))) {
-                throw new IllegalArgumentException("Illegal Content " + tc + " given Type " + tt);
-            }
+        // If it is of a special type, then it must be either a Dragon (which means the content must be a color)
+        // or a Wind (which means the content must be a Direction).
+        if (tt.isSpecialType() && (tt == TileType.DRAGON && !TileContent.isColor(tc)) || (tt == TileType.WIND && !TileContent.isDirection(tc))) {
+            throw new IllegalArgumentException("Illegal Content " + tc + " given Type " + tt);
         }
         this._type = tt;
         this._content = tc;
@@ -157,7 +158,7 @@ public class Tile {
         }
     }
 
-    public ArrayList<ArrayList<Tile>> getPossibleChowCombinations() {
+    public List<ArrayList<Tile>> getPossibleChowCombinations() {
         // This function returns all chows that include the supplied tile
         ArrayList<ArrayList<Tile>> possibleChows = new ArrayList<>();
 
