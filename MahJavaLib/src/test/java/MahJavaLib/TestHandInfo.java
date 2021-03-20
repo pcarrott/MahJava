@@ -7,31 +7,32 @@ import static org.testng.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import MahJavaLib.MahjongPlayer.CombinationType;
+import MahJavaLib.Tile.*;
+import MahJavaLib.Player.CombinationType;
 
 public class TestHandInfo {
     @Test
     public void testAllPungs() {
-        List<MahjongTile> tiles = new ArrayList<>();
+        List<Tile> tiles = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.ONE));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.ONE));
         }
 
         for (int i = 0; i < 3; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DOTS, MahjongTile.TileContent.THREE));
+            tiles.add(new Tile(TileType.DOTS, TileContent.THREE));
         }
 
         for (int i = 0; i < 3; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.FIVE));
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.FIVE));
         }
 
         for (int i = 0; i < 3; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.WIND, MahjongTile.TileContent.EAST));
+            tiles.add(new Tile(TileType.WIND, TileContent.EAST));
         }
 
         for (int i = 0; i < 2; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DRAGON, MahjongTile.TileContent.RED));
+            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
         }
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
@@ -49,26 +50,26 @@ public class TestHandInfo {
 
     @Test
     public void testSimpleChows() {
-        List<MahjongTile> tiles = new ArrayList<>();
+        List<Tile> tiles = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.ONE));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.ONE));
         }
 
         for (int i = 1; i < 4; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DOTS, MahjongTile.TileContent.fromValue(i)));
+            tiles.add(new Tile(TileType.DOTS, TileContent.fromValue(i)));
         }
 
         for (int i = 0; i < 3; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.FIVE));
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.FIVE));
         }
 
         for (int i = 7; i < 10; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.fromValue(i)));
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.fromValue(i)));
         }
 
         for (int i = 0; i < 2; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DRAGON, MahjongTile.TileContent.RED));
+            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
         }
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
@@ -86,18 +87,18 @@ public class TestHandInfo {
 
     @Test
     public void testBigChow() {
-        List<MahjongTile> tiles = new ArrayList<>();
+        List<Tile> tiles = new ArrayList<>();
 
         for (int i = 1; i < 10; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DOTS, MahjongTile.TileContent.fromValue(i)));
+            tiles.add(new Tile(TileType.DOTS, TileContent.fromValue(i)));
         }
 
         for (int i = 7; i < 10; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.fromValue(i)));
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.fromValue(i)));
         }
 
         for (int i = 0; i < 2; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DRAGON, MahjongTile.TileContent.RED));
+            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
         }
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
@@ -115,30 +116,30 @@ public class TestHandInfo {
 
     @Test
     public void testInterleavedChows() {
-        List<MahjongTile> tiles = new ArrayList<>();
+        List<Tile> tiles = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.ONE));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.ONE));
         }
 
         for (int i = 0; i < 2; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DOTS, MahjongTile.TileContent.ONE));
+            tiles.add(new Tile(TileType.DOTS, TileContent.ONE));
         }
 
         for (int i = 0; i < 2; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DOTS, MahjongTile.TileContent.TWO));
+            tiles.add(new Tile(TileType.DOTS, TileContent.TWO));
         }
 
         for (int i = 0; i < 2; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DOTS, MahjongTile.TileContent.THREE));
+            tiles.add(new Tile(TileType.DOTS, TileContent.THREE));
         }
 
         for (int i = 7; i < 10; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.fromValue(i)));
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.fromValue(i)));
         }
 
         for (int i = 0; i < 2; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DRAGON, MahjongTile.TileContent.RED));
+            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
         }
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
@@ -161,23 +162,23 @@ public class TestHandInfo {
 
     @Test
     public void testDelayedInterleavedChows() {
-        List<MahjongTile> tiles = new ArrayList<>();
+        List<Tile> tiles = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.ONE));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.ONE));
         }
 
         for (int i = 1; i < 4; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DOTS, MahjongTile.TileContent.fromValue(i)));
-            tiles.add(new MahjongTile(MahjongTile.TileType.DOTS, MahjongTile.TileContent.fromValue(i + 1)));
+            tiles.add(new Tile(TileType.DOTS, TileContent.fromValue(i)));
+            tiles.add(new Tile(TileType.DOTS, TileContent.fromValue(i + 1)));
         }
 
         for (int i = 7; i < 10; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.fromValue(i)));
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.fromValue(i)));
         }
 
         for (int i = 0; i < 2; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DRAGON, MahjongTile.TileContent.RED));
+            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
         }
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
@@ -200,26 +201,26 @@ public class TestHandInfo {
 
     @Test
     public void testEdgeChows() {
-        List<MahjongTile> tiles = new ArrayList<>();
+        List<Tile> tiles = new ArrayList<>();
 
         for (int i = 1; i < 4; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DOTS, MahjongTile.TileContent.fromValue(i)));
+            tiles.add(new Tile(TileType.DOTS, TileContent.fromValue(i)));
         }
 
         for (int i = 0; i < 2; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DOTS, MahjongTile.TileContent.THREE));
+            tiles.add(new Tile(TileType.DOTS, TileContent.THREE));
         }
 
         for (int i = 3; i < 6; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DOTS, MahjongTile.TileContent.fromValue(i)));
+            tiles.add(new Tile(TileType.DOTS, TileContent.fromValue(i)));
         }
 
         for (int i = 7; i < 10; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.CHARACTERS, MahjongTile.TileContent.fromValue(i)));
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.fromValue(i)));
         }
 
         for (int i = 0; i < 3; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.DRAGON, MahjongTile.TileContent.RED));
+            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
         }
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
@@ -247,26 +248,26 @@ public class TestHandInfo {
 
     @Test
     public void testMultipleWinningHands() {
-        List<MahjongTile> tiles = new ArrayList<>();
+        List<Tile> tiles = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.ONE));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.ONE));
         }
 
         for (int i = 0; i < 3; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.TWO));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.TWO));
         }
 
         for (int i = 0; i < 3; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.THREE));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.THREE));
         }
 
         for (int i = 4; i < 7; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.fromValue(i)));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.fromValue(i)));
         }
 
         for (int i = 0; i < 2; i++) {
-            tiles.add(new MahjongTile(MahjongTile.TileType.BAMBOO, MahjongTile.TileContent.SEVEN));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.SEVEN));
         }
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work

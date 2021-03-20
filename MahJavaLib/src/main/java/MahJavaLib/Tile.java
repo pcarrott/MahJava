@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
-public class MahjongTile {
+public class Tile {
 
     public enum TileType {
         CHARACTERS,
@@ -85,7 +85,7 @@ public class MahjongTile {
     private TileType _type;
     private TileContent _content;
 
-    public MahjongTile(TileType tt, TileContent tc) throws IllegalArgumentException {
+    public Tile(TileType tt, TileContent tc) throws IllegalArgumentException {
         // All non-special types (Characters, Dots and Bamboos) must be Numbers.
         if (!tt.isSpecialType() && !TileContent.isNumber(tc)) {
             throw new IllegalArgumentException("Illegal Content " + tc + " given Type " + tt);
@@ -119,7 +119,7 @@ public class MahjongTile {
         this._content = _content;
     }
 
-    public boolean isNext(MahjongTile tile) {
+    public boolean isNext(Tile tile) {
         return this._type == tile._type &&
                 !this._type.isSpecialType() &&
                 this._content._value < 9 &&
@@ -135,10 +135,10 @@ public class MahjongTile {
     // that have the same Type and Content, are recognized as the same on a HashMap
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof MahjongTile)) {
+        if (!(o instanceof Tile)) {
             return false;
         }
-        MahjongTile other = (MahjongTile) o;
+        Tile other = (Tile) o;
         return this._type.equals(other._type) && this._content.equals(other._content);
     }
 
@@ -147,9 +147,9 @@ public class MahjongTile {
         return this._type.hashCode() ^ this._content.hashCode();
     }
 
-    static class MahjongTileComparator implements Comparator<MahjongTile> {
+    static class MahjongTileComparator implements Comparator<Tile> {
         @Override
-        public int compare(MahjongTile a, MahjongTile b) {
+        public int compare(Tile a, Tile b) {
             if (a._type.equals(b._type)) {
                 return a._content.compareTo(b._content);
             }
@@ -157,9 +157,9 @@ public class MahjongTile {
         }
     }
 
-    public ArrayList<ArrayList<MahjongTile>> getPossibleChowCombinations() {
+    public ArrayList<ArrayList<Tile>> getPossibleChowCombinations() {
         // This function returns all chows that include the supplied tile
-        ArrayList<ArrayList<MahjongTile>> possibleChows = new ArrayList<>();
+        ArrayList<ArrayList<Tile>> possibleChows = new ArrayList<>();
 
         // It is impossible to make a Chow with a Special tile
         if (this._type.isSpecialType() || !TileContent.isNumber(_content)) {
@@ -181,9 +181,9 @@ public class MahjongTile {
             // Since smallerValue is always smaller than both middleValue and biggerValue, and biggerValue is always
             // bigger than both middleValue and smallerValue, we only need to check both extremes.
             if (1 <= smallerValue && biggerValue <= 9) {
-                MahjongTile smallTile = new MahjongTile(this.getType(), TileContent.fromValue(smallerValue));
-                MahjongTile middleTile = new MahjongTile(this.getType(), TileContent.fromValue(middleValue));
-                MahjongTile bigTile = new MahjongTile(this.getType(), TileContent.fromValue(biggerValue));
+                Tile smallTile = new Tile(this.getType(), TileContent.fromValue(smallerValue));
+                Tile middleTile = new Tile(this.getType(), TileContent.fromValue(middleValue));
+                Tile bigTile = new Tile(this.getType(), TileContent.fromValue(biggerValue));
                 possibleChows.add(new ArrayList<>(Arrays.asList(smallTile, middleTile, bigTile)));
             }
 

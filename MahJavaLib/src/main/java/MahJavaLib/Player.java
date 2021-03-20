@@ -1,12 +1,9 @@
 package MahJavaLib;
 
-import MahJavaLib.MahjongGame;
-import MahJavaLib.MahjongHand;
-
 import java.util.ArrayList;
 import java.util.Optional;
 
-public class MahjongPlayer {
+public class Player {
 
     public enum CombinationType {
         CHOW,
@@ -16,12 +13,12 @@ public class MahjongPlayer {
     }
 
     //private MahjongGame _game;
-    private MahjongHand _hand;
-    private MahjongGame.PlayerTurn _seatWind = MahjongGame.PlayerTurn.EAST;
-    private ArrayList<MahJavaLib.MahjongTile> _discardPile = new ArrayList<>();
-    private MahJavaLib.MahjongTile _discardedTile;
+    private Hand _hand;
+    private Game.PlayerTurn _seatWind = Game.PlayerTurn.EAST;
+    private ArrayList<Tile> _discardPile = new ArrayList<>();
+    private Tile _discardedTile;
 
-    public MahjongPlayer() throws IllegalArgumentException {
+    public Player() throws IllegalArgumentException {
     }
 
     /*public MahjongPlayer(MahjongGame game, MahjongHand hand) throws IllegalArgumentException {
@@ -31,21 +28,21 @@ public class MahjongPlayer {
         //else throw IllegalArgumentException
     }*/
 
-    public void discardTile(MahJavaLib.MahjongTile tile) {
+    public void discardTile(Tile tile) {
         //if(!MahjongHand.containsTile(tile)) throws IllegalArgumentException
         //MahjongHand.discardTile(tile)
         this._discardPile.add(tile);
     }
 
-    public void addTile(MahJavaLib.MahjongTile tile, Optional<CombinationType> combinationType, ArrayList<MahJavaLib.MahjongTile> combination) {
+    public void addTile(Tile tile, Optional<CombinationType> combinationType, ArrayList<Tile> combination) {
         //this._hand.addTile(tile);
     }
 
-    public void receiveDiscardedTile(MahJavaLib.MahjongTile tile) {
+    public void receiveDiscardedTile(Tile tile) {
         this._discardedTile = tile;
     }
 
-    public boolean drawTileRequest(Optional<CombinationType> combinationType, ArrayList<MahJavaLib.MahjongTile> combination) {
+    public boolean drawTileRequest(Optional<CombinationType> combinationType, ArrayList<Tile> combination) {
         //return this._game.isDrawTileRequestValid(combinationType, combination);
         return true;
     }
@@ -57,11 +54,11 @@ public class MahjongPlayer {
         //if (drawTileAttempt(combinationType, combination)) {addTile(this._discardedTile); this._discardedTile = null;}
     }
 
-    public MahjongGame.PlayerTurn getSeatWind() {
+    public Game.PlayerTurn getSeatWind() {
         return this._seatWind;
     }
 
-    public void setSeatWind(MahjongGame.PlayerTurn _seatWind) {
+    public void setSeatWind(Game.PlayerTurn _seatWind) {
         this._seatWind = _seatWind;
     }
 

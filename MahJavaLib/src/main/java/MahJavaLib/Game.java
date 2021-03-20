@@ -1,11 +1,9 @@
 package MahJavaLib;
 
-import MahJavaLib.MahjongBoard;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MahjongGame {
+public class Game {
 
     public enum PlayerTurn {
         EAST,
@@ -21,11 +19,11 @@ public class MahjongGame {
 
 
 
-    private MahjongBoard _board = new MahjongBoard();
+    private Board _board = new Board();
     private PlayerTurn _playerTurn = PlayerTurn.EAST;
-    private HashMap<PlayerTurn, MahJavaLib.MahjongPlayer> _players = new HashMap<>();
+    private HashMap<PlayerTurn, Player> _players = new HashMap<>();
 
-    public MahjongGame(ArrayList<MahJavaLib.MahjongPlayer> players) {
+    public Game(ArrayList<Player> players) {
         PlayerTurn[] turns = PlayerTurn.values();
         for (int i = 0; i <= turns.length; ++i) {
             PlayerTurn seatWind = turns[i];
@@ -34,7 +32,7 @@ public class MahjongGame {
         }
     }
 
-    public MahJavaLib.MahjongPlayer nextPlayer() {
+    public Player nextPlayer() {
         this._playerTurn = this._playerTurn.next();
         return _players.get(_playerTurn);
     }
@@ -47,11 +45,11 @@ public class MahjongGame {
         return this._playerTurn;
     }
 
-    public HashMap<PlayerTurn, MahJavaLib.MahjongPlayer> getPlayers() {
+    public HashMap<PlayerTurn, Player> getPlayers() {
         return this._players;
     }
 
-    public MahJavaLib.MahjongPlayer getPlayer(PlayerTurn seatWind) {
+    public Player getPlayer(PlayerTurn seatWind) {
         return this._players.get(seatWind);
     }
 
@@ -62,17 +60,5 @@ public class MahjongGame {
                 ", _playerTurn=" + _playerTurn +
                 ", _players=" + _players +
                 '}';
-    }
-
-    public static void main(String[] args) {
-        ArrayList<MahJavaLib.MahjongPlayer> players = new ArrayList<>();
-        players.add(new MahJavaLib.MahjongPlayer());
-        players.add(new MahJavaLib.MahjongPlayer());
-        players.add(new MahJavaLib.MahjongPlayer());
-        players.add(new MahJavaLib.MahjongPlayer());
-
-        MahjongGame game = new MahjongGame(players);
-
-        System.out.println("Game: " + game + "; Players: " + game.getPlayers() + "; Player Turn: " + game.getPlayerTurn());
     }
 }

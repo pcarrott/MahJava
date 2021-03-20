@@ -2,7 +2,7 @@ package MahJavaLib;
 
 import java.util.*;
 
-import MahJavaLib.MahjongPlayer.CombinationType;
+import MahJavaLib.Player.CombinationType;
 import lombok.Getter;
 
 public class HandInfo {
@@ -36,26 +36,26 @@ public class HandInfo {
      * @param tiles The tiles obtained after drawing the 14th tile.
      *              These are assumed to be sorted for the algorithm to work.
      */
-    public HandInfo(List<MahjongTile> tiles) {
+    public HandInfo(List<Tile> tiles) {
         this.createChowTable();
 
         int duplicateCount = 0; // Counter for pairs and pungs
         int sequenceCount = 0; // Counter for sequences
 
         /*
-         * During the for loop we will always compare each tile with the previous, 
+         * During the for loop we will always compare each tile with the previous,
          * taking advantage of its sorted state.
          */
-        MahjongTile previousTile = tiles.get(0);
+        Tile previousTile = tiles.get(0);
         for (int i = 1; i < tiles.size(); i++) {
-            MahjongTile currentTile = tiles.get(i);
+            Tile currentTile = tiles.get(i);
 
             if (currentTile.equals(previousTile)) {
                 /*
                  * We see repeated tiles. Might be a pung or a pair. An interleaved chow is also possible.
                  */
 
-                /* We leave the previous tile with only one of its possible chows. 
+                /* We leave the previous tile with only one of its possible chows.
                  * The remaining chows are passed along to the next tile.
                  */
                 Deque<Integer> previousChows = this.chowTable.get(i - 1);
@@ -68,8 +68,8 @@ public class HandInfo {
                  * This will always be its first insertion in the ITC for these tiles.
                  */
                 this.indexToCombinations.put(
-                    i,
-                    new HashMap<>(Map.ofEntries(Map.entry(CombinationType.PAIR, CombinationType.PAIR)))
+                        i,
+                        new HashMap<>(Map.ofEntries(Map.entry(CombinationType.PAIR, CombinationType.PAIR)))
                 );
 
                 /*
@@ -109,8 +109,8 @@ public class HandInfo {
                  */
                 if (sequenceCount > 0)
                     this.indexToCombinations.put(
-                        i,
-                        new HashMap<>(Map.ofEntries(Map.entry(CombinationType.CHOW, CombinationType.CHOW)))
+                            i,
+                            new HashMap<>(Map.ofEntries(Map.entry(CombinationType.CHOW, CombinationType.CHOW)))
                     );
 
                 sequenceCount++;
@@ -139,7 +139,7 @@ public class HandInfo {
      * Tiles can form multiple combinations with different tiles and all those possibilities are accounted for.
      *
      * @param currentIndex The index of the tile where we are currently checking.
-     * @param foundPair Each winning hand can only have one pair, so a boolean is passed to keep track of the state.
+     * @param foundPair    Each winning hand can only have one pair, so a boolean is passed to keep track of the state.
      * @return All the hands that assure victory in the game with the current tile set.
      */
     private List<List<CombinationType>> computeWinningHands(int currentIndex, boolean foundPair) {
@@ -236,7 +236,7 @@ public class HandInfo {
      * @return The index-to-combinations copy.
      */
     private Map<Integer, Map<CombinationType, CombinationType>> copyITC(
-        Map<Integer, Map<CombinationType, CombinationType>> itc) {
+            Map<Integer, Map<CombinationType, CombinationType>> itc) {
 
         Map<Integer, Map<CombinationType, CombinationType>> newITC = new HashMap<>();
         for (Map.Entry<Integer, Map<CombinationType, CombinationType>> entry : itc.entrySet()) {
@@ -256,7 +256,7 @@ public class HandInfo {
      * with other tiles that do not belong to any combination
      *
      * @param index The index of the tile to be set.
-     * @param itc The current index-to-combinations structure to be updated.
+     * @param itc   The current index-to-combinations structure to be updated.
      */
     private void setAsChowTile(int index, Map<Integer, Map<CombinationType, CombinationType>> itc) {
         Map<CombinationType, CombinationType> indexCombinations = itc.get(index);
@@ -264,5 +264,15 @@ public class HandInfo {
             itc.put(index, new HashMap<>());
         else
             indexCombinations.clear();
+
+        itc.computeIfPresent(index + 1, (k, v) -> {
+            v.remove(CombinationType.PAIR);
+            return v;
+        });
+
+        itc.computeIfPresent(index + 2, (k, v) -> {
+            v.remove(CombinationType.PUNG);
+            return v;
+        });
     }
 }

@@ -6,9 +6,9 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
 
-public class TestMahjongBoard {
+public class TestBoard {
 
-    private MahjongBoard _board = null;
+    private Board _board = null;
 
     @BeforeMethod
     public void setUp() {
@@ -21,7 +21,7 @@ public class TestMahjongBoard {
 
     @Test
     public void testConstructor() {
-        this._board = new MahjongBoard();
+        this._board = new Board();
 
         // There should be 9*3 normal pieces + 3 dragons + 4 winds = 34
         assertEquals(this._board.getWall().size(), 34);
