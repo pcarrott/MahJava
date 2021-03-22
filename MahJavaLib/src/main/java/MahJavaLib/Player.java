@@ -1,5 +1,7 @@
 package MahJavaLib;
 
+import MahJavaLib.hand.Hand;
+
 import java.util.ArrayList;
 import java.util.Optional;
 

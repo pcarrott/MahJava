@@ -1,8 +1,9 @@
-package MahJavaLib;
+package MahJavaLib.hand;
 
 import java.util.*;
 import java.util.function.Function;
 
+import MahJavaLib.Tile;
 import MahJavaLib.Tile.*;
 
 // The MahjongHand structure allows us to record all the information about a specific hand
