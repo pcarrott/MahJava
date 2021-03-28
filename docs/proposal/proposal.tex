@@ -1,26 +1,24 @@
 %% The first command in your LaTeX source must be the \documentclass command.
 \documentclass{acmart}
 
-%%
 %% \BibTeX command to typeset BibTeX logo in the docs
 \AtBeginDocument{%
   \providecommand\BibTeX{{%
     \normalfont B\kern-0.5em{\scshape i\kern-0.25em b}\kern-0.8em\TeX}}}
-%%
-%% end of the preamble, start of the body of the document source.
 
 %% Need this to remove the awful DOI link in the reference
 \acmDOI{}
 
+%% Bibliography file
+\bibliographystyle{acm}
 
+%% end of the preamble, start of the body of the document source.
 \begin{document}
 
-%%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{Strategic multi-agent decision-making on Sueca Mahjong: a zero-sum, dynamic team-based, hidden-information board game}
+\title{Strategic multi-agent decision-making on Hong Kong Mahjong: a zero-sum, adverserial, hidden-information board game}
 
-%%
 %% The "author" command and its associated commands are used to define
 %% the authors and their affiliations.
 \author{Bernardo Conde}
@@ -37,29 +35,52 @@
 
 \renewcommand{\shortauthors}{Conde, Carrott and Gonçalves}
 
-%%
-%% The abstract is a short summary of the work to be presented in the
-%% article.
+%% The abstract is a short summary of the work to be presented in the article.
 \begin{abstract}
-  In this proposal, we present Sueca Mahjong: a variant of the Hong Kong-style
-  Mahjong game, adapted to work within a team-based environment. We explain its rules,
-  deviances from normal Mahjong, and multiple strategies to maximize points.
+  Board games have always been a very good environment to show complex multi-agent decision making, due to the existance of usually easy-to-define rules
+  and a huge viable strategy space. One of the most analysed games for adverserial multi-agent decision making has been Poker.
+  Unfortunately, Poker has a very high hidden information space, only allowing players to know about their cards, the river, and everyone's bets;
+  making bluffing and deception strategies quite tricky and high-risk.
+  We decided to model a different, more complex game: Hong Kong Mahjong. Due to its tile-discarding mechanic and complex scoring system\cite{hkmahjongrules},
+  we assume that it will allow for more varied and more deceptive gamestyles to flourish. We will also implement different agents, that will atempt to compete
+  with each other, in order to show the viability of these multiple strategies.
 \end{abstract}
 
 
-%%
-%% This command processes the author and affiliation and title
-%% information and builds the first part of the formatted document.
+%% This command processes the author and affiliation and title information and builds the first part of the formatted document.
 \maketitle
 
 \section{Introduction}
-TODO
+Analysis of hidden-information multiplayer games allows us to better understand the dynamics between adverserial, multi-agent systems. In this paper, we present
+an analysis of multiple strategies applied to the game of the Hong Kong variety of Mahjong. We recomend that the professors familiarize themselves with
+the rules\cite{hkmahjongrules} before continuing, since the game is way too complex to fully explain in this proposal. In short: Hong Kong Mahjong is a 4-player,
+turn-based game, where each of the 4 players tries to make a special hand to win the game. Each player has available to them 13 pieces, plus 1 more piece that it
+draws from the Wall, a large struture comprising of the remaining game pieces. Each player is forced to discard one piece after drawing, showing it to every one
+permanently. Instead of drawing, after a discard, any other player can also rob the discarded piece, if it completes a meld (special piece configuration).
+If a meld is completed by robbing, this meld becomes open, visible to every other oponent. The round ends when one player announces that it has a winning hand.
+As a reward for winning, a number of points, dependent of the value of the winning hand is transfered from one or more losing players to the winning one.
+Each player starts with 20000 points and the game ends when one of the players gets to 0 or negative points. The player with most points wins.
 
 \section{Approach}
-TODO
+In order to model Hong Kong Mahjong, we first needed to write our own simulator of it. This simulator, written in Java, was appropriately called MahJava. 
+It follows a very simple Client-Server architecture: there are 4 clients, called the Players, that join a central Server. When these 4 Players are present,
+the server starts a new game, keeping then track of each of the Players' interactions, and giving them the necessary information. All these links between players and
+servers need to go ``both ways'', since both need to be able to trade information with each other. Because both the Players and the Server need to keep track of the
+game state, we have isolated this shared functionality onto a shared library.
+To deal with all the comunications between Players and the Server, we are using the Spring Boot framework\cite{springbootfw} and its WebSocket\cite{mdnwebsocket}
+functionality, in order to guarantee reliable, 2-way comunication.
+Each Player will then have a special Profile, a strategy that it employs during the game. This strategy can either be as simple as probability analysis of the remaining
+tiles, or as complicated as a fully-trained Deep Learning model.
 
 \section{Evaluation}
-TODO
+Some interesting metrics of evaluation would be:
+\begin{itemize}
+\item Percentage of wins/losses/draws, total and against every other Profile
+\item Balance of points, total and against every other Profile
+\item Variance/Deviation in Profile matchups
+\item etc
+\end{itemize}
 
+\bibliography{biblio}
 \end{document}
 \endinput
