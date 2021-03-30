@@ -105,7 +105,7 @@ public class TestHandInfo {
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
         // Generated tiles: [1D,2D,3D,4D,5D,6D,7D,8D,9D,7C,8C,9C,DR,DR]
-        HandInfo info = new HandInfo(new Hand(tiles));
+        Hand hand = new Hand(tiles);
         //List<List<CombinationType>> winningHands = info.getWinningHands();
 //
         //assertEquals(winningHands.size(), 1);

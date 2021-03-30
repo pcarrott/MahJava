@@ -3,6 +3,7 @@ package MahJavaLib;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Tile {
@@ -16,6 +17,10 @@ public class Tile {
 
         public boolean isSpecialType() {
             return (this == DRAGON || this == WIND);
+        }
+
+        public static List<TileType> getRegularTypes() {
+            return Arrays.asList(CHARACTERS, DOTS, BAMBOO);
         }
     }
 
@@ -193,5 +198,21 @@ public class Tile {
         }
 
         return possibleChows;
+    }
+
+    public List<Tile> asChow() {
+        List<Tile> chow = new ArrayList<>();
+        if (this._type.isSpecialType() || !TileContent.isNumber(this._content) ||
+                this._content == TileContent.EIGHT || this._content == TileContent.NINE)
+            return chow;
+
+        int secondValue = this._content._value + 1;
+        int thirdValue = this._content._value + 2;
+
+        chow.add(this);
+        chow.add(new Tile(this._type, TileContent.fromValue(secondValue)));
+        chow.add(new Tile(this._type, TileContent.fromValue(thirdValue)));
+
+        return chow;
     }
 }

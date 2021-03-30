@@ -2,7 +2,10 @@ package MahJavaLib.hand;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import MahJavaLib.Player;
+import MahJavaLib.Player.CombinationType;
 import MahJavaLib.Tile;
 import MahJavaLib.Tile.*;
 
@@ -10,203 +13,215 @@ import MahJavaLib.Tile.*;
 // Due to the nature of Mahjong, all MahjongHand objects should be created at the start of each
 // round (with a 14-tile starting hand), and then incrementally updated.
 public class Hand {
-    // This info structure allows us to record all the major information about each hand
-    // as the game progresses (ex: how many Chows/Pungs/Kongs does this hand have, how many tiles
-    // of each type, etc.)
-    // This structure should be created right at the start of each game, with the starting hand
-    // and it should be incrementally updated as the game progresses.
-    // @TODO: add a way to record Kongs, I'm still not fully sure on how to encode it
-    public static class MahjongHandInfo {
-        // Record all the important combinations you can make in a Mahjong hand
-        // @TODO: create the Combination enum, and make this a HashMap<Combination, ArrayList<...>>
-        ArrayList<ArrayList<Tile>> _chows = new ArrayList<>();
-        ArrayList<ArrayList<Tile>> _pungs = new ArrayList<>();
-        ArrayList<ArrayList<Tile>> _kongs = new ArrayList<>();
 
-        // Also, having a way to get the number of all specific tile types in a hand is very useful
-        HashMap<TileType, Integer> _numberOfTilesOfType = new HashMap<>();
-
-        public MahjongHandInfo(){}
-
-        public MahjongHandInfo(MahjongHandInfo info) {
-            this._chows = new ArrayList<>(info._chows);
-            this._pungs = new ArrayList<>(info._pungs);
-            this._kongs = new ArrayList<>(info._kongs);
-            this._numberOfTilesOfType = new HashMap<>(info._numberOfTilesOfType);
-        }
-        public MahjongHandInfo(Hand startingHand) throws IllegalArgumentException {
-            Integer handSize = startingHand.getHandSize();
-            if (handSize != 14) {
-                throw new IllegalArgumentException("MahjongHandInfo: Starting hand size must be 14; is: " + handSize);
+    public Hand(ArrayList<Tile> startingHand) throws IllegalArgumentException {
+        if (startingHand.size() != 14) {
+            throw new IllegalArgumentException("MahjongHand: Hand must contain 14 tiles, contains: " + startingHand.size());
+        } else {
+            for (Tile tile : startingHand) {
+                this.addTile(tile);
             }
-
-            // Since this will be a destructive operation (to make sure we are not creating multiple different sequences
-            // with the same tiles, we have to copy the tiles objects.
-            Hand copyHand = new Hand(startingHand);
-
-            // At the start, no Kongs can be created, since you must declare one before it can be considered a Kong, so
-            // there is no need to check for them.
-
-            // We start by checking for Pungs (we will also take advantage of this for loop to also record the number
-            // of tiles of each type)
-
-            for (Map.Entry<Tile, Integer> entry : copyHand.getHand().entrySet()) {
-                // The behaviour of merge is the following: if the key doesn't exist, then it stores the supplied value;
-                // else it runs the given function (in this case sum) with the value supplied and the stored value
-                // as its arguments, and stores the result with the key. Weird name though.
-                this._numberOfTilesOfType.merge(entry.getKey().getType(), 1, Integer::sum);
-                if (entry.getValue() >= 3) {
-                    _pungs.add(new ArrayList<>(Collections.nCopies(3, entry.getKey())));
-                }
-            }
-
-            // Remove all done pung tiles, so we don't record the same piece twice
-            for (ArrayList<Tile> pung : _pungs) {
-                for (Tile tile : pung) {
-                    copyHand.removeTile(tile);
-                }
-            }
-
-            // Theoretically, we would like to simply iterate through all the available tiles, check if there is a
-            // chow that can be made with it, and if so, record that chow and remove all its pieces from the hand.
-            // Unfortunately, because of this last removal step, it would invalidate the iterator, which would throw us
-            // a ConcurrentException. So, instead of that, we will iterate through all the available tiles until we get
-            // to a tile that can form a Chow. Then we will stop the iteration, record and remove all the Chow's pieces
-            // and start the iteration again. If we got to the end of the hand, then it means that there are no more
-            // possible Chows in the hand, and so we can break out of this loop.
-            while (true) {
-                boolean chowInHand = false;
-                outerFor:
-                for (Map.Entry<Tile, Integer> entry : copyHand.getHand().entrySet()) {
-                    ArrayList<ArrayList<Tile>> possibleChows = entry.getKey().getPossibleChowCombinations();
-                    for (ArrayList<Tile> chow : possibleChows) {
-                        chowInHand = chow.stream().allMatch(tile -> copyHand.getHand().get(tile) != null);
-                        // If we can make a Chow, then we will add it to our information, and remove the tiles that make
-                        // this a recorded chow, so we don't make mistakes.
-                        if (chowInHand) {
-                            this._chows.add(chow);
-                            for (Tile chowTile : chow) {
-                                copyHand.removeTile(chowTile);
-                            }
-
-                            // We need to exit the full hand iteration
-                            break outerFor;
-                        }
-                    }
-                }
-
-                if (!chowInHand) {
-                    // Got to the end of the hand and there are no more chows
-                    break;
-                }
-            }
+            this._info = new HandInfo(this);
         }
     }
 
+    /*
+     * Any 4 sets (Pungs/Kongs/Chows) + any Pair.
+     * Scoring: Components
+     */
     public Boolean isFourCombinationsPlusPair() {
-        // This hand is a normal winning hand of Mahjong, that consists of:
-        // - 4 Chow/Pung/Kongs + 1 pair
+        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
+            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
+            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
+            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
 
-        // If there is less then 4 total combinations, we can simply move on; we know for sure that
-        // this is not a hand of this type
-        if (this._info._chows.size() + this._info._pungs.size() + this._info._kongs.size() < 4) {
-            return false;
-        }
-
-        // If we got here, then we know that there are at least 4 combinations present in the hand
-        // Now we just need to find the remaining pair
-        for (Map.Entry<Tile, Integer> entry : this.getHand().entrySet()) {
-            if (entry.getValue() == 2) {
+            if (pairs == 1 && pungs + kongs + chows == 4)
                 return true;
-            }
         }
         return false;
     }
 
+    /*
+     * Any 7 Pairs.
+     * Scoring: 4 fan + components
+     */
     public Boolean isSevenPairs() {
-        // A "Seven Pairs" hand is, as the name implies, a hand solely consisting of seven pairs.
-        for (Map.Entry<Tile, Integer> entry : this.getHand().entrySet()) {
-            // This one is as easy as it gets: we go through all the hand entries, and check if we have
-            // every tile a even number of times (we can only have up to 4 tiles, and 0 can never be in the hand
-            // so this is the same as checking if the value is different than 2 or 4).
-            if (entry.getValue() % 2 != 0) {
-                return false;
-            }
-        }
+        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
+            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
+            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
+            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
 
-        return true;
+            if (pairs == 7 && pungs + kongs + chows == 0)
+                return true;
+        }
+        return false;
     }
 
-//    public static Boolean isNineGates(MahjongHand hand) {
-//        // A "Nine Gates" hand is a special hand and consists of: a Pung of 1, Pung of 9, and the sequence of all the
-//        // numbers in between, all of them of the same type + 1 pair with any available tile
-//        // The hand must also be closed, and no Kongs are allowed.
-//
-//        // First check that we have only two pungs and no kongs (no more than 14 tiles total in hand)
-//        if (hand._info._pungs.size() != 2 || hand._info._kongs.size() != 0 || hand.getHandSize() != 14) {
-//            return false;
-//        }
-//
-//        // Get the assumed type of the Nine Gates hand (basically get any tile and choose its type)
-//        MahJavaLib.MahjongTileType nineGatesType = hand._info._pungs.get(0).get(0).getType();
-//
-//        // Check if both Pungs are one Pung of 1s and one Pung of 9s of the same type
-//        if (hand.getHand().get(new MahJavaLib.MahjongTile(nineGatesType, MahJavaLib.MahjongTileContent.ONE)) != 3 ||
-//                hand.getHand().get(new MahJavaLib.MahjongTile(nineGatesType, MahJavaLib.MahjongTileContent.NINE)) != 3) {
-//            return false;
-//        }
-//
-//        // For the intermediate sequence, we shall iterate through all the tiles in hand, check if their type is
-//        // the same as both Pungs checked above, and if they are not a part of the Pung (which means they must be a part
-//        // of the sequence, store the Content value in an array.
-//        // Then we sort this array, and check if it is equal to a range of [2, 8]; which means that we have at least
-//        // one of each Number tiles of the same type.
-//        ArrayList<Integer> values = new ArrayList<>();
-//        values.ensureCapacity(hand.getHandSize());
-//
-//        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
-//            MahJavaLib.MahjongTile tile = entry.getKey();
-//            // All tiles MUST be of the same type
-//            if (getType() != nineGatesType) {
-//                return false;
-//            }
-//
-//            // Ignore the 1s and 9s, we already checked their pre-conditions
-//            if (getContent()._value > 1 && getContent()._value < 9) {
-//                values.add(getContent()._value);
-//            }
-//        }
-//        // 2021 and Java still does not allow you to create a Range stream of ints to ArrayList<Integers> :)
-//        ArrayList<Integer> range = new ArrayList<>();
-//        for (Integer i = 2; i < 9; ++i) {
-//            range.add(i);
-//        }
-//
-//        Collections.sort(values);
-//        if (!values.equals(range)) {
-//            return false;
-//        }
-//
-//        // Finally, we only need to check if there is a single pair in our hand
-//        for (Map.Entry<MahJavaLib.MahjongTile, Integer> entry : hand.getHand().entrySet()) {
-//            if (entry.getValue() == 2) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
+    /*
+     * Any 4 pungs + any Pair.
+     * All concealed and win by Self-Drawn. TODO
+     * Scoring: 64 fan
+     */
+    public Boolean isHiddenTreasure() {
+        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
+            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
+            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
+            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
 
+            if (pairs == 1 && pungs == 4 && kongs + chows == 0)
+                return true;
+        }
+        return false;
+    }
+
+    /*
+     * Pung/Kong with three Winds + 1 Pair with fourth wind + any set (Pung/Kong/Chow).
+     * May all be melded.
+     * Scoring: 64 fan
+     */
+    public Boolean isLittleFourWinds() {
+        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
+            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
+            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
+            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
+
+            if (pairs != 1 || chows > 1 || chows + pungs + kongs != 4)
+                continue;
+
+            List<Tile> pairsList = new ArrayList<>(hand.get(CombinationType.PAIR).keySet());
+            List<Tile> pungsList = new ArrayList<>(hand.get(CombinationType.PUNG).keySet());
+            List<Tile> kongsList = new ArrayList<>(hand.get(CombinationType.KONG).keySet());
+
+            TileContent content = pairsList.get(0).getContent();
+            Map<TileContent, Boolean> conditions = new HashMap<>();
+            TileContent.getDirections().forEach(wind -> conditions.put(wind, wind == content));
+
+            if (!conditions.containsValue(true))
+                continue;
+
+            if (this.checkPungsAndKongs(conditions, pungsList, kongsList))
+                return true;
+        }
+        return false;
+    }
+
+    /*
+     * Pung/Kong with all Winds + any Pair.
+     * May all be melded.
+     * Scoring: 64 fan
+     */
+    public Boolean isBigFourWinds() {
+        return this.isBigFourWindsOrThreeGreatScholars(Arrays.asList(
+                TileContent.EAST,
+                TileContent.SOUTH,
+                TileContent.WEST,
+                TileContent.NORTH
+        ));
+    }
+
+    /*
+     * Pung/Kong with all 3 dragons + any set (Pung/Kong/Chow) + any Pair.
+     * May all be melded.
+     * Scoring: 64 fan
+     */
+    public Boolean isThreeGreatScholars() {
+        return this.isBigFourWindsOrThreeGreatScholars(Arrays.asList(
+                TileContent.RED,
+                TileContent.GREEN,
+                TileContent.WHITE
+        ));
+    }
+
+    private boolean isBigFourWindsOrThreeGreatScholars(List<TileContent> contents) {
+        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
+            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
+            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
+            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
+
+            if (pairs != 1 || chows > 4 - contents.size() || chows + pungs + kongs != 4)
+                continue;
+
+            List<Tile> pungsList = new ArrayList<>(hand.get(CombinationType.PUNG).keySet());
+            List<Tile> kongsList = new ArrayList<>(hand.get(CombinationType.KONG).keySet());
+
+            Map<TileContent, Boolean> conditions = new HashMap<>();
+            contents.forEach(c -> conditions.put(c, false));
+
+            if (this.checkPungsAndKongs(conditions, pungsList, kongsList))
+                return true;
+        }
+        return false;
+    }
+
+    private boolean checkPungsAndKongs(
+            Map<TileContent, Boolean> conditions,
+            List<Tile> pungsList,
+            List<Tile> kongsList) {
+
+        for (Tile tile : pungsList) {
+            conditions.replaceAll((k, v) -> v || tile.getContent() == k);
+            if (conditions.values().stream().allMatch(v -> v))
+                return true;
+        }
+
+        for (Tile tile : kongsList) {
+            conditions.replaceAll((k, v) -> v || tile.getContent() == k);
+            if (conditions.values().stream().allMatch(v -> v))
+                return true;
+        }
+        return false;
+    }
+
+    /*
+     * Three 1's + Three 9's + Sequence from 2 to 8 + any tile that matches the previous tiles
+     * All tiles of the same suite.
+     * Must be concealed.
+     * No kongs allowed. (This is implied by the concealed restriction)
+     * Scoring: 64 fan
+     */
+    public Boolean isNineGates() {
+        // The hand should have only one suite.
+        // Note: it is not possible to compose a hand with only Winds or only Dragons.
+        List<TileType> handSuites = this._hand
+                .keySet().stream()
+                .map(Tile::getType)
+                .distinct()
+                .collect(Collectors.toList());
+        if (handSuites.size() > 1)
+            return false;
+
+        // The hand should contain all numbers of the given suite.
+        TileType suite = handSuites.get(0);
+        if (!TileContent.getNumbers().stream()
+                .map(num -> new Tile(suite, num))
+                .allMatch(this._hand::containsKey))
+            return false;
+
+        // The hand should have at least 3 tiles of 1 and 3 tiles of 9 for the given suite.
+        // Since we already checked that we only have one suite and that we have all tiles from 1 to 9,
+        //     if there are three 1's and three 9's, then the extra tile must be one from 2 to 8
+        //     which completes the hand with a pair.
+        return this._hand.get(new Tile(suite, TileContent.ONE)) >= 3 &&
+                this._hand.get(new Tile(suite, TileContent.NINE)) >= 3;
+    }
+
+    /*
+     * One tile of each 1, 9, Dragon and Wind + any tile that matches the previous ones
+     * Must be concealed
+     * Scoring: 64 fan
+     */
     public Boolean isThirteenOrphans() {
-        // A "Thirteen Orphans" hand is a special hand that consists of one of each 1s, 9s, Dragons, Winds, and a pair
-        // with any of them
-
         // Hand can only have 14 tiles (no Kongs are allowed)
         if (this.getHandSize() != 14) {
             return false;
         }
 
-        ArrayList<Tile> necessaryTilesToHave = new ArrayList<>();
+        List<Tile> necessaryTilesToHave = new ArrayList<>();
 
         for (TileType tileType : TileType.values()) {
             if (!tileType.isSpecialType()) {
@@ -227,21 +242,162 @@ public class Hand {
         }
 
         // If any of the necessary tiles are not present in the final hand, then it can't be a Thirteen Orphans
-        if (necessaryTilesToHave.stream().anyMatch(necessaryTile -> (this.getHand().get(necessaryTile) == null))) {
-            return false;
-        }
-
         // If it has all the necessary tiles, then we also need to check if we have a pair
-        for (Map.Entry<Tile, Integer> entry : this.getHand().entrySet()) {
-            if (entry.getValue() == 2) {
-                return true;
-            }
-        }
+        return necessaryTilesToHave.stream().allMatch(this._hand::containsKey) &&
+                this._hand.containsValue(2);
+    }
 
-        // No pair, no nothing
+    /*
+     * Any 4 Kongs + any pair.
+     * Scoring: 64 fan
+     */
+    public Boolean isAllKongs() {
+        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
+            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
+            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
+            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
+
+            if (pairs == 1 && pungs == 0 && kongs == 4 && chows == 0)
+                return true;
+        }
         return false;
     }
 
+    /*
+     * 4 Pungs/Kongs + 1 Pair of Dragons/Winds.
+     * May all be melded.
+     * Scoring: 64 fan
+     */
+    public Boolean isAllHonors() {
+        return isAllHonorsOrAllTerminals(
+                new ArrayList<>(),
+                Arrays.asList(TileType.DRAGON, TileType.WIND)
+        );
+    }
+
+    /*
+     * 4 Pungs/Kongs + 1 Pair of 1/9.
+     * May all be melded.
+     * Scoring: 64 fan
+     */
+    public Boolean isAllTerminals() {
+        return isAllHonorsOrAllTerminals(
+                Arrays.asList(TileContent.ONE, TileContent.NINE),
+                new ArrayList<>()
+        );
+    }
+
+    private boolean isAllHonorsOrAllTerminals(List<TileContent> contents, List<TileType> types) {
+        for (Map<CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
+            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
+            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
+            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
+
+            if (pairs != 1 || chows > 0 || pungs + kongs != 4)
+                continue;
+
+            List<Tile> pairsList = new ArrayList<>(hand.get(CombinationType.PAIR).keySet());
+            List<Tile> pungsList = new ArrayList<>(hand.get(CombinationType.PUNG).keySet());
+            List<Tile> kongsList = new ArrayList<>(hand.get(CombinationType.KONG).keySet());
+
+            Tile pair = pairsList.get(0);
+            if (!contents.contains(pair.getContent()) && !types.contains(pair.getType()))
+                continue;
+
+            boolean allTilesMatch = true;
+
+            for (Tile t : pungsList)
+                allTilesMatch = allTilesMatch &&
+                        (contents.contains(t.getContent()) || types.contains(t.getType()));
+
+            for (Tile t : kongsList)
+                allTilesMatch = allTilesMatch &&
+                        (contents.contains(t.getContent()) || types.contains(t.getType()));
+
+            if (allTilesMatch)
+                return true;
+        }
+        return false;
+    }
+
+    /*
+     * 1 Pung/Kong of Green Dragon
+     * 3 Pungs/Kongs + 1 Pair of Bamboos.
+     * Scoring: 64 fan
+     */
+    public Boolean isJadeDragon() {
+        return isSpecialDragon(TileContent.GREEN, TileType.BAMBOO);
+    }
+
+    /*
+     * 1 Pung/Kong of Red Dragon
+     * 3 Pungs/Kongs + 1 Pair of Characters.
+     * Scoring: 64 fan
+     */
+    public Boolean isRubyDragon() {
+        return isSpecialDragon(TileContent.RED, TileType.CHARACTERS);
+    }
+
+    /*
+     * 1 Pung/Kong of White Dragon
+     * 3 Pungs/Kongs + 1 Pair of Dots.
+     * Scoring: 64 fan
+     */
+    public Boolean isPearlDragon() {
+        return isSpecialDragon(TileContent.WHITE, TileType.DOTS);
+    }
+
+    private boolean isSpecialDragon(TileContent dragonColor, TileType pairSuite) {
+        for (Map<CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
+            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
+            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
+            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
+
+            if (pairs != 1 || chows > 0 || pungs + kongs != 4)
+                continue;
+
+            List<Tile> pairsList = new ArrayList<>(hand.get(CombinationType.PAIR).keySet());
+            List<Tile> pungsList = new ArrayList<>(hand.get(CombinationType.PUNG).keySet());
+            List<Tile> kongsList = new ArrayList<>(hand.get(CombinationType.KONG).keySet());
+
+            Tile pair = pairsList.get(0);
+            if (pairSuite != pair.getType())
+                continue;
+
+            boolean allTilesAreValid = true;
+
+            for (Tile t : pungsList)
+                allTilesAreValid = allTilesAreValid && (dragonColor == t.getContent() || pairSuite == t.getType());
+
+            for (Tile t : kongsList)
+                allTilesAreValid = allTilesAreValid && (dragonColor == t.getContent() || pairSuite == t.getType());
+
+            if (allTilesAreValid)
+                return true;
+        }
+        return false;
+    }
+
+    /*
+     * East declares "Out" with the dealt hand (after supplement tiles, if any).
+     * Scoring: 64 fan
+     */
+    public Boolean isHeavenlyHands() {
+        // TODO This method does not depend on HandInfo but might useful later
+        return false;
+    }
+
+    /*
+     * Non-dealer goes out on dealer's first discard (supplement tiles are allowed).
+     * Scoring: 64 fan
+     */
+    public Boolean isEarthlyHands() {
+        // TODO This method does not depend on HandInfo but might useful later
+        return false;
+    }
 
     // Each hand is represented as a HashMap, where each Key is an existing type of tile
     // present in the hand, and each associated Value is the number of times that specific tile exists in the hand.
@@ -251,26 +407,10 @@ public class Hand {
     // should ever be 0. If a get() method call returns null, then that means that no tile of that specific type+content
     // exists.
     private final HashMap<Tile, Integer> _hand = new HashMap<>();
-    private MahjongHandInfo _info = new MahjongHandInfo();
+    private final HandInfo _info;
 
     public HashMap<Tile, Integer> getHand() {
         return this._hand;
-    }
-
-    private Hand(Hand hand){
-        this._hand.putAll(hand.getHand());
-        this._info = new MahjongHandInfo(hand._info);
-    }
-
-    public Hand(ArrayList<Tile> startingHand) throws IllegalArgumentException {
-        if (startingHand.size() != 14) {
-            throw new IllegalArgumentException("MahjongHand: Hand must contain 14 tiles, contains: " + startingHand.size());
-        } else {
-            for (Tile tile : startingHand) {
-                this.addTile(tile);
-            }
-            this._info = new MahjongHandInfo(this);
-        }
     }
 
     public int getHandSize() {
