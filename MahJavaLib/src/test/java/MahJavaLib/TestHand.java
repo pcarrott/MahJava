@@ -355,7 +355,7 @@ public class TestHand {
                 this.allHonors,
                 //this.allKongs,
                 this.thirteenOrphans,
-                this.nineGates,
+                //this.nineGates,
                 this.threeGreatScholars,
                 this.bigFourWinds,
                 this.littleFourWinds,

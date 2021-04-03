@@ -16,55 +16,48 @@ import MahJavaLib.Tile;
 public class HandInfo {
 
     private final List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands;
-    private Map<Tile, Tile> blacklist = new HashMap<>();
-    private Map<Tile, Tile> visited = new HashMap<>();
+    private final Map<Integer, Map<Tile, Tile>> visitedByLevel = new HashMap<>();
 
     public HandInfo(Hand hand) {
-        this.allPossibleHands = computeHands(hand.getHand()).stream().distinct().collect(Collectors.toList());
+        this.visitedByLevel.put(0, new HashMap<>());
+        this.allPossibleHands = computeHands(hand.getHand(), 0).stream().distinct().collect(Collectors.toList());
         System.out.println(this.allPossibleHands.size());
-        this.allPossibleHands.forEach(System.out::println);
+        this.allPossibleHands.stream().map(h->h.get(CombinationType.CHOW)).forEach(System.out::println);
     }
 
-    private List<Map<CombinationType, Map<Tile, Integer>>> computeHands(HashMap<Tile, Integer> tileCounter) {
+    private List<Map<CombinationType, Map<Tile, Integer>>> computeHands(HashMap<Tile, Integer> tileCounter, int chowLevel) {
 
-        System.out.println("computeHands - Current tile counter: " + tileCounter);
-        System.out.println("computeHands - Current blacklist: " + this.blacklist);
-        System.out.println("computeHands - Current visited: " + this.visited);
-
-        if (tileCounter.isEmpty()) {
-            System.out.println("computeHands - Tile counter is empty");
+        if (tileCounter.isEmpty())
             return Collections.singletonList(new HashMap<>(Map.ofEntries(
                     Map.entry(CombinationType.PAIR, new HashMap<>()),
                     Map.entry(CombinationType.PUNG, new HashMap<>()),
                     Map.entry(CombinationType.KONG, new HashMap<>()),
                     Map.entry(CombinationType.CHOW, new HashMap<>())
             )));
-        }
+
 
         Tile tile = null;
         for (Tile t : tileCounter.keySet())
-            if (!this.visited.containsKey(t)) {
+            if (!this.visitedByLevel.get(chowLevel).containsKey(t)) {
                 tile = t;
                 break;
             }
+        if (tile == null)
+            return Collections.singletonList(new HashMap<>(Map.ofEntries(
+                    Map.entry(CombinationType.PAIR, new HashMap<>()),
+                    Map.entry(CombinationType.PUNG, new HashMap<>()),
+                    Map.entry(CombinationType.KONG, new HashMap<>()),
+                    Map.entry(CombinationType.CHOW, new HashMap<>())
+            )));
 
-        if (tile == null) {
-            System.out.println("computeHands - All tiles have been visited");
-            return new ArrayList<>();
-        }
-
-        System.out.println("computeHands - Current tile is " + tile);
         Integer count = tileCounter.get(tile);
         List<Map<CombinationType, Map<Tile, Integer>>> currentHands = new ArrayList<>();
 
-        /*
-         * Since the piece is in hand, we must include the scenarios where it is possible to make a chow with it
-         */
-        this.dankChow(tile, tileCounter, currentHands);
+        tryChow(tile, tileCounter, currentHands, chowLevel);
 
         if (count == 1) {
-            System.out.println("computeHands - After dankChow");
-            this.setCurrentHands(tile, new ArrayList<>(), tileCounter, currentHands);
+            this.setCurrentHands(
+                    tile, new ArrayList<>(), tileCounter, currentHands, chowLevel);
 
         } else if (count == 2) {
             /*
@@ -75,7 +68,7 @@ public class HandInfo {
              */
 
             this.setCombinations(
-                    tile, count, Collections.singletonList(CombinationType.PAIR), tileCounter, currentHands);
+                    tile, count, Collections.singletonList(CombinationType.PAIR), tileCounter, currentHands, chowLevel);
 
         } else if (count == 3) {
             /*
@@ -88,10 +81,10 @@ public class HandInfo {
              */
 
             this.setCombinations(
-                    tile, count, Collections.singletonList(CombinationType.PUNG), tileCounter, currentHands);
+                    tile, count, Collections.singletonList(CombinationType.PUNG), tileCounter, currentHands, chowLevel);
 
             this.setCombinations(
-                    tile, count, Collections.singletonList(CombinationType.PAIR), tileCounter, currentHands);
+                    tile, count, Collections.singletonList(CombinationType.PAIR), tileCounter, currentHands, chowLevel);
 
         } else if (count == 4) {
             /*
@@ -105,61 +98,53 @@ public class HandInfo {
              */
 
             this.setCombinations(
-                    tile, count, Arrays.asList(CombinationType.PAIR, CombinationType.PAIR), tileCounter, currentHands);
+                    tile, count, Arrays.asList(CombinationType.PAIR, CombinationType.PAIR), tileCounter, currentHands, chowLevel);
 
             this.setCombinations(
-                    tile, count, Collections.singletonList(CombinationType.PUNG), tileCounter, currentHands);
+                    tile, count, Collections.singletonList(CombinationType.PUNG), tileCounter, currentHands, chowLevel);
         }
 
         return currentHands;
     }
 
-    private void dankChow(
+    private void tryChow(
             Tile tile,
             HashMap<Tile, Integer> tileCounter,
-            List<Map<CombinationType, Map<Tile, Integer>>> currentHands) {
+            List<Map<CombinationType, Map<Tile, Integer>>> currentHands,
+            int chowLevel) {
 
-        System.out.println("dankChow - Current tile is " + tile);
 
-        Tile first = tile;
-        List<Tile> currentChow = tile.asChow();
+        Tile currentTile = tile;
+        List<Tile> chow = currentTile.asChow();
         int skippedTiles = 0;
 
-        Map<Tile, Tile> old = new HashMap<>(this.blacklist);
-        //Map<Tile, Tile> oldV = new HashMap<>(this.visited);
-        this.blacklist = new HashMap<>();
-        while (!currentChow.isEmpty() && skippedTiles < 3) {
-            if (!currentChow.stream().allMatch(t -> tileCounter.containsKey(t) && !this.blacklist.containsKey(t)) ||
-                    this.blacklist.containsKey(tile))
+        this.visitedByLevel.get(chowLevel).put(tile, tile);
+        chow.forEach(t -> this.visitedByLevel.get(chowLevel).put(t, t));
+        this.visitedByLevel.put(chowLevel + 1, new HashMap<>(this.visitedByLevel.get(chowLevel)));
+
+        while (!chow.isEmpty() && skippedTiles < 3) {
+
+            if (!chow.stream().allMatch(tileCounter::containsKey))
                 break;
 
-            this.blacklist.put(tile, tile);
-            this.visited = new HashMap<>();
-
-            for (Tile t : currentChow) {
-                Integer c = tileCounter.get(t);
+            for (Tile t : chow) {
+                int c = tileCounter.get(t);
                 if (c == 1)
                     tileCounter.remove(t);
                 else
                     tileCounter.put(t, c - 1);
             }
 
-            System.out.println("dankChow - First chow: " + currentChow);
-            // this.setCurrentHands(kek, Collections.singletonList(CombinationType.CHOW), tileCounter, currentHands);
-            this.setCurrentHands(tile, Collections.singletonList(CombinationType.CHOW), tileCounter, currentHands);
+            this.setCurrentHands(
+                    currentTile, Collections.singletonList(CombinationType.CHOW), tileCounter, currentHands, chowLevel + 1);
 
-            for (Tile t : currentChow)
-                tileCounter.merge(t, 1, Integer::sum);
+            chow.forEach(t -> tileCounter.merge(t, 1, Integer::sum));
 
-            tile = currentChow.get(1);
-            currentChow = tile.asChow();
+            currentTile = chow.get(1);
+            chow = currentTile.asChow();
             skippedTiles++;
+            this.visitedByLevel.put(chowLevel + 1, new HashMap<>(this.visitedByLevel.get(chowLevel)));
         }
-
-        this.blacklist = old;
-        //this.visited = oldV;
-        this.visited.put(first, first);
-        //first.asChow().forEach(t -> this.visited.put(t, t));
     }
 
     private void setCombinations(
@@ -167,10 +152,11 @@ public class HandInfo {
             Integer count,
             List<CombinationType> combinations,
             HashMap<Tile, Integer> tileCounter,
-            List<Map<CombinationType, Map<Tile, Integer>>> currentHands) {
+            List<Map<CombinationType, Map<Tile, Integer>>> currentHands,
+            int chowLevel) {
 
         tileCounter.remove(tile);
-        this.setCurrentHands(tile, combinations, tileCounter, currentHands);
+        this.setCurrentHands(tile, combinations, tileCounter, currentHands, chowLevel);
         tileCounter.put(tile, count);
     }
 
@@ -178,9 +164,10 @@ public class HandInfo {
             Tile tile,
             List<CombinationType> combinations,
             HashMap<Tile, Integer> tileCounter,
-            List<Map<CombinationType, Map<Tile, Integer>>> currentHands) {
+            List<Map<CombinationType, Map<Tile, Integer>>> currentHands,
+            int chowLevel) {
 
-        List<Map<CombinationType, Map<Tile, Integer>>> computedHands = computeHands(tileCounter);
+        List<Map<CombinationType, Map<Tile, Integer>>> computedHands = computeHands(tileCounter, chowLevel);
 
         combinations.forEach(combination ->
                 computedHands.stream()

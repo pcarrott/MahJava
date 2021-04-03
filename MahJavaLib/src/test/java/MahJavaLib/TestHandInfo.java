@@ -88,6 +88,39 @@ public class TestHandInfo {
     }
 
     @Test
+    public void testChows() {
+        ArrayList<Tile> tiles = new ArrayList<>();
+
+        for (int i = 0; i < 3; i++) {
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.ONE));
+        }
+
+        for (int i = 0; i < 3; i++) {
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.NINE));
+        }
+
+        for (int i = 1; i < 7; i++) {
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.fromValue(i)));
+        }
+
+        for (int i = 0; i < 2; i++) {
+            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
+        }
+
+        // The order of insertion assures that the tiles are sorted, so HandInfo will work
+        // Generated tiles: [1B,1B,1B,1D,2D,3D,5C,5C,5C,7C,8C,9C,DR,DR]
+        Hand hand = new Hand(tiles);
+        //List<List<CombinationType>> winningHands = info.getWinningHands();
+//
+        //assertEquals(winningHands.size(), 1);
+        //assertEquals(winningHands.get(0).get(0), CombinationType.PUNG); // 1B,1B,1B
+        //assertEquals(winningHands.get(0).get(1), CombinationType.CHOW); // 1D,2D,3D
+        //assertEquals(winningHands.get(0).get(2), CombinationType.PUNG); // 5C,5C,5C
+        //assertEquals(winningHands.get(0).get(3), CombinationType.CHOW); // 7C,8C,9C
+        //assertEquals(winningHands.get(0).get(4), CombinationType.PAIR); // DR,DR
+    }
+
+    @Test
     public void testBigChow() {
         ArrayList<Tile> tiles = new ArrayList<>();
 
