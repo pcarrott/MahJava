@@ -37,8 +37,8 @@ public class Hand {
 
         public MahjongHandInfo(Hand startingHand) throws IllegalArgumentException {
             Integer handSize = startingHand.getHandSize();
-            if (handSize != 14) {
-                throw new IllegalArgumentException("MahjongHandInfo: Starting hand size must be 14; is: " + handSize);
+            if (handSize != 13) {
+                throw new IllegalArgumentException("MahjongHandInfo: Starting hand size must be 13; is: " + handSize);
             }
 
             // Since this will be a destructive operation (to make sure we are not creating multiple different sequences
@@ -263,9 +263,9 @@ public class Hand {
         this._info = new MahjongHandInfo(hand._info);
     }
 
-    public Hand(ArrayList<Tile> startingHand) throws IllegalArgumentException {
-        if (startingHand.size() != 14) {
-            throw new IllegalArgumentException("MahjongHand: Hand must contain 14 tiles, contains: " + startingHand.size());
+    public Hand(List<Tile> startingHand) throws IllegalArgumentException {
+        if (startingHand.size() != 13) {
+            throw new IllegalArgumentException("MahjongHand: Hand must contain 13 tiles, contains: " + startingHand.size());
         } else {
             for (Tile tile : startingHand) {
                 this.addTile(tile);
@@ -294,7 +294,7 @@ public class Hand {
         }
     }
 
-    private void removeTile(Tile tile) {
+    public void removeTile(Tile tile) {
         Integer count = this._hand.get(tile);
         if (count != null) {
             count -= 1;
@@ -304,13 +304,6 @@ public class Hand {
                 this._hand.remove(tile);
             }
         }
-    }
-
-    public void discardTile(Tile tileToDiscard) {
-        // Right now the only thing this does is simply remove the tile from the internal HashMap.
-        // However, discarding a tile can have other game-changing consequences, that will have to be recorded.
-        // @TODO: encode those consequences somewhere in someway
-        this.removeTile(tileToDiscard);
     }
 
     public boolean isWinningHand() {

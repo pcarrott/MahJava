@@ -6,8 +6,6 @@ import MahJavaLib.Tile.*;
 import MahJavaLib.exceptions.WallIsEmptyException;
 
 public class Board {
-
-
     private Deque<Tile> _wall;
 
     public Board() {

@@ -12,46 +12,38 @@ public class Player {
         KONG
     }
 
-    //private MahjongGame _game;
+    private Game _game;
     private Hand _hand;
     private Game.PlayerTurn _seatWind = Game.PlayerTurn.EAST;
     private ArrayList<Tile> _discardPile = new ArrayList<>();
-    private Tile _discardedTile;
 
-    public Player() throws IllegalArgumentException {
+
+    public Player() {
+        // The player constructor is empty, since it is supposed to be initialized by the game it is currently in
     }
 
-    /*public MahjongPlayer(MahjongGame game, MahjongHand hand) throws IllegalArgumentException {
-        this._game = game;
-        //if(hand.isValidHand())
+    public void setHand(Hand hand) throws IllegalArgumentException {
+        // @TODO: check if hand is valid
         this._hand = hand;
-        //else throw IllegalArgumentException
-    }*/
+    }
 
-    public void discardTile(Tile tile) {
-        //if(!MahjongHand.containsTile(tile)) throws IllegalArgumentException
-        //MahjongHand.discardTile(tile)
+    public void setGame(Game game) {
+        this._game = game;
+    }
+
+    public Tile chooseTileToDiscard() {
+        // @TODO: actually implement decent logic for this, right now it is kinda random
+        Tile randomTile = (Tile)this._hand.getHand().keySet().toArray()[0];
+        this._hand.removeTile(randomTile);
+        return randomTile;
+    }
+
+    public void addToDiscardPile(Tile tile) {
         this._discardPile.add(tile);
     }
 
-    public void addTile(Tile tile, Optional<CombinationType> combinationType, ArrayList<Tile> combination) {
-        //this._hand.addTile(tile);
-    }
-
-    public void receiveDiscardedTile(Tile tile) {
-        this._discardedTile = tile;
-    }
-
-    public boolean drawTileRequest(Optional<CombinationType> combinationType, ArrayList<Tile> combination) {
-        //return this._game.isDrawTileRequestValid(combinationType, combination);
-        return true;
-    }
-
-    public void drawTile() {
-        //A way to generate the possible combinations with the discardedTile
-        //Present combination options to client
-        //Client selects combination to send to server
-        //if (drawTileAttempt(combinationType, combination)) {addTile(this._discardedTile); this._discardedTile = null;}
+    public void addTile(Tile tile) {
+        this._hand.addTile(tile);
     }
 
     public Game.PlayerTurn getSeatWind() {
@@ -62,13 +54,19 @@ public class Player {
         this._seatWind = _seatWind;
     }
 
+    public boolean wantsDiscardedTile(Tile discardedTile) {
+        // @TODO: implement logic for this, also change return values since we should inform the Game on the type of
+        // combination we want to achieve with the discarded tile (both to make us eligible to get it, and to mark it
+        // as Open)
+        return false;
+    }
+
     @Override
     public String toString() {
         return "MahjongPlayer{" +
                 "_hand=" + _hand +
                 ", _seatWind=" + _seatWind +
                 ", _discardPile=" + _discardPile +
-                ", _discardedTile=" + _discardedTile +
                 '}';
     }
 }
