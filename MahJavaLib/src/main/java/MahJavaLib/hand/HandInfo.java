@@ -15,14 +15,29 @@ import MahJavaLib.Tile;
  */
 public class HandInfo {
 
-    private final List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands;
+    private final List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = new ArrayList<>();
     private final Map<Integer, Map<Tile, Tile>> visitedByLevel = new HashMap<>();
 
     public HandInfo(Hand hand) {
         this.visitedByLevel.put(0, new HashMap<>());
-        this.allPossibleHands = computeHands(hand.getHand(), 0).stream().distinct().collect(Collectors.toList());
-        System.out.println(this.allPossibleHands.size());
-        this.allPossibleHands.stream().map(h->h.get(CombinationType.CHOW)).forEach(System.out::println);
+
+        List<Map<CombinationType, Map<Tile, Integer>>> res = computeHands(hand.getHand(), 0).stream().distinct().collect(Collectors.toList());
+
+        // Filter combinations that are subsets of other combinations
+        for (int i = 0; i < res.size(); i++) {
+            Collections.swap(res, 0, i);
+            Map<CombinationType, Map<Tile, Integer>> pivot = res.get(0);
+            this.allPossibleHands.add(pivot);
+            Map<Tile, Integer> chows = pivot.get(CombinationType.CHOW);
+            for (int j = 1; j < res.size(); j++) {
+                Map<CombinationType, Map<Tile, Integer>> comp = res.get(j);
+                Map<Tile, Integer> compChows = comp.get(CombinationType.CHOW);
+                if (chows.keySet().stream().allMatch(compChows::containsKey)) {
+                    this.allPossibleHands.remove(this.allPossibleHands.size() - 1);
+                    break;
+                }
+            }
+        }
     }
 
     private List<Map<CombinationType, Map<Tile, Integer>>> computeHands(HashMap<Tile, Integer> tileCounter, int chowLevel) {
