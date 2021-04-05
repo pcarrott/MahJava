@@ -39,7 +39,7 @@ public class TestHandInfo {
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
         // Generated tiles: [1B,1B,1B,3D,3D,3D,5C,5C,5C,WE,WE,WE,DR,DR]
-        HandInfo info = new HandInfo(new Hand(tiles));
+        Hand hand = new Hand(tiles);
         //List<List<CombinationType>> winningHands = info.getWinningHands();
 //
         //assertEquals(winningHands.size(), 1);
@@ -76,7 +76,7 @@ public class TestHandInfo {
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
         // Generated tiles: [1B,1B,1B,1D,2D,3D,5C,5C,5C,7C,8C,9C,DR,DR]
-        HandInfo info = new HandInfo(new Hand(tiles));
+        Hand hand = new Hand(tiles);
         //List<List<CombinationType>> winningHands = info.getWinningHands();
 //
         //assertEquals(winningHands.size(), 1);
@@ -179,7 +179,7 @@ public class TestHandInfo {
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
         // Generated tiles: [1B,1B,1B,1D,1D,2D,2D,3D,3D,7C,8C,9C,DR,DR]
-        HandInfo info = new HandInfo(new Hand(tiles));
+        Hand hand = new Hand(tiles);
         //List<List<CombinationType>> winningHands = info.getWinningHands();
 //
         //assertEquals(winningHands.size(), 1);
@@ -213,7 +213,7 @@ public class TestHandInfo {
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
         // Generated tiles: [1B,1B,1B,1D,2D,2D,3D,3D,4D,7C,8C,9C,DR,DR]
-        HandInfo info = new HandInfo(new Hand(tiles));
+        Hand hand = new Hand(tiles);
         //List<List<CombinationType>> winningHands = info.getWinningHands();
 //
         //assertEquals(winningHands.size(), 1);
@@ -250,7 +250,7 @@ public class TestHandInfo {
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
         // Generated tiles: [1D,2D,3D,3D,3D,3D,4D,5D,7C,8C,9C,DR,DR,DR]
-        HandInfo info = new HandInfo(new Hand(tiles));
+        Hand hand = new Hand(tiles);
         //List<List<CombinationType>> winningHands = info.getWinningHands();
 //
         //assertEquals(winningHands.size(), 1);
@@ -292,7 +292,7 @@ public class TestHandInfo {
 
         // The order of insertion assures that the tiles are sorted, so HandInfo will work
         // Generated tiles: [1B,1B,1B,2B,2B,2B,3B,3B,3B,4B,5B,6B,7B,7B]
-        HandInfo info = new HandInfo(new Hand(tiles));
+        Hand hand = new Hand(tiles);
         //List<List<CombinationType>> winningHands = info.getWinningHands();
 //
         //assertEquals(winningHands.size(), 2);
