@@ -81,15 +81,11 @@ public class HandInfo {
              *   - chow + (no-chow + no-chow)
              *   - chow + (any combo where count == 2)
              * Scenarios left to be included:
-             *   - no-chow + pair
              *   - pung
              */
 
             this.setCombinations(
                     tile, count, Collections.singletonList(CombinationType.PUNG), tileCounter, currentHands);
-
-            this.setCombinations(
-                    tile, count, Collections.singletonList(CombinationType.PAIR), tileCounter, currentHands);
 
         } else if (count == 4) {
             /*
@@ -97,16 +93,12 @@ public class HandInfo {
              *   - chow + (no-chow + no-chow + no-chow)
              *   - chow + (any combo where chow == 3)
              * Scenarios left to be included:
-             *   - no-chow + pung
              *   - pair + pair
              *   - kong TODO
              */
 
             this.setCombinations(
                     tile, count, Arrays.asList(CombinationType.PAIR, CombinationType.PAIR), tileCounter, currentHands);
-
-            this.setCombinations(
-                    tile, count, Collections.singletonList(CombinationType.PUNG), tileCounter, currentHands);
         }
 
         return currentHands;
@@ -189,6 +181,13 @@ public class HandInfo {
         // We get the possible chows for this tile, given the remaining tiles available.
         var chows = this.getPossibleChows(tile, tileCounter);
 
+        // Here we check if there is a chow with two ignored tiles.
+        // If so, then we cannot ignore the tile because we would be ignoring a full chow.
+        if (chows.stream().anyMatch(
+                c -> c.stream().filter(t -> !t.equals(tile)).allMatch(this.ignoredTiles::containsKey)
+        ))
+            return false;
+
         if (chows.size() == 1) {
             /*
              * Possible scenarios:
@@ -203,8 +202,13 @@ public class HandInfo {
              *   have a possible combination. So, the tile can be ignored.
              *
              * In essence, if at least one tile can be part of another chow, then we can ignore the tile.
+             *
+             * Note: another condition was added but it would be another long explanation, so just trust me on this...
              */
-            return chows.get(0).stream().anyMatch(t -> this.getPossibleChows(t, tileCounter).size() > 1);
+            return chows.get(0).stream().anyMatch(
+                    t -> this.getPossibleChows(t, tileCounter).size() > 1 ||
+                         (tileCounter.get(t) != null && tileCounter.get(t) > 1)
+            );
 
         } else if (chows.size() == 2) {
             /*
@@ -229,6 +233,8 @@ public class HandInfo {
              *
              * In essence, we get the smallest tile and the largest tile amongst the 2 chows of the tile.
              * If one of those edge tiles can be part of another chow, then we can ignore the original tile.
+             *
+             * Note: another condition was added but it would be... jk, I think this *still* makes sense
              */
             Tile smallest = chows.get(0).get(0);
             Tile largest = chows.get(1).get(2);
@@ -257,11 +263,18 @@ public class HandInfo {
              * In essence, we get the smallest tile of the smallest chow of the tile and the largest tile of the largest
              *   chow of the tile.
              * If both of these tiles can belong to more than 1 chow, then we can ignore the original tile.
+             *
+             * Note: another condition was added but it would be another long explanation, so just trust me on this...
              */
             Tile smallest = chows.get(0).get(0);
             Tile largest = chows.get(2).get(2);
-            return this.getPossibleChows(smallest, tileCounter).size() > 1 &&
-                    this.getPossibleChows(largest, tileCounter).size() > 1;
+            return (this.getPossibleChows(smallest, tileCounter).size() > 1 ||
+                    (tileCounter.get(smallest) != null && tileCounter.get(smallest) > 1 &&
+                     this.getPossibleChows(largest, tileCounter).size() > 1)
+                    &&
+                   (this.getPossibleChows(largest, tileCounter).size() > 1 ||
+                    (tileCounter.get(largest) != null && tileCounter.get(largest) > 1) &&
+                     this.getPossibleChows(smallest, tileCounter).size() > 1));
 
         }
 

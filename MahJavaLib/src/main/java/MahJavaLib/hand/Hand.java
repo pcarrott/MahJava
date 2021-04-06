@@ -421,6 +421,10 @@ public class Hand {
         return count;
     }
 
+    public List<Map<CombinationType, Map<Tile, Integer>>> getPossibleHands() {
+        return this._info.getAllPossibleHands();
+    }
+
     public void addTile(Tile tileToAdd) throws IllegalArgumentException {
         Integer count = this._hand.get(tileToAdd);
         if (count == null) {
