@@ -31,12 +31,7 @@ public class Hand {
      */
     public Boolean isFourCombinationsPlusPair() {
         for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
-            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
-            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
-            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
-
-            if (pairs == 1 && pungs + kongs + chows == 4)
+            if (this.checkCombinationCount(hand, 1, 4, 4, 4, 4))
                 return true;
         }
         return false;
@@ -48,12 +43,7 @@ public class Hand {
      */
     public Boolean isSevenPairs() {
         for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
-            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
-            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
-            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
-
-            if (pairs == 7 && pungs + kongs + chows == 0)
+            if (this.checkCombinationCount(hand, 7, 0, 0, 0, 0))
                 return true;
         }
         return false;
@@ -66,12 +56,7 @@ public class Hand {
      */
     public Boolean isHiddenTreasure() {
         for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
-            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
-            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
-            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
-
-            if (pairs == 1 && pungs == 4 && kongs + chows == 0)
+            if (this.checkCombinationCount(hand, 1, 4, 4, 0, 0))
                 return true;
         }
         return false;
@@ -84,12 +69,7 @@ public class Hand {
      */
     public Boolean isLittleFourWinds() {
         for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
-            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
-            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
-            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
-
-            if (pairs != 1 || chows > 1 || chows + pungs + kongs != 4)
+            if (!this.checkCombinationCount(hand, 1, 4, 4, 4, 1))
                 continue;
 
             List<Tile> pairsList = new ArrayList<>(hand.get(CombinationType.PAIR).keySet());
@@ -138,12 +118,7 @@ public class Hand {
 
     private boolean isBigFourWindsOrThreeGreatScholars(List<TileContent> contents) {
         for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
-            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
-            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
-            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
-
-            if (pairs != 1 || chows > 4 - contents.size() || chows + pungs + kongs != 4)
+            if (!this.checkCombinationCount(hand, 1, 4, 4, 4, 4 - contents.size()))
                 continue;
 
             List<Tile> pungsList = new ArrayList<>(hand.get(CombinationType.PUNG).keySet());
@@ -165,13 +140,13 @@ public class Hand {
 
         for (Tile tile : pungsList) {
             conditions.replaceAll((k, v) -> v || tile.getContent() == k);
-            if (conditions.values().stream().allMatch(v -> v))
+            if (conditions.entrySet().stream().allMatch(Map.Entry::getValue))
                 return true;
         }
 
         for (Tile tile : kongsList) {
             conditions.replaceAll((k, v) -> v || tile.getContent() == k);
-            if (conditions.values().stream().allMatch(v -> v))
+            if (conditions.entrySet().stream().allMatch(Map.Entry::getValue))
                 return true;
         }
         return false;
@@ -180,7 +155,7 @@ public class Hand {
     /*
      * Three 1's + Three 9's + Sequence from 2 to 8 + any tile that matches the previous tiles
      * All tiles of the same suite.
-     * Must be concealed.
+     * Must be concealed. // TODO
      * No kongs allowed. (This is implied by the concealed restriction)
      * Scoring: 64 fan
      */
@@ -205,14 +180,14 @@ public class Hand {
         // The hand should have at least 3 tiles of 1 and 3 tiles of 9 for the given suite.
         // Since we already checked that we only have one suite and that we have all tiles from 1 to 9,
         //     if there are three 1's and three 9's, then the extra tile must be one from 2 to 8
-        //     which completes the hand with a pair.
+        //     which completes the hand.
         return this._hand.get(new Tile(suite, TileContent.ONE)) >= 3 &&
                 this._hand.get(new Tile(suite, TileContent.NINE)) >= 3;
     }
 
     /*
      * One tile of each 1, 9, Dragon and Wind + any tile that matches the previous ones
-     * Must be concealed
+     * Must be concealed // TODO
      * Scoring: 64 fan
      */
     public Boolean isThirteenOrphans() {
@@ -253,12 +228,7 @@ public class Hand {
      */
     public Boolean isAllKongs() {
         for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
-            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
-            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
-            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
-
-            if (pairs == 1 && pungs == 0 && kongs == 4 && chows == 0)
+            if (this.checkCombinationCount(hand, 1, 4, 0, 4, 0))
                 return true;
         }
         return false;
@@ -290,12 +260,7 @@ public class Hand {
 
     private boolean isAllHonorsOrAllTerminals(List<TileContent> contents, List<TileType> types) {
         for (Map<CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
-            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
-            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
-            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
-
-            if (pairs != 1 || chows > 0 || pungs + kongs != 4)
+            if (!this.checkCombinationCount(hand, 1, 4, 4, 4, 0))
                 continue;
 
             List<Tile> pairsList = new ArrayList<>(hand.get(CombinationType.PAIR).keySet());
@@ -309,12 +274,10 @@ public class Hand {
             boolean allTilesMatch = true;
 
             for (Tile t : pungsList)
-                allTilesMatch = allTilesMatch &&
-                        (contents.contains(t.getContent()) || types.contains(t.getType()));
+                allTilesMatch = allTilesMatch && (contents.contains(t.getContent()) || types.contains(t.getType()));
 
             for (Tile t : kongsList)
-                allTilesMatch = allTilesMatch &&
-                        (contents.contains(t.getContent()) || types.contains(t.getType()));
+                allTilesMatch = allTilesMatch && (contents.contains(t.getContent()) || types.contains(t.getType()));
 
             if (allTilesMatch)
                 return true;
@@ -351,12 +314,7 @@ public class Hand {
 
     private boolean isSpecialDragon(TileContent dragonColor, TileType pairSuite) {
         for (Map<CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
-            int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
-            int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
-            int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
-
-            if (pairs != 1 || chows > 0 || pungs + kongs != 4)
+            if (!this.checkCombinationCount(hand, 1, 4, 4, 4, 0))
                 continue;
 
             List<Tile> pairsList = new ArrayList<>(hand.get(CombinationType.PAIR).keySet());
@@ -397,6 +355,20 @@ public class Hand {
     public Boolean isEarthlyHands() {
         // TODO This method does not depend on HandInfo but might useful later
         return false;
+    }
+
+    private boolean checkCombinationCount(
+            Map<CombinationType, Map<Tile, Integer>> hand,
+            int pairCount, int nonPairCount,
+            int maxPungs, int maxKongs, int maxChows) {
+
+        int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
+        int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
+        int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
+        int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
+
+        return pairs == pairCount && pungs+kongs+chows == nonPairCount &&
+                pungs <= maxPungs && kongs <= maxKongs && chows <= maxChows;
     }
 
     // Each hand is represented as a HashMap, where each Key is an existing type of tile
