@@ -30,11 +30,7 @@ public class Hand {
      * Scoring: Components
      */
     public Boolean isFourCombinationsPlusPair() {
-        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            if (this.checkCombinationCount(hand, 1, 4, 4, 4, 4))
-                return true;
-        }
-        return false;
+        return this.checkCountForAllHands(1, 4,4, 4, 4);
     }
 
     /*
@@ -42,11 +38,7 @@ public class Hand {
      * Scoring: 4 fan + components
      */
     public Boolean isSevenPairs() {
-        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            if (this.checkCombinationCount(hand, 7, 0, 0, 0, 0))
-                return true;
-        }
-        return false;
+        return this.checkCountForAllHands(7, 0,0, 0, 0);
     }
 
     /*
@@ -55,8 +47,20 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isHiddenTreasure() {
+        return this.checkCountForAllHands(1, 4,4, 0, 0);
+    }
+
+    /*
+     * Any 4 Kongs + any pair.
+     * Scoring: 64 fan
+     */
+    public Boolean isAllKongs() {
+        return this.checkCountForAllHands(1, 4,0, 4, 0);
+    }
+
+    private boolean checkCountForAllHands(int pairCount, int nonPairCount, int maxPungs, int maxKongs, int maxChows) {
         for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            if (this.checkCombinationCount(hand, 1, 4, 4, 0, 0))
+            if (this.checkCombinationCount(hand, pairCount, nonPairCount, maxPungs, maxKongs, maxChows))
                 return true;
         }
         return false;
@@ -68,25 +72,11 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isLittleFourWinds() {
-        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            if (!this.checkCombinationCount(hand, 1, 4, 4, 4, 1))
-                continue;
+        List<TileContent> contents = new ArrayList<>();
+        List<TileType> types = Arrays.asList(TileType.values());
+        List<TileContent> mandatory = TileContent.getDirections();
 
-            List<Tile> pairsList = new ArrayList<>(hand.get(CombinationType.PAIR).keySet());
-            List<Tile> pungsList = new ArrayList<>(hand.get(CombinationType.PUNG).keySet());
-            List<Tile> kongsList = new ArrayList<>(hand.get(CombinationType.KONG).keySet());
-
-            TileContent content = pairsList.get(0).getContent();
-            Map<TileContent, Boolean> conditions = new HashMap<>();
-            TileContent.getDirections().forEach(wind -> conditions.put(wind, wind == content));
-
-            if (!conditions.containsValue(true))
-                continue;
-
-            if (this.checkPungsAndKongs(conditions, pungsList, kongsList))
-                return true;
-        }
-        return false;
+        return isStandardHandWithMandatoryTiles(contents, types, mandatory, mandatory::contains, Tile::getContent);
     }
 
     /*
@@ -95,12 +85,12 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isBigFourWinds() {
-        return this.isBigFourWindsOrThreeGreatScholars(Arrays.asList(
-                TileContent.EAST,
-                TileContent.SOUTH,
-                TileContent.WEST,
-                TileContent.NORTH
-        ));
+        List<TileContent> contents = new ArrayList<>();
+        List<TileType> types = Collections.singletonList(TileType.WIND);
+        List<TileContent> mandatory = TileContent.getDirections();
+        List<TileContent> pairValues = Arrays.asList(TileContent.values());
+
+        return isStandardHandWithMandatoryTiles(contents, types, mandatory, pairValues::contains, Tile::getContent);
     }
 
     /*
@@ -109,44 +99,103 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isThreeGreatScholars() {
-        return this.isBigFourWindsOrThreeGreatScholars(Arrays.asList(
-                TileContent.RED,
-                TileContent.GREEN,
-                TileContent.WHITE
-        ));
+        List<TileContent> contents = new ArrayList<>();
+        List<TileType> types = Arrays.asList(TileType.values());
+        List<TileContent> mandatory = TileContent.getColors();
+        List<TileContent> pairValues = Arrays.asList(TileContent.values());
+
+        return isStandardHandWithMandatoryTiles(contents, types, mandatory, pairValues::contains, Tile::getContent);
     }
 
-    private boolean isBigFourWindsOrThreeGreatScholars(List<TileContent> contents) {
-        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            if (!this.checkCombinationCount(hand, 1, 4, 4, 4, 4 - contents.size()))
+    /*
+     * 4 Pungs/Kongs + 1 Pair of Dragons/Winds.
+     * May all be melded.
+     * Scoring: 64 fan
+     */
+    public Boolean isAllHonors() {
+        List<TileContent> contents = new ArrayList<>();
+        List<TileType> types = Arrays.asList(TileType.DRAGON, TileType.WIND);
+        List<TileContent> mandatory = new ArrayList<>();
+
+        return isStandardHandWithMandatoryTiles(contents, types, mandatory, types::contains, Tile::getType);
+    }
+
+    /*
+     * 4 Pungs/Kongs + 1 Pair of 1/9.
+     * May all be melded.
+     * Scoring: 64 fan
+     */
+    public Boolean isAllTerminals() {
+        List<TileContent> contents = Arrays.asList(TileContent.ONE, TileContent.NINE);
+        List<TileType> types = new ArrayList<>();
+        List<TileContent> mandatory = new ArrayList<>();
+
+        return isStandardHandWithMandatoryTiles(contents, types, mandatory, contents::contains, Tile::getContent);
+    }
+
+    /*
+     * 1 Pung/Kong of Green Dragon
+     * 3 Pungs/Kongs + 1 Pair of Bamboos.
+     * Scoring: 64 fan
+     */
+    public Boolean isJadeDragon() {
+        List<TileContent> contents = Collections.singletonList(TileContent.GREEN);
+        List<TileType> types = Collections.singletonList(TileType.BAMBOO);
+
+        return isStandardHandWithMandatoryTiles(contents, types, contents, types::contains, Tile::getType);
+    }
+
+    /*
+     * 1 Pung/Kong of Red Dragon
+     * 3 Pungs/Kongs + 1 Pair of Characters.
+     * Scoring: 64 fan
+     */
+    public Boolean isRubyDragon() {
+        List<TileContent> contents = Collections.singletonList(TileContent.RED);
+        List<TileType> types = Collections.singletonList(TileType.CHARACTERS);
+
+        return isStandardHandWithMandatoryTiles(contents, types, contents, types::contains, Tile::getType);
+    }
+
+    /*
+     * 1 Pung/Kong of White Dragon
+     * 3 Pungs/Kongs + 1 Pair of Dots.
+     * Scoring: 64 fan
+     */
+    public Boolean isPearlDragon() {
+        List<TileContent> contents = Collections.singletonList(TileContent.WHITE);
+        List<TileType> types = Collections.singletonList(TileType.DOTS);
+
+        return isStandardHandWithMandatoryTiles(contents, types, contents, types::contains, Tile::getType);
+    }
+
+    private <T> boolean isStandardHandWithMandatoryTiles(
+            List<TileContent> contents, List<TileType> types, List<TileContent> mandatory,
+            Function<T, Boolean> pairCondition, Function<Tile, T> pairValue) {
+
+        for (Map<CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+            if (!this.checkCombinationCount(hand, 1, 4, 4, 4, 0))
                 continue;
 
-            List<Tile> pungsList = new ArrayList<>(hand.get(CombinationType.PUNG).keySet());
-            List<Tile> kongsList = new ArrayList<>(hand.get(CombinationType.KONG).keySet());
+            Tile pair = new ArrayList<>(hand.get(CombinationType.PAIR).keySet()).get(0);
+            if (!pairCondition.apply(pairValue.apply(pair)))
+                continue;
 
             Map<TileContent, Boolean> conditions = new HashMap<>();
-            contents.forEach(c -> conditions.put(c, false));
+            mandatory.forEach(content -> conditions.put(content, content == pair.getContent()));
+            boolean allTilesMatch = true;
 
-            if (this.checkPungsAndKongs(conditions, pungsList, kongsList))
-                return true;
-        }
-        return false;
-    }
+            for (Tile t : hand.get(CombinationType.PUNG).keySet()) {
+                conditions.replaceAll((k, v) -> v || t.getContent() == k);
+                allTilesMatch = allTilesMatch && (contents.contains(t.getContent()) || types.contains(t.getType()));
+            }
 
-    private boolean checkPungsAndKongs(
-            Map<TileContent, Boolean> conditions,
-            List<Tile> pungsList,
-            List<Tile> kongsList) {
+            for (Tile t : hand.get(CombinationType.KONG).keySet()) {
+                conditions.replaceAll((k, v) -> v || t.getContent() == k);
+                allTilesMatch = allTilesMatch && (contents.contains(t.getContent()) || types.contains(t.getType()));
+            }
 
-        for (Tile tile : pungsList) {
-            conditions.replaceAll((k, v) -> v || tile.getContent() == k);
-            if (conditions.entrySet().stream().allMatch(Map.Entry::getValue))
-                return true;
-        }
-
-        for (Tile tile : kongsList) {
-            conditions.replaceAll((k, v) -> v || tile.getContent() == k);
-            if (conditions.entrySet().stream().allMatch(Map.Entry::getValue))
+            if (allTilesMatch && conditions.entrySet().stream().allMatch(Map.Entry::getValue))
                 return true;
         }
         return false;
@@ -220,123 +269,6 @@ public class Hand {
         // If it has all the necessary tiles, then we also need to check if we have a pair
         return necessaryTilesToHave.stream().allMatch(this._hand::containsKey) &&
                 this._hand.containsValue(2);
-    }
-
-    /*
-     * Any 4 Kongs + any pair.
-     * Scoring: 64 fan
-     */
-    public Boolean isAllKongs() {
-        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            if (this.checkCombinationCount(hand, 1, 4, 0, 4, 0))
-                return true;
-        }
-        return false;
-    }
-
-    /*
-     * 4 Pungs/Kongs + 1 Pair of Dragons/Winds.
-     * May all be melded.
-     * Scoring: 64 fan
-     */
-    public Boolean isAllHonors() {
-        return isAllHonorsOrAllTerminals(
-                new ArrayList<>(),
-                Arrays.asList(TileType.DRAGON, TileType.WIND)
-        );
-    }
-
-    /*
-     * 4 Pungs/Kongs + 1 Pair of 1/9.
-     * May all be melded.
-     * Scoring: 64 fan
-     */
-    public Boolean isAllTerminals() {
-        return isAllHonorsOrAllTerminals(
-                Arrays.asList(TileContent.ONE, TileContent.NINE),
-                new ArrayList<>()
-        );
-    }
-
-    private boolean isAllHonorsOrAllTerminals(List<TileContent> contents, List<TileType> types) {
-        for (Map<CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            if (!this.checkCombinationCount(hand, 1, 4, 4, 4, 0))
-                continue;
-
-            List<Tile> pairsList = new ArrayList<>(hand.get(CombinationType.PAIR).keySet());
-            List<Tile> pungsList = new ArrayList<>(hand.get(CombinationType.PUNG).keySet());
-            List<Tile> kongsList = new ArrayList<>(hand.get(CombinationType.KONG).keySet());
-
-            Tile pair = pairsList.get(0);
-            if (!contents.contains(pair.getContent()) && !types.contains(pair.getType()))
-                continue;
-
-            boolean allTilesMatch = true;
-
-            for (Tile t : pungsList)
-                allTilesMatch = allTilesMatch && (contents.contains(t.getContent()) || types.contains(t.getType()));
-
-            for (Tile t : kongsList)
-                allTilesMatch = allTilesMatch && (contents.contains(t.getContent()) || types.contains(t.getType()));
-
-            if (allTilesMatch)
-                return true;
-        }
-        return false;
-    }
-
-    /*
-     * 1 Pung/Kong of Green Dragon
-     * 3 Pungs/Kongs + 1 Pair of Bamboos.
-     * Scoring: 64 fan
-     */
-    public Boolean isJadeDragon() {
-        return isSpecialDragon(TileContent.GREEN, TileType.BAMBOO);
-    }
-
-    /*
-     * 1 Pung/Kong of Red Dragon
-     * 3 Pungs/Kongs + 1 Pair of Characters.
-     * Scoring: 64 fan
-     */
-    public Boolean isRubyDragon() {
-        return isSpecialDragon(TileContent.RED, TileType.CHARACTERS);
-    }
-
-    /*
-     * 1 Pung/Kong of White Dragon
-     * 3 Pungs/Kongs + 1 Pair of Dots.
-     * Scoring: 64 fan
-     */
-    public Boolean isPearlDragon() {
-        return isSpecialDragon(TileContent.WHITE, TileType.DOTS);
-    }
-
-    private boolean isSpecialDragon(TileContent dragonColor, TileType pairSuite) {
-        for (Map<CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            if (!this.checkCombinationCount(hand, 1, 4, 4, 4, 0))
-                continue;
-
-            List<Tile> pairsList = new ArrayList<>(hand.get(CombinationType.PAIR).keySet());
-            List<Tile> pungsList = new ArrayList<>(hand.get(CombinationType.PUNG).keySet());
-            List<Tile> kongsList = new ArrayList<>(hand.get(CombinationType.KONG).keySet());
-
-            Tile pair = pairsList.get(0);
-            if (pairSuite != pair.getType())
-                continue;
-
-            boolean allTilesAreValid = true;
-
-            for (Tile t : pungsList)
-                allTilesAreValid = allTilesAreValid && (dragonColor == t.getContent() || pairSuite == t.getType());
-
-            for (Tile t : kongsList)
-                allTilesAreValid = allTilesAreValid && (dragonColor == t.getContent() || pairSuite == t.getType());
-
-            if (allTilesAreValid)
-                return true;
-        }
-        return false;
     }
 
     /*
@@ -483,4 +415,4 @@ public class Hand {
         }
     }
 
-};
+}
