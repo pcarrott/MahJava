@@ -29,6 +29,8 @@ public class TestHand {
     private Hand rubyDragon;
     private Hand pearlDragon;
 
+    private Stream<Hand> allHands;
+
     @BeforeMethod
     public void setUp() {
         ArrayList<Tile> fourCombsPlusPair = new ArrayList<>();
@@ -257,99 +259,8 @@ public class TestHand {
         this.jadeDragon = new Hand(jadeDragon);
         this.rubyDragon = new Hand(rubyDragon);
         this.pearlDragon = new Hand(pearlDragon);
-    }
 
-    @AfterMethod
-    public void tearDown() {
-    }
-
-    @Test
-    public void testIsFourCombinationsPlusPair() {
-        assertTrue(this.fourCombsPlusPair.isFourCombinationsPlusPair());
-        assertEquals(Stream.of(this.thirteenOrphans,
-                this.sevenPairs,
-                this.fourCombsPlusPair)
-                .filter(Hand::isFourCombinationsPlusPair).count(), 1);
-    }
-
-    @Test
-    public void testIsSevenPairs() {
-        assertTrue(this.sevenPairs.isSevenPairs());
-        assertEquals(Stream.of(this.thirteenOrphans,
-                this.sevenPairs,
-                this.fourCombsPlusPair)
-                .filter(Hand::isSevenPairs).count(), 1);
-    }
-
-    @Test
-    public void testIsHiddenTreasure() {
-        assertTrue(this.hiddenTreasure.isHiddenTreasure());
-    }
-
-    @Test
-    public void testIsLittleFourWinds() {
-        assertTrue(this.littleFourWinds.isLittleFourWinds());
-        assertFalse(this.bigFourWinds.isLittleFourWinds());
-    }
-
-    @Test
-    public void testIsBigFourWinds() {
-        assertTrue(this.bigFourWinds.isBigFourWinds());
-        assertFalse(this.littleFourWinds.isBigFourWinds());
-    }
-
-    @Test
-    public void testIsThreeGreatScholars() {
-        assertTrue(this.threeGreatScholars.isThreeGreatScholars());
-    }
-
-    @Test
-    public void testIsNineGates() {
-        assertTrue(this.nineGates.isNineGates());
-    }
-
-    @Test
-    public void testIsThirteenOrphans() {
-        assertTrue(this.thirteenOrphans.isThirteenOrphans());
-        assertEquals(Stream.of(this.thirteenOrphans,
-                this.sevenPairs,
-                this.fourCombsPlusPair)
-                .filter(Hand::isThirteenOrphans).count(), 1);
-    }
-
-    @Test
-    public void testIsAllKongs() {
-        // assertTrue(this.allKongs.isAllKongs());
-    }
-
-    @Test
-    public void testIsAllHonors() {
-        assertTrue(this.allHonors.isAllHonors());
-    }
-
-    @Test
-    public void testIsAllTerminals() {
-        assertTrue(this.allTerminals.isAllTerminals());
-    }
-
-    @Test
-    public void testIsJadeDragon() {
-        assertTrue(this.jadeDragon.isJadeDragon());
-    }
-
-    @Test
-    public void testIsRubyDragon() {
-        assertTrue(this.rubyDragon.isRubyDragon());
-    }
-
-    @Test
-    public void testIsPearlDragon() {
-        assertTrue(this.pearlDragon.isPearlDragon());
-    }
-
-    @Test
-    public void testIsWinningHand() {
-        assertTrue(Stream.of(
+        this.allHands = Stream.of(
                 this.pearlDragon,
                 this.rubyDragon,
                 this.jadeDragon,
@@ -363,8 +274,161 @@ public class TestHand {
                 this.littleFourWinds,
                 this.hiddenTreasure,
                 this.sevenPairs,
-                this.fourCombsPlusPair)
-                .allMatch(Hand::isWinningHand));
+                this.fourCombsPlusPair);
+    }
+
+    @AfterMethod
+    public void tearDown() {
+    }
+
+    @Test
+    public void testIsFourCombinationsPlusPair() {
+        assertTrue(this.fourCombsPlusPair.isFourCombinationsPlusPair());
+        // Change this to 12 for allKongs
+        assertEquals(this.allHands.filter(Hand::isFourCombinationsPlusPair).count(), 11);
+    }
+
+    @Test
+    public void testIsSevenPairs() {
+        assertTrue(this.sevenPairs.isSevenPairs());
+        assertEquals(this.allHands.filter(Hand::isSevenPairs).count(), 1);
+    }
+
+    @Test
+    public void testIsHiddenTreasure() {
+        assertTrue(this.hiddenTreasure.isHiddenTreasure());
+    }
+
+    @Test
+    public void testIsLittleFourWinds() {
+        assertTrue(this.littleFourWinds.isLittleFourWinds());
+        assertEquals(this.allHands.filter(Hand::isLittleFourWinds).count(), 1);
+    }
+
+    @Test
+    public void testIsBigFourWinds() {
+        assertTrue(this.bigFourWinds.isBigFourWinds());
+        assertEquals(this.allHands.filter(Hand::isBigFourWinds).count(), 1);
+    }
+
+    @Test
+    public void testIsThreeGreatScholars() {
+        assertTrue(this.threeGreatScholars.isThreeGreatScholars());
+        assertEquals(this.allHands.filter(Hand::isThreeGreatScholars).count(), 1);
+
+        ArrayList<Tile> tiles = new ArrayList<>();
+        for (int i = 0; i < 3; i ++) {
+            // Add 3 of 3 winds (3 winds * 3 = 9)
+            tiles.add(new Tile(TileType.DRAGON, TileContent.GREEN));
+            tiles.add(new Tile(TileType.DRAGON, TileContent.WHITE));
+
+            // Add a random 555 of Bamboo (9 + 3 = 12)
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.FIVE));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.ONE));
+        }
+        // Add a pair of the last wind, NN (12 + 2 = 14)
+        for (int i = 0; i < 2; i++)
+            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
+        Hand notThreeGreatScholars = new Hand(tiles);
+
+        assertFalse(notThreeGreatScholars.isThreeGreatScholars());
+    }
+
+    @Test
+    public void testIsNineGates() {
+        assertTrue(this.nineGates.isNineGates());
+        assertEquals(this.allHands.filter(Hand::isNineGates).count(), 1);
+    }
+
+    @Test
+    public void testIsThirteenOrphans() {
+        assertTrue(this.thirteenOrphans.isThirteenOrphans());
+        assertEquals(this.allHands.filter(Hand::isThirteenOrphans).count(), 1);
+    }
+
+    @Test
+    public void testIsAllKongs() {
+        // assertTrue(this.allKongs.isAllKongs());
+    }
+
+    @Test
+    public void testIsAllHonors() {
+        assertTrue(this.allHonors.isAllHonors());
+        assertEquals(this.allHands.filter(Hand::isAllHonors).count(), 1);
+    }
+
+    @Test
+    public void testIsAllTerminals() {
+        assertTrue(this.allTerminals.isAllTerminals());
+        assertEquals(this.allHands.filter(Hand::isAllTerminals).count(), 1);
+    }
+
+    @Test
+    public void testIsJadeDragon() {
+        assertTrue(this.jadeDragon.isJadeDragon());
+        assertEquals(this.allHands.filter(Hand::isJadeDragon).count(), 1);
+
+        ArrayList<Tile> tiles = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            // Add 111, 222, 444, 555 of Dots (3 tiles * 4 = 12)
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.ONE));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.TWO));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.FOUR));
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.FIVE));
+        }
+        for (int i = 0; i < 2; i++)
+            // Add 77D (12 + 2 = 14)
+            tiles.add(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+        Hand notJadeDragon = new Hand(tiles);
+
+        assertFalse(notJadeDragon.isJadeDragon());
+    }
+
+    @Test
+    public void testIsRubyDragon() {
+        assertTrue(this.rubyDragon.isRubyDragon());
+        assertEquals(this.allHands.filter(Hand::isRubyDragon).count(), 1);
+
+        ArrayList<Tile> tiles = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            // Add 111, 222, 444, 555 of Dots (3 tiles * 4 = 12)
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.ONE));
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.TWO));
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.FOUR));
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.FIVE));
+        }
+        for (int i = 0; i < 2; i++)
+            // Add 77D (12 + 2 = 14)
+            tiles.add(new Tile(TileType.CHARACTERS, TileContent.SEVEN));
+        Hand notRubyDragon = new Hand(tiles);
+
+        assertFalse(notRubyDragon.isRubyDragon());
+    }
+
+    @Test
+    public void testIsPearlDragon() {
+        assertTrue(this.pearlDragon.isPearlDragon());
+        assertEquals(this.allHands.filter(Hand::isPearlDragon).count(), 1);
+
+        ArrayList<Tile> tiles = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            // Add 111, 222, 444, 555 of Dots (3 tiles * 4 = 12)
+            tiles.add(new Tile(TileType.DOTS, TileContent.ONE));
+            tiles.add(new Tile(TileType.DOTS, TileContent.TWO));
+            tiles.add(new Tile(TileType.DOTS, TileContent.FOUR));
+            tiles.add(new Tile(TileType.DOTS, TileContent.FIVE));
+        }
+        for (int i = 0; i < 2; i++)
+            // Add 77D (12 + 2 = 14)
+            tiles.add(new Tile(TileType.DOTS, TileContent.SEVEN));
+        Hand notPearlDragon = new Hand(tiles);
+
+        assertFalse(notPearlDragon.isPearlDragon());
+    }
+
+    @Test
+    public void testIsWinningHand() {
+        assertTrue(this.allHands.allMatch(Hand::isWinningHand));
     }
 
     @Test
