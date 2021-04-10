@@ -289,11 +289,13 @@ public class TestHand {
     @Test
     public void testIsLittleFourWinds() {
         assertTrue(this.littleFourWinds.isLittleFourWinds());
+        assertFalse(this.bigFourWinds.isLittleFourWinds());
     }
 
     @Test
     public void testIsBigFourWinds() {
         assertTrue(this.bigFourWinds.isBigFourWinds());
+        assertFalse(this.littleFourWinds.isBigFourWinds());
     }
 
     @Test

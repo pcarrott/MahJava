@@ -3,6 +3,7 @@ package MahJavaLib.hand;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import MahJavaLib.Player;
 import MahJavaLib.Player.CombinationType;
@@ -72,11 +73,14 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isLittleFourWinds() {
-        List<TileContent> contents = new ArrayList<>();
-        List<TileType> types = Arrays.asList(TileType.values());
-        List<TileContent> mandatory = TileContent.getDirections();
+        Map<TileType, TileType> types = Arrays.stream(TileType.values())
+                .collect(Collectors.toMap(Function.identity(), Function.identity()));
+        Map<TileContent, TileContent> mandatory = TileContent.getDirections().stream()
+                .collect(Collectors.toMap(Function.identity(), Function.identity()));
 
-        return isStandardHandWithMandatoryTiles(contents, types, mandatory, mandatory::contains, Tile::getContent);
+        return isStandardHandWithMandatoryTiles(
+                new HashMap<>(), types, mandatory,
+                mandatory::containsKey, Tile::getContent);
     }
 
     /*
@@ -85,12 +89,15 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isBigFourWinds() {
-        List<TileContent> contents = new ArrayList<>();
-        List<TileType> types = Collections.singletonList(TileType.WIND);
-        List<TileContent> mandatory = TileContent.getDirections();
-        List<TileContent> pairValues = Arrays.asList(TileContent.values());
+        Map<TileType, TileType> types = Map.of(TileType.WIND, TileType.WIND);
+        Map<TileContent, TileContent> mandatory = TileContent.getDirections().stream()
+                .collect(Collectors.toMap(Function.identity(), Function.identity()));
+        Map<TileContent, TileContent> pairValues = Stream.of(TileContent.getColors(), TileContent.getNumbers())
+                .flatMap(Collection::stream).collect(Collectors.toMap(Function.identity(), Function.identity()));
 
-        return isStandardHandWithMandatoryTiles(contents, types, mandatory, pairValues::contains, Tile::getContent);
+        return isStandardHandWithMandatoryTiles(
+                new HashMap<>(), types, mandatory,
+                pairValues::containsKey, Tile::getContent);
     }
 
     /*
@@ -99,12 +106,16 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isThreeGreatScholars() {
-        List<TileContent> contents = new ArrayList<>();
-        List<TileType> types = Arrays.asList(TileType.values());
-        List<TileContent> mandatory = TileContent.getColors();
-        List<TileContent> pairValues = Arrays.asList(TileContent.values());
+        Map<TileType, TileType> types = Arrays.stream(TileType.values())
+                .collect(Collectors.toMap(Function.identity(), Function.identity()));
+        Map<TileContent, TileContent> mandatory = TileContent.getColors().stream()
+                .collect(Collectors.toMap(Function.identity(), Function.identity()));
+        Map<TileContent, TileContent> pairValues = Stream.of(TileContent.getDirections(), TileContent.getNumbers())
+                .flatMap(Collection::stream).collect(Collectors.toMap(Function.identity(), Function.identity()));
 
-        return isStandardHandWithMandatoryTiles(contents, types, mandatory, pairValues::contains, Tile::getContent);
+        return isStandardHandWithMandatoryTiles(
+                new HashMap<>(), types, mandatory,
+                pairValues::containsKey, Tile::getContent);
     }
 
     /*
@@ -113,11 +124,14 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isAllHonors() {
-        List<TileContent> contents = new ArrayList<>();
-        List<TileType> types = Arrays.asList(TileType.DRAGON, TileType.WIND);
-        List<TileContent> mandatory = new ArrayList<>();
+        Map<TileType, TileType> types = Map.of(
+                TileType.DRAGON, TileType.DRAGON,
+                TileType.WIND, TileType.WIND
+        );
 
-        return isStandardHandWithMandatoryTiles(contents, types, mandatory, types::contains, Tile::getType);
+        return isStandardHandWithMandatoryTiles(
+                new HashMap<>(), types, new HashMap<>(),
+                types::containsKey, Tile::getType);
     }
 
     /*
@@ -126,11 +140,14 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isAllTerminals() {
-        List<TileContent> contents = Arrays.asList(TileContent.ONE, TileContent.NINE);
-        List<TileType> types = new ArrayList<>();
-        List<TileContent> mandatory = new ArrayList<>();
+        Map<TileContent, TileContent> contents = Map.of(
+                TileContent.ONE, TileContent.ONE,
+                TileContent.NINE, TileContent.NINE
+        );
 
-        return isStandardHandWithMandatoryTiles(contents, types, mandatory, contents::contains, Tile::getContent);
+        return isStandardHandWithMandatoryTiles(
+                contents, new HashMap<>(), new HashMap<>(),
+                contents::containsKey, Tile::getContent);
     }
 
     /*
@@ -139,10 +156,12 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isJadeDragon() {
-        List<TileContent> contents = Collections.singletonList(TileContent.GREEN);
-        List<TileType> types = Collections.singletonList(TileType.BAMBOO);
+        Map<TileContent, TileContent> contents = Map.of(TileContent.GREEN, TileContent.GREEN);
+        Map<TileType, TileType> types = Map.of(TileType.BAMBOO, TileType.BAMBOO);
 
-        return isStandardHandWithMandatoryTiles(contents, types, contents, types::contains, Tile::getType);
+        return isStandardHandWithMandatoryTiles(
+                contents, types, contents,
+                types::containsKey, Tile::getType);
     }
 
     /*
@@ -151,10 +170,12 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isRubyDragon() {
-        List<TileContent> contents = Collections.singletonList(TileContent.RED);
-        List<TileType> types = Collections.singletonList(TileType.CHARACTERS);
+        Map<TileContent, TileContent> contents = Map.of(TileContent.RED, TileContent.RED);
+        Map<TileType, TileType> types = Map.of(TileType.CHARACTERS, TileType.CHARACTERS);
 
-        return isStandardHandWithMandatoryTiles(contents, types, contents, types::contains, Tile::getType);
+        return isStandardHandWithMandatoryTiles(
+                contents, types, contents,
+                types::containsKey, Tile::getType);
     }
 
     /*
@@ -163,14 +184,17 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isPearlDragon() {
-        List<TileContent> contents = Collections.singletonList(TileContent.WHITE);
-        List<TileType> types = Collections.singletonList(TileType.DOTS);
+        Map<TileContent, TileContent> contents = Map.of(TileContent.WHITE, TileContent.WHITE);
+        Map<TileType, TileType> types = Map.of(TileType.DOTS, TileType.DOTS);
 
-        return isStandardHandWithMandatoryTiles(contents, types, contents, types::contains, Tile::getType);
+        return isStandardHandWithMandatoryTiles(
+                contents, types, contents,
+                types::containsKey, Tile::getType);
     }
 
     private <T> boolean isStandardHandWithMandatoryTiles(
-            List<TileContent> contents, List<TileType> types, List<TileContent> mandatory,
+            Map<TileContent, TileContent> contents, Map<TileType, TileType> types,
+            Map<TileContent, TileContent> mandatory,
             Function<T, Boolean> pairCondition, Function<Tile, T> pairValue) {
 
         for (Map<CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
@@ -182,17 +206,17 @@ public class Hand {
                 continue;
 
             Map<TileContent, Boolean> conditions = new HashMap<>();
-            mandatory.forEach(content -> conditions.put(content, content == pair.getContent()));
+            mandatory.keySet().forEach(content -> conditions.put(content, content == pair.getContent()));
             boolean allTilesMatch = true;
 
             for (Tile t : hand.get(CombinationType.PUNG).keySet()) {
                 conditions.replaceAll((k, v) -> v || t.getContent() == k);
-                allTilesMatch = allTilesMatch && (contents.contains(t.getContent()) || types.contains(t.getType()));
+                allTilesMatch = allTilesMatch && (contents.containsKey(t.getContent()) || types.containsKey(t.getType()));
             }
 
             for (Tile t : hand.get(CombinationType.KONG).keySet()) {
                 conditions.replaceAll((k, v) -> v || t.getContent() == k);
-                allTilesMatch = allTilesMatch && (contents.contains(t.getContent()) || types.contains(t.getType()));
+                allTilesMatch = allTilesMatch && (contents.containsKey(t.getContent()) || types.containsKey(t.getType()));
             }
 
             if (allTilesMatch && conditions.entrySet().stream().allMatch(Map.Entry::getValue))
@@ -205,7 +229,6 @@ public class Hand {
      * Three 1's + Three 9's + Sequence from 2 to 8 + any tile that matches the previous tiles
      * All tiles of the same suite.
      * Must be concealed. // TODO
-     * No kongs allowed. (This is implied by the concealed restriction)
      * Scoring: 64 fan
      */
     public Boolean isNineGates() {
@@ -241,6 +264,8 @@ public class Hand {
      */
     public Boolean isThirteenOrphans() {
         // Hand can only have 14 tiles (no Kongs are allowed)
+        // The no-kongs restriction is assured if the hand is concealed,
+        //   so maybe in the future this check may not be needed.
         if (this.getHandSize() != 14) {
             return false;
         }
