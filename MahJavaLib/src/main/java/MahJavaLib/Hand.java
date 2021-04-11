@@ -361,4 +361,8 @@ public class Hand {
         }
     }
 
+    public Boolean hasTile(Tile tile) {
+        return this._hand.containsKey(tile);
+    }
+
 };

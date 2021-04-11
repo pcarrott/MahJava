@@ -15,7 +15,7 @@ public class Player {
     private Game _game;
     private Hand _hand;
     private Game.PlayerTurn _seatWind = Game.PlayerTurn.EAST;
-    private ArrayList<Tile> _discardPile = new ArrayList<>();
+    private final ArrayList<Tile> _discardPile = new ArrayList<>();
 
 
     public Player() {
@@ -33,9 +33,14 @@ public class Player {
 
     public Tile chooseTileToDiscard() {
         // @TODO: actually implement decent logic for this, right now it is kinda random
-        Tile randomTile = (Tile)this._hand.getHand().keySet().toArray()[0];
-        this._hand.removeTile(randomTile);
-        return randomTile;
+        // @TODO: when we do this in the client, we also need to remove it from our hand, we don't do that right now
+        // since the server needs to check if we actually have it, but in the future, the player's hands data structures
+        // will be different between the server and the player.
+        return (Tile) this._hand.getHand().keySet().toArray()[0];
+    }
+
+    public boolean hasTile(Tile tile) {
+        return this._hand.hasTile(tile);
     }
 
     public void addToDiscardPile(Tile tile) {
@@ -59,6 +64,10 @@ public class Player {
         // combination we want to achieve with the discarded tile (both to make us eligible to get it, and to mark it
         // as Open)
         return false;
+    }
+
+    public void removeTile(Tile tile) {
+        this._hand.removeTile(tile);
     }
 
     @Override
