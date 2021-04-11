@@ -1,6 +1,7 @@
 package MahJavaLib;
 
 import MahJavaLib.exceptions.WallIsEmptyException;
+import MahJavaLib.hand.Hand;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +47,7 @@ public class Game {
                 } catch (WallIsEmptyException ignored) {
                 }
             }
-            player.setHand(new MahJavaLib.Hand(hand));
+            player.setHand(new Hand(hand));
 
             this._players.put(seatWind, player);
             this._discardedTiles.put(player, new ArrayList<>());

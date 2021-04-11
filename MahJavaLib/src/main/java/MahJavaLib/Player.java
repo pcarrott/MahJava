@@ -1,7 +1,8 @@
 package MahJavaLib;
 
+import MahJavaLib.hand.Hand;
+
 import java.util.ArrayList;
-import java.util.Optional;
 
 public class Player {
 
@@ -67,7 +68,7 @@ public class Player {
     }
 
     public void removeTile(Tile tile) {
-        this._hand.removeTile(tile);
+        this._hand.discardTile(tile);
     }
 
     @Override
