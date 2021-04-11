@@ -27,6 +27,45 @@ public class Hand {
     }
 
     /*
+     * Some special hands don't allow Chows, others only allow Pairs, and so on.
+     * This method allows to make the counting of combinations for each special hand generic, receiving as parameters:
+     *   - the given hand
+     *   - the concrete number of Pairs required
+     *   - the concrete total of non-Pair combinations (Pungs/Kongs/Chows) allowed
+     *   - the maximum number of Pungs allowed
+     *   - the maximum number of Kongs allowed
+     *   - the maximum number of Chows allowed
+     */
+    private boolean checkCombinationCount(
+            Map<CombinationType, Map<Tile, Integer>> hand,
+            int pairCount, int nonPairCount,
+            int maxPungs, int maxKongs, int maxChows) {
+
+        int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
+        int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
+        int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
+        int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
+
+        return pairs == pairCount && pungs+kongs+chows == nonPairCount &&
+                pungs <= maxPungs && kongs <= maxKongs && chows <= maxChows;
+    }
+
+    /*
+     * Some special hands only require that the hand's combinations have the specified number of occurrences, without
+     *   having restrictions regarding the type and content of the tiles.
+     * This method checks this for each possible hand we may have, given the necessary parameters.
+     */
+    private boolean checkCountForAllHands(int pairCount, int nonPairCount, int maxPungs, int maxKongs, int maxChows) {
+        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+            if (this.checkCombinationCount(hand, pairCount, nonPairCount, maxPungs, maxKongs, maxChows))
+                return true;
+        }
+
+        // No hand matches the specified parameters
+        return false;
+    }
+
+    /*
      * Any 4 sets (Pungs/Kongs/Chows) + any Pair.
      * Scoring: Components
      */
@@ -59,11 +98,71 @@ public class Hand {
         return this.checkCountForAllHands(1, 4,0, 4, 0);
     }
 
-    private boolean checkCountForAllHands(int pairCount, int nonPairCount, int maxPungs, int maxKongs, int maxChows) {
-        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            if (this.checkCombinationCount(hand, pairCount, nonPairCount, maxPungs, maxKongs, maxChows))
+    /*
+     * This auxiliary method generalizes the checking process for hands that require a single Pair and 4 sets, excluding
+     *   Chows, i.e., only Pungs and Kongs are allowed.
+     *
+     * For the parameters, we have:
+     *   - contents: Allowed contents for the sets in the hand (e.g. only 1s and 9s)
+     *   - types: Allowed types for the sets in the hand (e.g. only Dragons and Winds)
+     *   - mandatory: Mandatory contents for the sets and/or Pairs (e.g. for a Jade Dragon, we need to make the Green
+     *                Dragon mandatory, in order to avoid accepting hands composed of only bamboos)
+     *
+     * We also have more complex parameters such as:
+     *   - pairValue: the tile that composes the Pair may be restricted by its type or content, so we pass one of the
+     *                Tile::getType and Tile::getContent methods as an argument.
+     *   - pairCondition: since the tile can be restricted by its type or content, we don't now if we should check the
+     *                    types or contents maps, so we pass a pairValues::containsKey method as an argument. This
+     *                    pairValues can be one of the other supplied maps or a different map.
+     */
+    private <T> boolean isStandardHandWithMandatoryTiles(
+            Map<TileContent, TileContent> contents, Map<TileType, TileType> types,
+            Map<TileContent, TileContent> mandatory,
+            Function<Tile, T> pairValue, Function<T, Boolean> pairCondition) {
+
+        for (Map<CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+            if (!this.checkCombinationCount(hand, 1, 4, 4, 4, 0))
+                continue;
+
+            Tile pair = new ArrayList<>(hand.get(CombinationType.PAIR).keySet()).get(0);
+            // We extract the type/content of the Pair tile and apply the pairCondition.
+            // Ignores the hand if the allowed Pair values do not contain the Pair tile.
+            if (!pairCondition.apply(pairValue.apply(pair)))
+                continue;
+
+            // Create a map to see if all mandatory tiles are present
+            Map<TileContent, Boolean> conditions = new HashMap<>();
+            // The Pair tile may be one the mandatory tiles so we need to take that into account when we initialize the
+            //    map. All entries different from the Pair tile will be initialised to false.
+            mandatory.keySet().forEach(content -> conditions.put(content, content == pair.getContent()));
+            // To check if all tiles match the allowed types and contents, a single boolean is needed.
+            boolean allTilesMatch = true;
+
+            // Check all pungs
+            for (Tile t : hand.get(CombinationType.PUNG).keySet()) {
+                // If it is a mandatory tile, then it will be updated to true. Otherwise, it will keep the stored value.
+                conditions.replaceAll((k, v) -> v || t.getContent() == k);
+                // If the tile's type/content is allowed, then all tiles still match. Otherwise, it will become false.
+                allTilesMatch = allTilesMatch &&
+                        (contents.containsKey(t.getContent()) || types.containsKey(t.getType()));
+            }
+
+            // Check all kongs
+            for (Tile t : hand.get(CombinationType.KONG).keySet()) {
+                // If it is a mandatory tile, then it will be updated to true. Otherwise, it will keep the stored value.
+                conditions.replaceAll((k, v) -> v || t.getContent() == k);
+                // If the tile's type/content is allowed, then all tiles still match. Otherwise, it will become false.
+                allTilesMatch = allTilesMatch &&
+                        (contents.containsKey(t.getContent()) || types.containsKey(t.getType()));
+            }
+
+            // If all tiles match the allowed types and contents, and all mandatory tiles are present, then we have the
+            //   the specified special hand.
+            if (allTilesMatch && conditions.entrySet().stream().allMatch(Map.Entry::getValue))
                 return true;
         }
+
+        // No hand matches the specified parameters
         return false;
     }
 
@@ -80,7 +179,7 @@ public class Hand {
 
         return isStandardHandWithMandatoryTiles(
                 new HashMap<>(), types, mandatory,
-                mandatory::containsKey, Tile::getContent);
+                Tile::getContent, mandatory::containsKey);
     }
 
     /*
@@ -97,7 +196,7 @@ public class Hand {
 
         return isStandardHandWithMandatoryTiles(
                 new HashMap<>(), types, mandatory,
-                pairValues::containsKey, Tile::getContent);
+                Tile::getContent, pairValues::containsKey);
     }
 
     /*
@@ -115,7 +214,7 @@ public class Hand {
 
         return isStandardHandWithMandatoryTiles(
                 new HashMap<>(), types, mandatory,
-                pairValues::containsKey, Tile::getContent);
+                Tile::getContent, pairValues::containsKey);
     }
 
     /*
@@ -131,7 +230,7 @@ public class Hand {
 
         return isStandardHandWithMandatoryTiles(
                 new HashMap<>(), types, new HashMap<>(),
-                types::containsKey, Tile::getType);
+                Tile::getType, types::containsKey);
     }
 
     /*
@@ -147,7 +246,7 @@ public class Hand {
 
         return isStandardHandWithMandatoryTiles(
                 contents, new HashMap<>(), new HashMap<>(),
-                contents::containsKey, Tile::getContent);
+                Tile::getContent, contents::containsKey);
     }
 
     /*
@@ -161,7 +260,7 @@ public class Hand {
 
         return isStandardHandWithMandatoryTiles(
                 contents, types, contents,
-                types::containsKey, Tile::getType);
+                Tile::getType, types::containsKey);
     }
 
     /*
@@ -175,7 +274,7 @@ public class Hand {
 
         return isStandardHandWithMandatoryTiles(
                 contents, types, contents,
-                types::containsKey, Tile::getType);
+                Tile::getType, types::containsKey);
     }
 
     /*
@@ -189,40 +288,7 @@ public class Hand {
 
         return isStandardHandWithMandatoryTiles(
                 contents, types, contents,
-                types::containsKey, Tile::getType);
-    }
-
-    private <T> boolean isStandardHandWithMandatoryTiles(
-            Map<TileContent, TileContent> contents, Map<TileType, TileType> types,
-            Map<TileContent, TileContent> mandatory,
-            Function<T, Boolean> pairCondition, Function<Tile, T> pairValue) {
-
-        for (Map<CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
-            if (!this.checkCombinationCount(hand, 1, 4, 4, 4, 0))
-                continue;
-
-            Tile pair = new ArrayList<>(hand.get(CombinationType.PAIR).keySet()).get(0);
-            if (!pairCondition.apply(pairValue.apply(pair)))
-                continue;
-
-            Map<TileContent, Boolean> conditions = new HashMap<>();
-            mandatory.keySet().forEach(content -> conditions.put(content, content == pair.getContent()));
-            boolean allTilesMatch = true;
-
-            for (Tile t : hand.get(CombinationType.PUNG).keySet()) {
-                conditions.replaceAll((k, v) -> v || t.getContent() == k);
-                allTilesMatch = allTilesMatch && (contents.containsKey(t.getContent()) || types.containsKey(t.getType()));
-            }
-
-            for (Tile t : hand.get(CombinationType.KONG).keySet()) {
-                conditions.replaceAll((k, v) -> v || t.getContent() == k);
-                allTilesMatch = allTilesMatch && (contents.containsKey(t.getContent()) || types.containsKey(t.getType()));
-            }
-
-            if (allTilesMatch && conditions.entrySet().stream().allMatch(Map.Entry::getValue))
-                return true;
-        }
-        return false;
+                Tile::getType, types::containsKey);
     }
 
     /*
@@ -312,20 +378,6 @@ public class Hand {
     public Boolean isEarthlyHands() {
         // TODO This method does not depend on HandInfo but might useful later
         return false;
-    }
-
-    private boolean checkCombinationCount(
-            Map<CombinationType, Map<Tile, Integer>> hand,
-            int pairCount, int nonPairCount,
-            int maxPungs, int maxKongs, int maxChows) {
-
-        int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
-        int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
-        int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
-        int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
-
-        return pairs == pairCount && pungs+kongs+chows == nonPairCount &&
-                pungs <= maxPungs && kongs <= maxKongs && chows <= maxChows;
     }
 
     // Each hand is represented as a HashMap, where each Key is an existing type of tile
