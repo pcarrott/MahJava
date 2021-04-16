@@ -10,7 +10,8 @@ public class Player {
         CHOW,
         PAIR,
         PUNG,
-        KONG
+        KONG,
+        NONE
     }
 
     private Game _game;

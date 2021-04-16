@@ -15,12 +15,22 @@ import java.util.stream.Collectors;
  */
 public class HandInfo {
 
-    private final List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands;
+    private List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands;
     private final Map<Tile, Tile> ignoredTiles = new HashMap<>();
 
     public HandInfo(Hand hand) {
         // Distinct is used because there seems to be some cases where the same hand appears more than once.
         this.allPossibleHands = computeHands(hand.getHand()).stream().distinct().collect(Collectors.toList());
+    }
+
+    public HandInfo() {
+        this.allPossibleHands = Collections.singletonList(new HashMap<>(Map.ofEntries(
+                Map.entry(CombinationType.NONE, new HashMap<>()),
+                Map.entry(CombinationType.PAIR, new HashMap<>()),
+                Map.entry(CombinationType.PUNG, new HashMap<>()),
+                Map.entry(CombinationType.KONG, new HashMap<>()),
+                Map.entry(CombinationType.CHOW, new HashMap<>())
+        )));
     }
 
     /*
@@ -34,6 +44,7 @@ public class HandInfo {
          */
         if (tileCounter.isEmpty())
             return Collections.singletonList(new HashMap<>(Map.ofEntries(
+                    Map.entry(CombinationType.NONE, new HashMap<>()),
                     Map.entry(CombinationType.PAIR, new HashMap<>()),
                     Map.entry(CombinationType.PUNG, new HashMap<>()),
                     Map.entry(CombinationType.KONG, new HashMap<>()),
@@ -61,7 +72,7 @@ public class HandInfo {
              */
             this.ignoredTiles.put(tile, tile);
             this.setCombinations(
-                    tile, count, new ArrayList<>(), tileCounter, currentHands);
+                    tile, count, Collections.singletonList(CombinationType.NONE), tileCounter, currentHands);
             this.ignoredTiles.remove(tile);
 
         } else if (count == 2) {
@@ -321,14 +332,192 @@ public class HandInfo {
         currentHands.addAll(computedHands);
     }
 
-    public boolean removeTile(Tile tile) {
+    public void removeTile(Tile tile) {
 
-        return false;
     }
 
-    public boolean addTile(Tile tile) {
+    public void addTile(Tile tile) {
+        var allChows = tile.getPossibleChowCombinations();
+        List<Map<CombinationType, Map<Tile, Integer>>> res = new ArrayList<>();
 
-        return false;
+        for (var hand : this.allPossibleHands) {
+            // Chows with the tile that the hand currently has
+            var chows = allChows.stream()
+                    .filter(chow -> hand.get(CombinationType.CHOW).containsKey(chow.get(0)))
+                    .collect(Collectors.toList());
+
+            // Chows that can be made with tile and other tiles that belong to no combination
+            var possibleChows = allChows.stream()
+                    .filter(chow -> chow.stream()
+                            .filter(t -> !t.equals(tile))
+                            .allMatch(hand.get(CombinationType.NONE)::containsKey))
+                    .collect(Collectors.toList());
+
+            boolean hasCombinations = chows.size() != 0;
+
+            if (hand.get(CombinationType.NONE).containsKey(tile)) {
+                hasCombinations = true;
+
+                // Scenario: 1 None          -> 1 Pair
+                // Scenario: 1 None + 1 Chow -> 1 Pair + 1 Chow
+                // Scenario: 1 None + 2 Chow -> 1 Pair + 2 Chow
+                var handWithPair = this.copyHand(hand);
+                handWithPair.get(CombinationType.PAIR).put(tile, 1);
+                handWithPair.get(CombinationType.NONE).remove(tile);
+                res.add(handWithPair);
+
+            } if (hand.get(CombinationType.PAIR).containsKey(tile)) {
+                hasCombinations = true;
+
+                // Scenario: 1 Pair          -> 1 Pung
+                // Scenario: 1 Pair + 1 Chow -> 1 Pung + 1 Chow
+                var handWithPung = this.copyHand(hand);
+                handWithPung.get(CombinationType.PUNG).put(tile, 1);
+                handWithPung.get(CombinationType.PAIR).remove(tile);
+                res.add(handWithPung);
+
+                // If 0 Chow
+                // Scenario: 1 Pair          -> 1 Pair + 1 Chow
+                if (chows.size() == 0) {
+                    possibleChows.forEach(chow -> {
+                        var handWithChow = this.copyHand(hand);
+                        handWithChow.get(CombinationType.CHOW).put(chow.get(0), 1);
+                        res.add(handWithChow);
+                    });
+                }
+
+            } if (hand.get(CombinationType.PUNG).containsKey(tile)) {
+                hasCombinations = true;
+
+                // Scenario: 1 Pung          -> 1 Kong
+                // FIXME Kongs need to be checked first because of the extra tile
+                // var handWithKong = this.copyHand(hand);
+                // handWithKong.get(CombinationType.KONG).put(tile, 1);
+                // handWithKong.get(CombinationType.PUNG).remove(tile);
+                // res.add(handWithKong);
+
+                // Scenario: 1 Pung          -> 1 None + 1 Pung
+                var handWithNone = this.copyHand(hand);
+                handWithNone.get(CombinationType.NONE).put(tile, 1);
+                res.add(handWithNone);
+
+            } if (chows.size() != 0) {
+                // If has no possible chows
+                // Scenario:          1 Chow -> 1 None + 1 Chow
+                // Scenario:          2 Chow -> 1 None + 2 Chow
+                // Scenario:          3 Chow -> 1 None + 3 Chow
+                if (possibleChows.size() == 0) {
+                    var handWithNone = this.copyHand(hand);
+                    handWithNone.get(CombinationType.NONE).put(tile, 1);
+                    res.add(handWithNone);
+                }
+
+                // If 1 Chow + 0 None and at least 1 tile from the chow(s) has another possible chow
+                // Scenario:          1 Chow -> 1 Pair
+                // Scenario: 1 Pair + 1 Chow -> 2 Pair
+                if (chows.size() == 1 &&  !hand.get(CombinationType.NONE).containsKey(tile) &&
+                    chows.get(0).stream()
+                            .flatMap(t -> t.getPossibleChowCombinations().stream())
+                            .peek(c -> c.removeAll(chows.get(0)))
+                            .distinct()
+                            .noneMatch(c -> !c.isEmpty() && c.stream().allMatch(hand.get(CombinationType.NONE)::containsKey))
+                ) {
+                    List<Tile> chow = chows.get(0);
+                    var handWithPair = this.copyHand(hand);
+                    handWithPair.get(CombinationType.PAIR).merge(tile, 1, Integer::sum);
+                    handWithPair.get(CombinationType.CHOW).remove(chow.get(0));
+                    chow.stream()
+                            .filter(t -> !t.equals(tile))
+                            .forEach(t -> handWithPair.get(CombinationType.NONE).put(t, 1));
+                    res.add(handWithPair);
+                }
+
+                // For each possible Chow
+                // Scenario:          1 Chow ->          2 Chow
+                // Scenario:          2 Chow ->          3 Chow
+                // Scenario: 1 Pair + 1 Chow -> 1 Pair + 2 Chow
+                // Scenario:          3 Chow ->          4 Chow
+                possibleChows.forEach(chow -> {
+                    var handWithChow = this.copyHand(hand);
+                    handWithChow.get(CombinationType.CHOW).merge(chow.get(0), 1, Integer::sum);
+                    res.add(handWithChow);
+                });
+
+            } if (!hasCombinations) {
+                // Scenario:                 -> 1 None
+                if (possibleChows.size() == 0) {
+                    var handWithNone = this.copyHand(hand);
+                    handWithNone.get(CombinationType.NONE).put(tile, 1);
+                    res.add(handWithNone);
+                }
+
+                // For each possible Chow
+                // Scenario:                 ->          1 Chow
+                possibleChows.forEach(chow -> {
+                    var handWithChow = this.copyHand(hand);
+                    handWithChow.get(CombinationType.CHOW).merge(chow.get(0), 1, Integer::sum);
+                    chow.forEach(t -> handWithChow.get(CombinationType.NONE).remove(t));
+                    res.add(handWithChow);
+                });
+
+                // Break existing chows to create a new chow
+                allChows.forEach(newChow -> {
+                    List<Tile> remainingTiles = newChow.stream()
+                            .filter(t -> !t.equals(tile))
+                            .collect(Collectors.toList());
+
+                    remainingTiles.stream()
+                            .flatMap(t -> t.getPossibleChowCombinations().stream())
+                            .filter(oldChow ->
+                                    // We want the new chow to replace an already existing chow
+                                    hand.get(CombinationType.CHOW).containsKey(oldChow.get(0)) &&
+
+                                    // The old chow must have all the remaining tiles to complete the new chow
+                                    oldChow.containsAll(remainingTiles) &&
+
+                                    // The ignored tiles in the old chow mustn't form a chow with already ignored tiles
+                                    oldChow.stream().noneMatch(t -> t.getPossibleChowCombinations().stream()
+                                            .peek(ch -> ch.remove(t))
+                                            .anyMatch(ch -> ch.stream().allMatch(
+                                                    hand.get(CombinationType.NONE)::containsKey
+                                            ))
+                                    )
+                            )
+                            .forEach(oldChow -> {
+                                var handWithNewChow = this.copyHand(hand);
+
+                                // Add new chow
+                                handWithNewChow.get(CombinationType.CHOW).merge(newChow.get(0), 1, Integer::sum);
+
+                                // The new chow may have tiles that were ignored
+                                newChow.forEach(t -> handWithNewChow.get(CombinationType.NONE).remove(t));
+
+                                // Remove old chow
+                                handWithNewChow.get(CombinationType.CHOW).remove(oldChow.get(0));
+
+                                // Remove used tiles from old chow and ignore the remaining tiles
+                                oldChow.removeAll(newChow);
+                                oldChow.forEach(t -> handWithNewChow.get(CombinationType.NONE).put(t, 1));
+
+                                res.add(handWithNewChow);
+                            });
+
+                });
+            }
+        }
+
+        // FIXME check if distinct is needed
+        this.allPossibleHands = res.stream().distinct().collect(Collectors.toList());
+    }
+
+    public Map<CombinationType, Map<Tile, Integer>> copyHand(Map<CombinationType, Map<Tile, Integer>> hand) {
+        return new HashMap<>(Map.ofEntries(
+                Map.entry(CombinationType.NONE, new HashMap<>(hand.get(CombinationType.NONE))),
+                Map.entry(CombinationType.PAIR, new HashMap<>(hand.get(CombinationType.PAIR))),
+                Map.entry(CombinationType.PUNG, new HashMap<>(hand.get(CombinationType.PUNG))),
+                Map.entry(CombinationType.KONG, new HashMap<>(hand.get(CombinationType.KONG))),
+                Map.entry(CombinationType.CHOW, new HashMap<>(hand.get(CombinationType.CHOW)))
+        ));
     }
 
     public List<Map<CombinationType, Map<Tile, Integer>>> getAllPossibleHands() {

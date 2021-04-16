@@ -23,7 +23,7 @@ public class Hand {
     // should ever be 0. If a get() method call returns null, then that means that no tile of that specific type+content
     // exists.
     private final Map<Tile, Integer> _hand = new HashMap<>();
-    private final HandInfo _info;
+    private final HandInfo _info = new HandInfo();
 
     public Hand(List<Tile> startingHand) throws IllegalArgumentException {
         if (startingHand.size() != 13) {
@@ -32,7 +32,6 @@ public class Hand {
             for (Tile tile : startingHand) {
                 this.addTile(tile);
             }
-            this._info = new HandInfo(this);
         }
     }
 
@@ -420,6 +419,8 @@ public class Hand {
             }
             this._hand.put(tileToAdd, count + 1);
         }
+
+        this._info.addTile(tileToAdd);
     }
 
     private void removeTile(Tile tile) {
