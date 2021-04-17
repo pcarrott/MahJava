@@ -103,7 +103,6 @@ public class Tile {
         this._content = tc;
     }
 
-
     public TileType getType() {
         return _type;
     }
@@ -118,13 +117,6 @@ public class Tile {
 
     public void setContent(TileContent _content) {
         this._content = _content;
-    }
-
-    public boolean isNext(Tile tile) {
-        return this._type == tile._type &&
-                !this._type.isSpecialType() &&
-                this._content._value < 9 &&
-                this._content._value + 1 == tile._content._value;
     }
 
     @Override
