@@ -48,7 +48,7 @@ public class HandInfo {
                             .allMatch(hand.get(CombinationType.NONE)::containsKey))
                     .collect(Collectors.toList());
 
-            boolean hasCombinations = chows.size() != 0;
+            boolean hasCombinations = false;
 
             if (hand.get(CombinationType.NONE).containsKey(tile)) {
                 hasCombinations = true;
@@ -76,12 +76,13 @@ public class HandInfo {
                 if (chows.size() == 0) {
                     possibleChows.forEach(chow -> {
                         var handWithChow = this.copyHand(hand);
-                        handWithChow.get(CombinationType.CHOW).put(chow.get(0), 1);
+                        handWithChow.get(CombinationType.CHOW).merge(chow.get(0), 1, Integer::sum);
+                        chow.forEach(t -> handWithChow.get(CombinationType.NONE).remove(t));
                         res.add(handWithChow);
                     });
                 }
 
-            } if (hand.get(CombinationType.PUNG).containsKey(tile)) {
+            } if (hand.get(CombinationType.PUNG).containsKey(tile) && possibleChows.isEmpty()) {
                 hasCombinations = true;
 
                 // Scenario: 1 Pung          -> 1 None + 1 Pung
@@ -94,11 +95,13 @@ public class HandInfo {
                 // Scenario:          1 Chow -> 1 None + 1 Chow
                 // Scenario:          2 Chow -> 1 None + 2 Chow
                 // Scenario:          3 Chow -> 1 None + 3 Chow
-                if (possibleChows.size() == 0) {
+                if (possibleChows.isEmpty() && !hasCombinations) {
                     var handWithNone = this.copyHand(hand);
                     handWithNone.get(CombinationType.NONE).put(tile, 1);
                     res.add(handWithNone);
                 }
+
+                hasCombinations = true;
 
                 // If 1 Chow + 0 None and at least 1 tile from the chow(s) has another possible chow
                 // Scenario:          1 Chow -> 1 Pair
@@ -110,13 +113,27 @@ public class HandInfo {
                             .distinct()
                             .noneMatch(c -> !c.isEmpty() && c.stream().allMatch(hand.get(CombinationType.NONE)::containsKey))
                 ) {
+
                     List<Tile> chow = chows.get(0);
                     var handWithPair = this.copyHand(hand);
                     handWithPair.get(CombinationType.PAIR).merge(tile, 1, Integer::sum);
                     handWithPair.get(CombinationType.CHOW).remove(chow.get(0));
                     chow.stream()
                             .filter(t -> !t.equals(tile))
-                            .forEach(t -> handWithPair.get(CombinationType.NONE).put(t, 1));
+                            .forEach(t -> {
+                                if (handWithPair.get(CombinationType.NONE).containsKey(t)) {
+                                    handWithPair.get(CombinationType.PAIR).merge(t, 1, Integer::sum);
+                                    handWithPair.get(CombinationType.NONE).remove(t);
+
+                                } else if (handWithPair.get(CombinationType.PAIR).containsKey(t)) {
+                                    handWithPair.get(CombinationType.PUNG).put(t, 1);
+                                    handWithPair.get(CombinationType.PAIR).remove(t);
+
+                                } else
+                                    handWithPair.get(CombinationType.NONE).put(t, 1);
+
+                                // FIXME I should also probably check for chows here...
+                            });
                     res.add(handWithPair);
                 }
 
@@ -128,12 +145,13 @@ public class HandInfo {
                 possibleChows.forEach(chow -> {
                     var handWithChow = this.copyHand(hand);
                     handWithChow.get(CombinationType.CHOW).merge(chow.get(0), 1, Integer::sum);
+                    chow.forEach(t -> handWithChow.get(CombinationType.NONE).remove(t));
                     res.add(handWithChow);
                 });
 
             } if (!hasCombinations) {
                 // Scenario:                 -> 1 None
-                if (possibleChows.size() == 0) {
+                if (possibleChows.isEmpty()) {
                     var handWithNone = this.copyHand(hand);
                     handWithNone.get(CombinationType.NONE).put(tile, 1);
                     res.add(handWithNone);
@@ -169,8 +187,79 @@ public class HandInfo {
                             c -> hand.get(CombinationType.CHOW).containsKey(c.get(0)) &&
                                     !c.contains(tile) && c.contains(secondTile)
                     ).collect(Collectors.toList());
-
                     this.updateHandsWithNewChow(hand, newChow, remainingTiles, new ArrayList<>(), commonChows, res);
+
+                    // Replace pairs with new possible chows
+                    // FIXME This is only checking if both have pairs. Pair + Chow should also be checked, for example
+                    if (hand.get(CombinationType.PAIR).containsKey(firstTile) &&
+                            hand.get(CombinationType.PAIR).containsKey(secondTile)) {
+
+                        var handWithoutPairs = this.copyHand(hand);
+
+                        handWithoutPairs.get(CombinationType.CHOW).merge(newChow.get(0), 1, Integer::sum);
+
+                        handWithoutPairs.get(CombinationType.PAIR).remove(firstTile);
+                        handWithoutPairs.get(CombinationType.PAIR).remove(secondTile);
+
+                        handWithoutPairs.get(CombinationType.NONE).put(firstTile, 1);
+                        handWithoutPairs.get(CombinationType.NONE).put(secondTile, 1);
+
+                        // Check chows with removed tiles
+                        var firstPossibleChows = firstTile.getPossibleChowCombinations().stream()
+                                .filter(c -> c.stream().allMatch(handWithoutPairs.get(CombinationType.NONE)::containsKey))
+                                .collect(Collectors.toList());
+                        firstPossibleChows.forEach(firstChow -> {
+                            var handWithChow = this.copyHand(handWithoutPairs);
+                            handWithChow.get(CombinationType.CHOW).merge(firstChow.get(0), 1, Integer::sum);
+                            firstChow.forEach(t -> handWithChow.get(CombinationType.NONE).remove(t));
+
+                            secondTile.getPossibleChowCombinations().forEach(secondChow -> {
+                                if (secondChow.stream().allMatch(handWithChow.get(CombinationType.NONE)::containsKey)) {
+                                    handWithChow.get(CombinationType.CHOW).merge(secondChow.get(0), 1, Integer::sum);
+                                    secondChow.forEach(t -> handWithChow.get(CombinationType.NONE).remove(t));
+                                }
+                            });
+
+                            res.add(handWithChow);
+                        });
+
+                        var secondPossibleChows = secondTile.getPossibleChowCombinations().stream()
+                                .filter(c -> c.stream().allMatch(handWithoutPairs.get(CombinationType.NONE)::containsKey))
+                                .collect(Collectors.toList());
+                        secondPossibleChows.forEach(secondChow -> {
+                            var handWithChow = this.copyHand(handWithoutPairs);
+                            handWithChow.get(CombinationType.CHOW).merge(secondChow.get(0), 1, Integer::sum);
+                            secondChow.forEach(t -> handWithChow.get(CombinationType.NONE).remove(t));
+                            res.add(handWithChow);
+                        });
+
+                        if (firstPossibleChows.size() + secondPossibleChows.size() == 0)
+                            res.add(handWithoutPairs);
+                    }
+
+                    // Replace Pungs with new possible chows
+                    // FIXME This only checks Pung + None. Should test all other combinations
+                    if (hand.get(CombinationType.PUNG).containsKey(firstTile) &&
+                            !hand.get(CombinationType.NONE).containsKey(firstTile) &&
+                            hand.get(CombinationType.NONE).containsKey(secondTile)) {
+                        var handWithChow = this.copyHand(hand);
+                        handWithChow.get(CombinationType.CHOW).merge(newChow.get(0), 1, Integer::sum);
+                        handWithChow.get(CombinationType.PAIR).merge(firstTile, 1, Integer::sum);
+                        handWithChow.get(CombinationType.PUNG).remove(firstTile);
+                        handWithChow.get(CombinationType.NONE).remove(secondTile);
+                        res.add(handWithChow);
+                    }
+
+                    if (hand.get(CombinationType.PUNG).containsKey(secondTile) &&
+                            !hand.get(CombinationType.NONE).containsKey(secondTile) &&
+                            hand.get(CombinationType.NONE).containsKey(firstTile)) {
+                        var handWithChow = this.copyHand(hand);
+                        handWithChow.get(CombinationType.CHOW).merge(newChow.get(0), 1, Integer::sum);
+                        handWithChow.get(CombinationType.PAIR).merge(secondTile, 1, Integer::sum);
+                        handWithChow.get(CombinationType.PUNG).remove(secondTile);
+                        handWithChow.get(CombinationType.NONE).remove(firstTile);
+                        res.add(handWithChow);
+                    }
                 });
             }
         }

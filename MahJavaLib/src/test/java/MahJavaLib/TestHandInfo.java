@@ -769,19 +769,9 @@ public class TestHandInfo {
         var res = hand.getPossibleHands();
 
         System.out.println("Computed");
-        res.forEach(h ->  {
-            System.out.println("NONE");
-            System.out.println(h.get(CombinationType.NONE));
-            System.out.println("CHOW");
-            System.out.println(h.get(CombinationType.CHOW));
-        });
+        res.forEach(System.out::println);
         System.out.println("Expected");
-        allPossibleHands.forEach(h ->  {
-            System.out.println("NONE");
-            System.out.println(h.get(CombinationType.NONE));
-            System.out.println("CHOW");
-            System.out.println(h.get(CombinationType.CHOW));
-        });
+        allPossibleHands.forEach(System.out::println);
 
         int handCount = res.size();
         assertEquals(handCount, allPossibleHands.size());
