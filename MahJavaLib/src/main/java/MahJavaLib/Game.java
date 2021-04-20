@@ -3,10 +3,7 @@ package MahJavaLib;
 import MahJavaLib.exceptions.WallIsEmptyException;
 import MahJavaLib.hand.Hand;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Game {
@@ -55,10 +52,10 @@ public class Game {
     }
 
     public void gameLoop() {
-        boolean winnerExists = false;
         boolean noSteal = true;
+        Optional<PlayerTurn> winner = Optional.empty();
         int turn = 0;
-        while (!winnerExists && !this.isBoardWallEmpty()) {
+        while (winner.isEmpty() && !this.isBoardWallEmpty()) {
             System.out.println("Turn " + turn);
             // A Mahjong Turn is made up of two phases:
             // - If no piece was "stolen" the round before, then this turn's player needs to be given a tile from the
@@ -87,7 +84,7 @@ public class Game {
             MahJavaLib.Tile tileToDiscard = playerToPlay.chooseTileToDiscard();
             // We need to check if this is even possible, meaning that we need to check
             // if the player has actually chosen a tile that it can discard.
-            assert playerToPlay.hasTile(tileToDiscard);
+            assert playerToPlay.hasTile(tileToDiscard, 1);
             playerToPlay.removeTile(tileToDiscard);
 
             System.out.println("\t\tPlayer discarded " + tileToDiscard);
@@ -97,26 +94,45 @@ public class Game {
                     .filter((player -> !player.equals(playerToPlay)))
                     .collect(Collectors.toList());
 
-            Map<MahJavaLib.Player, Boolean> wantsDiscardedTile = otherPlayers.stream()
+            Map<MahJavaLib.Player, Optional<Combination>> wantsDiscardedTile = otherPlayers.stream()
                     .collect(Collectors.toMap(
                             player -> player,
                             player -> player.wantsDiscardedTile(tileToDiscard)));
 
             System.out.println("\t(Stealing phase)");
             noSteal = true;
-            for (Map.Entry<MahJavaLib.Player, Boolean> entry : wantsDiscardedTile.entrySet()) {
+            for (Map.Entry<MahJavaLib.Player, Optional<Combination>> entry : wantsDiscardedTile.entrySet()) {
                 // If there is someone who wants it, then lets check if they can/should take it
                 // @TODO: in a real game, you can only take the tile if you make a combination with it AND you have
                 // the highest priority of every other requesting player. Need to check for that too.
-                if (entry.getValue()) {
-                    entry.getKey().addTile(tileToDiscard);
-                    System.out.println("\t\tPlayer " + this._playerTurn + " has stolen " + tileToDiscard);
-                    // The player that has stolen the tile gets to go next.
-                    this._playerTurn = entry.getKey().getSeatWind();
-                    noSteal = false;
-                    break;
+                if (entry.getValue().isPresent()) {
+                    Combination possibleCombination = entry.getValue().get();
+                    Player requestingPlayer = entry.getKey();
+
+                    // We start by giving them the tile, and then check if they actually have the combination they say
+                    // they have
+                    boolean hasCombination = true;
+                    for (Map.Entry<Tile, Integer> combinationEntry : possibleCombination.getTiles().entrySet()) {
+                            if (!requestingPlayer.hasTile(combinationEntry.getKey(), combinationEntry.getValue())) {
+                                // They don't have the combination, filthy liar; we need to get back the tile from them
+                                requestingPlayer.removeTile(tileToDiscard);
+                                hasCombination = false;
+                                break;
+                            }
+                    }
+
+                    // They do have the combination, then we need to handle this
+                    if (hasCombination) {
+                        System.out.println("\t\tPlayer " + this._playerTurn + " has stolen " + tileToDiscard + " to make a " + possibleCombination);
+                        // @TODO: open the combination
+                        // The player that has stolen the tile gets to go next.
+                        this._playerTurn = entry.getKey().getSeatWind();
+                        noSteal = false;
+                        break;
+                    }
                 }
             }
+
 
             // If no player has stolen the tile, then we need to actually record the discarding, and update the next
             // player.
@@ -127,13 +143,24 @@ public class Game {
                 this._playerTurn = this._playerTurn.next();
             }
 
+
+            List<PlayerTurn> winningPlayers = this._players.entrySet().stream()
+                    .filter(entry -> entry.getValue().hasWinningHand())
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
+
+            if (winningPlayers.size() > 0) {
+                winner = Optional.of(winningPlayers.get(0));
+            }
             // This is only for testing purposes, in the end it can be deleted
             turn += 1;
             if (turn > 5) {
-                winnerExists = true;
+                winner = Optional.of(this._players.keySet().toArray(PlayerTurn[]::new)[0]);
             }
+        }
+
+        winner.ifPresent(player -> System.out.println("Winner is: " + player));
     }
-}
 
     public boolean isBoardWallEmpty() {
         return this._board.isWallEmpty();
