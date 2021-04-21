@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
  */
 public class HandInfo {
 
+    // @NOTE: rename allPossibleHands to allPossibleCombinations, and add a Set that contains all pieces that can Pair
     private final List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands;
     private final Map<Tile, Tile> ignoredTiles = new HashMap<>();
 

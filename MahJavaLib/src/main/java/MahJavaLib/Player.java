@@ -3,11 +3,14 @@ package MahJavaLib;
 import MahJavaLib.hand.Hand;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class Player {
 
     public enum CombinationType {
         CHOW,
+        // @TODO: Pair should probably not be here, since it is not an actual combination
+        // Instead, have a different Map just for pairs in HandInfo
         PAIR,
         PUNG,
         KONG
@@ -40,8 +43,8 @@ public class Player {
         return (Tile) this._hand.getHand().keySet().toArray()[0];
     }
 
-    public boolean hasTile(Tile tile) {
-        return this._hand.hasTile(tile);
+    public boolean hasTile(Tile tile, Integer n) {
+        return this._hand.hasTile(tile, n);
     }
 
     public void addToDiscardPile(Tile tile) {
@@ -60,16 +63,18 @@ public class Player {
         this._seatWind = _seatWind;
     }
 
-    public boolean wantsDiscardedTile(Tile discardedTile) {
+    public Optional<Combination> wantsDiscardedTile(Tile discardedTile) {
         // @TODO: implement logic for this, also change return values since we should inform the Game on the type of
         // combination we want to achieve with the discarded tile (both to make us eligible to get it, and to mark it
         // as Open)
-        return false;
+        return Optional.empty();
     }
 
     public void removeTile(Tile tile) {
         this._hand.discardTile(tile);
     }
+
+    public boolean hasWinningHand() {return this._hand.isWinningHand();}
 
     @Override
     public String toString() {

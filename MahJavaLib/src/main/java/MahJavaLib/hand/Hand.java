@@ -36,8 +36,8 @@ public class Hand {
         }
     }
 
-    public boolean hasTile(Tile tile) {
-        return this._hand.containsKey(tile);
+    public boolean hasTile(Tile tile, Integer n) {
+        return this._hand.containsKey(tile) && (this._hand.get(tile) >= n);
     }
 
     /*
