@@ -31,12 +31,12 @@ public class TestHandInfo {
             tiles.add(new Tile(TileType.WIND, TileContent.EAST));
         }
 
-        for (int i = 0; i < 2; i++) {
-            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
-        }
+        tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
 
         // Generated tiles: [1B,1B,1B,3D,3D,3D,5C,5C,5C,EW,EW,EW,RD,RD]
+        Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+        hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Collections.singletonList(
                 // 111|B 333|D 555|C EEE|W RR|D
@@ -77,12 +77,12 @@ public class TestHandInfo {
             tiles.add(new Tile(TileType.CHARACTERS, TileContent.fromValue(i)));
         }
 
-        for (int i = 0; i < 2; i++) {
-            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
-        }
+        tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
 
         // Generated tiles: [1B,1B,1B,1D,2D,3D,5C,5C,5C,7C,8C,9C,RD,RD]
+        Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+        hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Collections.singletonList(
                 // 111|B 123|D 555|C 789|C RR|D
@@ -121,12 +121,12 @@ public class TestHandInfo {
             tiles.add(new Tile(TileType.CHARACTERS, TileContent.fromValue(i)));
         }
 
-        for (int i = 0; i < 2; i++) {
-            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
-        }
+        tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
 
         // Generated tiles: [1B,1B,1B,9C,9C,9C,1C,2C,3C,4C,5C,6C,RD,RD]
+        Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+        hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
                 // 111|B 999|C 123|C 456|C RR|D
@@ -189,12 +189,12 @@ public class TestHandInfo {
             tiles.add(new Tile(TileType.CHARACTERS, TileContent.fromValue(i)));
         }
 
-        for (int i = 0; i < 2; i++) {
-            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
-        }
+        tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
 
         // Generated tiles: [1D,2D,3D,4D,5D,6D,7D,8D,9D,7C,8C,9C,RD,RD]
+        Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+        hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
                 // 123|D 456|D 789|D 789|C RR|D
@@ -331,12 +331,12 @@ public class TestHandInfo {
             tiles.add(new Tile(TileType.CHARACTERS, TileContent.fromValue(i)));
         }
 
-        for (int i = 0; i < 2; i++) {
-            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
-        }
+        tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
 
         // Generated tiles: [1B,1B,1B,1D,1D,2D,2D,3D,3D,7C,8C,9C,RD,RD]
+        Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+        hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
                 // 111|B 11|D 22|D 33|D 789|C RR|D
@@ -391,12 +391,12 @@ public class TestHandInfo {
             tiles.add(new Tile(TileType.CHARACTERS, TileContent.fromValue(i)));
         }
 
-        for (int i = 0; i < 2; i++) {
-            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
-        }
+        tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
 
         // Generated tiles: [1B,1B,1B,1D,2D,2D,3D,3D,4D,7C,8C,9C,RD,RD]
+        Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+        hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
                 // 111|B 22|D 33|D 789|C RR|D
@@ -454,12 +454,14 @@ public class TestHandInfo {
             tiles.add(new Tile(TileType.CHARACTERS, TileContent.fromValue(i)));
         }
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
         }
 
         // Generated tiles: [1D,2D,3D,3D,3D,3D,4D,5D,7C,8C,9C,RD,RD,RD]
+        Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+        hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
                 // 123|D 33|D 345|D 789|C RRR|D
@@ -559,12 +561,12 @@ public class TestHandInfo {
             tiles.add(new Tile(TileType.BAMBOO, TileContent.fromValue(i)));
         }
 
-        for (int i = 0; i < 2; i++) {
-            tiles.add(new Tile(TileType.BAMBOO, TileContent.SEVEN));
-        }
+        tiles.add(new Tile(TileType.BAMBOO, TileContent.SEVEN));
 
         // Generated tiles: [1B,1B,1B,2B,2B,2B,3B,3B,3B,4B,5B,6B,7B,7B]
+        Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+        hand.addTile(new Tile(TileType.BAMBOO, TileContent.SEVEN));
 
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
                 // 111|B 222|B 333|B 456|B 77|B

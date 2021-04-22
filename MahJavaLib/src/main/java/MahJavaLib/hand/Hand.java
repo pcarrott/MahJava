@@ -23,7 +23,7 @@ public class Hand {
     // should ever be 0. If a get() method call returns null, then that means that no tile of that specific type+content
     // exists.
     private final Map<Tile, Integer> _hand = new HashMap<>();
-    private final HandInfo _info;
+    private final HandInfo _info = new HandInfo();
 
     public Hand(List<Tile> startingHand) throws IllegalArgumentException {
         if (startingHand.size() != 13) {
@@ -32,7 +32,6 @@ public class Hand {
             for (Tile tile : startingHand) {
                 this.addTile(tile);
             }
-            this._info = new HandInfo(this);
         }
     }
 
@@ -312,6 +311,10 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isNineGates() {
+        if (this.getHandSize() != 14) {
+            return false;
+        }
+
         // The hand should have only one suite.
         // Note: it is not possible to compose a hand with only Winds or only Dragons.
         List<TileType> handSuites = this._hand
@@ -420,6 +423,7 @@ public class Hand {
             }
             this._hand.put(tileToAdd, count + 1);
         }
+        this._info.updateHands(this._hand);
     }
 
     private void removeTile(Tile tile) {
@@ -431,6 +435,7 @@ public class Hand {
             } else {
                 this._hand.remove(tile);
             }
+            this._info.updateHands(this._hand);
         }
     }
 
