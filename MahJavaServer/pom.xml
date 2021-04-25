@@ -3,6 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mahjong</groupId>
+    <packaging>jar</packaging>
     <artifactId>MahJavaServer</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>MahJavaServer</name>
@@ -45,15 +46,9 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <configuration>
                     <mainClass>com.mahjong.MahJavaServer.MahJavaServerApplication</mainClass>
+                    <classpathScope>test</classpathScope>
                 </configuration>
             </plugin>
             <plugin>

@@ -5,18 +5,6 @@
     <groupId>com.mahjong</groupId>
     <artifactId>MahJavaClient</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>11</source>
-                    <target>11</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
     <name>MahJavaClient</name>
     <description>The frontend for the dankest Mahjong Engine out there</description>
     <properties>
@@ -52,4 +40,24 @@
             <systemPath>${project.basedir}/../MahJavaLib/target/MahJavaLib-1.0-SNAPSHOT.jar</systemPath>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.mahjong.MahJavaClient.MahJavaClientApplication</mainClass>
+                    <classpathScope>test</classpathScope>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
