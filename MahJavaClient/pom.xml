@@ -3,10 +3,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mahjong</groupId>
-    <artifactId>MahJavaServer</artifactId>
+    <artifactId>MahJavaClient</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>MahJavaServer</name>
-    <description>The backend for the dankest Mahjong Engine out there</description>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <name>MahJavaClient</name>
+    <description>The frontend for the dankest Mahjong Engine out there</description>
     <properties>
         <java.version>11</java.version>
     </properties>
@@ -40,30 +52,4 @@
             <systemPath>${project.basedir}/../MahJavaLib/target/MahJavaLib-1.0-SNAPSHOT.jar</systemPath>
         </dependency>
     </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <mainClass>com.mahjong.MahJavaServer.MahJavaServerApplication</mainClass>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>11</source>
-                    <target>11</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
