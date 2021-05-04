@@ -324,16 +324,6 @@ public class HandInfo {
         currentHands.addAll(computedHands);
     }
 
-    public boolean removeTile(Tile tile) {
-
-        return false;
-    }
-
-    public boolean addTile(Tile tile) {
-
-        return false;
-    }
-
     public List<Map<CombinationType, Map<Tile, Integer>>> getAllPossibleHands() {
         return this.allPossibleHands;
     }

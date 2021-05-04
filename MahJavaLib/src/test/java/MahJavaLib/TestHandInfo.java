@@ -6,6 +6,7 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import MahJavaLib.Tile.*;
 import MahJavaLib.Player.CombinationType;
@@ -36,8 +37,14 @@ public class TestHandInfo {
         // Generated tiles: [1B,1B,1B,3D,3D,3D,5C,5C,5C,EW,EW,EW,RD,RD]
         Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+
+        // Assert that discarded tile is a winning tile
+        assertTrue(hand.isWinningTile(new Tile(TileType.DRAGON, TileContent.RED)));
+
+        // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // Generate expected hands from adding winning tile
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Collections.singletonList(
                 // 111|B 333|D 555|C EEE|W RR|D
                 new HashMap<>(Map.ofEntries(
@@ -54,6 +61,7 @@ public class TestHandInfo {
                 ))
         );
 
+        // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
     }
 
@@ -82,8 +90,14 @@ public class TestHandInfo {
         // Generated tiles: [1B,1B,1B,1D,2D,3D,5C,5C,5C,7C,8C,9C,RD,RD]
         Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+
+        // Assert that discarded tile is a winning tile
+        assertTrue(hand.isWinningTile(new Tile(TileType.DRAGON, TileContent.RED)));
+
+        // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // Generate expected hands from adding winning tile
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Collections.singletonList(
                 // 111|B 123|D 555|C 789|C RR|D
                 new HashMap<>(Map.ofEntries(
@@ -102,6 +116,7 @@ public class TestHandInfo {
                 ))
         );
 
+        // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
     }
 
@@ -126,8 +141,14 @@ public class TestHandInfo {
         // Generated tiles: [1B,1B,1B,9C,9C,9C,1C,2C,3C,4C,5C,6C,RD,RD]
         Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+
+        // Assert that discarded tile is a winning tile
+        assertTrue(hand.isWinningTile(new Tile(TileType.DRAGON, TileContent.RED)));
+
+        // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // Generate expected hands from adding winning tile
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
                 // 111|B 999|C 123|C 456|C RR|D
                 new HashMap<>(Map.ofEntries(
@@ -174,6 +195,7 @@ public class TestHandInfo {
                 ))
         );
 
+        // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
     }
 
@@ -194,8 +216,14 @@ public class TestHandInfo {
         // Generated tiles: [1D,2D,3D,4D,5D,6D,7D,8D,9D,7C,8C,9C,RD,RD]
         Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+
+        // Assert that discarded tile is a winning tile
+        assertTrue(hand.isWinningTile(new Tile(TileType.DRAGON, TileContent.RED)));
+
+        // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // Generate expected hands from adding winning tile
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
                 // 123|D 456|D 789|D 789|C RR|D
                 new HashMap<>(Map.ofEntries(
@@ -304,6 +332,7 @@ public class TestHandInfo {
                 ))
         );
 
+        // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
     }
 
@@ -336,8 +365,14 @@ public class TestHandInfo {
         // Generated tiles: [1B,1B,1B,1D,1D,2D,2D,3D,3D,7C,8C,9C,RD,RD]
         Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+
+        // Assert that discarded tile is a winning tile
+        assertTrue(hand.isWinningTile(new Tile(TileType.DRAGON, TileContent.RED)));
+
+        // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // Generate expected hands from adding winning tile
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
                 // 111|B 11|D 22|D 33|D 789|C RR|D
                 new HashMap<>(Map.ofEntries(
@@ -371,6 +406,7 @@ public class TestHandInfo {
                 ))
         );
 
+        // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
     }
 
@@ -396,8 +432,14 @@ public class TestHandInfo {
         // Generated tiles: [1B,1B,1B,1D,2D,2D,3D,3D,4D,7C,8C,9C,RD,RD]
         Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+
+        // Assert that discarded tile is a winning tile
+        assertTrue(hand.isWinningTile(new Tile(TileType.DRAGON, TileContent.RED)));
+
+        // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // Generate expected hands from adding winning tile
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
                 // 111|B 22|D 33|D 789|C RR|D
                 new HashMap<>(Map.ofEntries(
@@ -431,6 +473,7 @@ public class TestHandInfo {
                 ))
         );
 
+        // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
     }
 
@@ -461,8 +504,22 @@ public class TestHandInfo {
         // Generated tiles: [1D,2D,3D,3D,3D,3D,4D,5D,7C,8C,9C,RD,RD,RD]
         Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+
+        // Assert that discarded tile is a winning tile
+        assertTrue(hand.isWinningTile(new Tile(TileType.DRAGON, TileContent.RED)));
+
+        // Since we can make a Pung with a Red Dragon, we compute all possible hands with that Pung.
+        var possibleCombinationsForTile =
+                hand.getPossibleCombinationsForTile(new Tile(TileType.DRAGON, TileContent.RED))
+                .values().stream()
+                .flatMap(h -> h.values().stream())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
+        // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // Generate expected hands from adding winning tile
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
                 // 123|D 33|D 345|D 789|C RRR|D
                 new HashMap<>(Map.ofEntries(
@@ -533,6 +590,11 @@ public class TestHandInfo {
                 ))
         );
 
+        // Computed hands from the Pung must be in the generated hands
+        assertEquals(possibleCombinationsForTile.size(), 5);
+        allPossibleHands.containsAll(possibleCombinationsForTile);
+
+        // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
     }
 
@@ -566,8 +628,22 @@ public class TestHandInfo {
         // Generated tiles: [1B,1B,1B,2B,2B,2B,3B,3B,3B,4B,5B,6B,7B,7B]
         Collections.shuffle(tiles);
         Hand hand = new Hand(tiles);
+
+        // Assert that discarded tile is a winning tile
+        assertTrue(hand.isWinningTile(new Tile(TileType.BAMBOO, TileContent.SEVEN)));
+
+        // Since we can make a Chow with a Seven Bamboo, we compute all possible hands with that Chow.
+        var possibleCombinationsForTile =
+                hand.getPossibleCombinationsForTile(new Tile(TileType.BAMBOO, TileContent.SEVEN))
+                        .values().stream()
+                        .flatMap(h -> h.values().stream())
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList());
+
+        // Add winning tile
         hand.addTile(new Tile(TileType.BAMBOO, TileContent.SEVEN));
 
+        // Generate expected hands from adding winning tile
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
                 // 111|B 222|B 333|B 456|B 77|B
                 new HashMap<>(Map.ofEntries(
@@ -770,6 +846,11 @@ public class TestHandInfo {
                 ))
         );
 
+        // Computed hands from the Chow must be in the generated hands
+        assertEquals(possibleCombinationsForTile.size(), 6);
+        allPossibleHands.containsAll(possibleCombinationsForTile);
+
+        // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
     }
 

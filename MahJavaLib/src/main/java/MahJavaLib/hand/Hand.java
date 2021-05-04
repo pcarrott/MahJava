@@ -446,6 +446,69 @@ public class Hand {
         this.removeTile(tileToDiscard);
     }
 
+    public Map<CombinationType, Map<Tile, List<Map<CombinationType, Map<Tile, Integer>>>>> getPossibleCombinationsForTile(
+            Tile discardedTile) {
+
+        Map<CombinationType, Map<Tile, List<Map<CombinationType, Map<Tile, Integer>>>>> res =
+                new HashMap<>(Map.ofEntries(
+                        Map.entry(CombinationType.PAIR, new HashMap<>()),
+                        Map.entry(CombinationType.PUNG, new HashMap<>()),
+                        Map.entry(CombinationType.KONG, new HashMap<>()),
+                        Map.entry(CombinationType.CHOW, new HashMap<>())
+                ));
+
+        var chows = discardedTile.getPossibleChowCombinations()
+                .stream()
+                .filter(chow -> chow.stream().allMatch(
+                        tile -> tile.equals(discardedTile) || this._hand.containsKey(tile)
+                ))
+                .collect(Collectors.toList());
+
+        for (List<Tile> chow : chows) {
+            List<Tile> remainingTiles = chow.stream()
+                    .filter(t -> !t.equals(discardedTile))
+                    .collect(Collectors.toList());
+
+            remainingTiles.forEach(this::removeTile);
+            this._info.updateHands(this._hand);
+            this._info.getAllPossibleHands().forEach(
+                    h -> h.get(CombinationType.CHOW).merge(chow.get(0), 1, Integer::sum)
+            );
+            res.get(CombinationType.CHOW).put(chow.get(0), this._info.getAllPossibleHands());
+            remainingTiles.forEach(this::addTile);
+        }
+
+        Integer count = this._hand.get(discardedTile);
+
+        if (count != null && count == 3) {
+            this._hand.remove(discardedTile);
+            this._info.updateHands(this._hand);
+            this._info.getAllPossibleHands().forEach(
+                    h -> h.get(CombinationType.KONG).merge(discardedTile, 1, Integer::sum)
+            );
+            res.get(CombinationType.KONG).put(discardedTile, this._info.getAllPossibleHands());
+            this._hand.put(discardedTile, 3);
+        }
+
+        if (count != null && count >= 2) {
+            if (count == 2)
+                this._hand.remove(discardedTile);
+            else
+                this._hand.put(discardedTile, 1);
+
+            this._info.updateHands(this._hand);
+            this._info.getAllPossibleHands().forEach(
+                    h -> h.get(CombinationType.PUNG).merge(discardedTile, 1, Integer::sum)
+            );
+            res.get(CombinationType.PUNG).put(discardedTile, this._info.getAllPossibleHands());
+
+            this._hand.merge(discardedTile, 2, Integer::sum);
+        }
+
+        this._info.updateHands(this._hand);
+        return res;
+    }
+
     public boolean isWinningHand() {
         // In Mahjong, a hand is a winning hand if at least one of the following conditions applies:
         // - A hand has 4 Chow/Pung/Kongs + 1 pair
@@ -458,6 +521,13 @@ public class Hand {
                 Hand::isThirteenOrphans));
 
         return winningConditions.stream().anyMatch((func) -> (func.apply(this)));
+    }
+
+    public boolean isWinningTile(Tile discardedTile) {
+        this.addTile(discardedTile);
+        boolean canWin = this.isWinningHand();
+        this.removeTile(discardedTile);
+        return canWin;
     }
 
 //    public Integer calculateHandValue() {
