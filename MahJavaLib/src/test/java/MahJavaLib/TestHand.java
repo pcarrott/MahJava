@@ -339,13 +339,11 @@ public class TestHand {
     @Test
     public void testIsNineGates() {
         assertTrue(this.nineGates.isNineGates());
-        this.nineGates.getPossibleHands().forEach(System.out::println);
         assertEquals(this.allHands.filter(Hand::isNineGates).count(), 1);
     }
 
     @Test
     public void testIsThirteenOrphans() {
-        System.out.println(this.thirteenOrphans);
         assertTrue(this.thirteenOrphans.isThirteenOrphans());
         assertEquals(this.allHands.filter(Hand::isThirteenOrphans).count(), 1);
     }

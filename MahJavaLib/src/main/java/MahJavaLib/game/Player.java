@@ -1,19 +1,22 @@
 package MahJavaLib.game;
 
+import MahJavaLib.tile.CombinationType;
 import MahJavaLib.tile.Tile;
 import MahJavaLib.tile.Combination;
 import MahJavaLib.hand.Hand;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class Player {
 
-    private Game game;
+    private OpenGame game;
     private Hand hand;
     private PlayerTurn seatWind = PlayerTurn.EAST;
     private final ArrayList<Tile> discardPile = new ArrayList<>();
 
+    // @TODO: Player should have a DiscardProfile and a CommitProfile
 
     public Player() {
         // The player constructor is empty, since it is supposed to be initialized by the game it is currently in
@@ -24,7 +27,8 @@ public class Player {
         this.hand = hand;
     }
 
-    public void setGame(Game game) {
+    public void setGame(OpenGame game) {
+        this.hand.setOpenHand(game.getOpenCombinations(this));
         this.game = game;
     }
 

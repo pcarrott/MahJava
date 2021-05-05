@@ -13,19 +13,19 @@ public class Game {
     private final Board board = new Board();
     private PlayerTurn playerTurn = PlayerTurn.EAST;
     private final Map<PlayerTurn, Player> players = new HashMap<>();
-    private final Map<Player, List<Tile>> discardedTiles = new HashMap<>();
+    private final OpenGame open;
 
     public Game(List<Player> players) {
         assert players.size() == 4 : "List of players doesn't have the correct size";
         assert this.board.getWall().size() == (4*9*3 + 4*4 + 3*4);
+
+        this.open = new OpenGame(players);
 
         PlayerTurn[] turns = PlayerTurn.values();
         for (int i = 0; i < turns.length; ++i) {
             Player player = players.get(i);
             PlayerTurn seatWind = turns[i];
 
-            player.setGame(this);
-            player.setSeatWind(seatWind);
             List<Tile> hand = new ArrayList<>();
             for (int j = 0; j < 13; ++j) {
                 try {
@@ -35,9 +35,11 @@ public class Game {
             }
             player.setHand(new Hand(hand));
 
+            player.setGame(this.open);
+            player.setSeatWind(seatWind);
             this.players.put(seatWind, player);
-            this.discardedTiles.put(player, new ArrayList<>());
         }
+
     }
 
     public void gameLoop() {
@@ -128,7 +130,7 @@ public class Game {
             if (noSteal) {
                 System.out.println("\tNo one stole anything what a ripoff");
                 playerToPlay.addToDiscardPile(tileToDiscard);
-                this.discardedTiles.get(playerToPlay).add(tileToDiscard);
+                this.open.addDiscardedTile(playerToPlay, tileToDiscard);
                 this.playerTurn = this.playerTurn.next();
             }
 

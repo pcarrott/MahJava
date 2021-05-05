@@ -19,6 +19,7 @@ public class Hand {
     // should ever be 0. If a get() method call returns null, then that means that no tile of that specific type+content
     // exists.
     private final Map<Tile, Integer> hand = new HashMap<>();
+    private List<Combination> openHand = new ArrayList<>();
     private final HandInfo info = new HandInfo();
 
     public Hand(List<Tile> startingHand) throws IllegalArgumentException {
@@ -54,6 +55,10 @@ public class Hand {
         int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
         int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
         int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
+
+        pungs += openHand.stream().map(Combination::getCombinationType).filter(c -> c == CombinationType.PUNG).count();
+        kongs += openHand.stream().map(Combination::getCombinationType).filter(c -> c == CombinationType.KONG).count();
+        chows += openHand.stream().map(Combination::getCombinationType).filter(c -> c == CombinationType.CHOW).count();
 
         return pairs == pairCount && pungs+kongs+chows == nonPairCount &&
                 pungs <= maxPungs && kongs <= maxKongs && chows <= maxChows;
@@ -96,7 +101,8 @@ public class Hand {
      * Scoring: 64 fan
      */
     public Boolean isHiddenTreasure() {
-        return this.checkCountForAllHands(1, 4,4, 0, 0);
+        return this.openHand.isEmpty() &&
+                this.checkCountForAllHands(1, 4,4, 0, 0);
     }
 
     /*
@@ -158,6 +164,16 @@ public class Hand {
 
             // Check all kongs
             for (Tile t : hand.get(CombinationType.KONG).keySet()) {
+                // If it is a mandatory tile, then it will be updated to true. Otherwise, it will keep the stored value.
+                conditions.replaceAll((k, v) -> v || t.getContent() == k);
+                // If the tile's type/content is allowed, then all tiles still match. Otherwise, it will become false.
+                allTilesMatch = allTilesMatch &&
+                        (contents.containsKey(t.getContent()) || types.containsKey(t.getType()));
+            }
+
+            for (Combination c : this.openHand) {
+                Tile t = (Tile) c.getTiles().keySet().toArray()[0];
+
                 // If it is a mandatory tile, then it will be updated to true. Otherwise, it will keep the stored value.
                 conditions.replaceAll((k, v) -> v || t.getContent() == k);
                 // If the tile's type/content is allowed, then all tiles still match. Otherwise, it will become false.
@@ -303,11 +319,12 @@ public class Hand {
     /*
      * Three 1's + Three 9's + Sequence from 2 to 8 + any tile that matches the previous tiles
      * All tiles of the same suite.
-     * Must be concealed. // TODO
+     * Must be concealed.
+     * No Kongs allowed.
      * Scoring: 64 fan
      */
     public Boolean isNineGates() {
-        if (this.getHandSize() != 14) {
+        if (this.getHandSize() != 14 || !this.openHand.isEmpty()) {
             return false;
         }
 
@@ -338,14 +355,11 @@ public class Hand {
 
     /*
      * One tile of each 1, 9, Dragon and Wind + any tile that matches the previous ones
-     * Must be concealed // TODO
+     * Must be concealed
      * Scoring: 64 fan
      */
     public Boolean isThirteenOrphans() {
-        // Hand can only have 14 tiles (no Kongs are allowed)
-        // The no-kongs restriction is assured if the hand is concealed,
-        //   so maybe in the future this check may not be needed.
-        if (this.getHandSize() != 14) {
+        if (!this.openHand.isEmpty()) {
             return false;
         }
 
@@ -395,6 +409,10 @@ public class Hand {
 
     public Map<Tile, Integer> getHand() {
         return this.hand;
+    }
+
+    public void setOpenHand(List<Combination> combinations) {
+        this.openHand = combinations;
     }
 
     public int getHandSize() {
