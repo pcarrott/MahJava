@@ -1,6 +1,7 @@
 package MahJavaLib;
 
 import MahJavaLib.hand.Hand;
+import MahJavaLib.tile.Tile;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
@@ -8,8 +9,7 @@ import static org.testng.Assert.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import MahJavaLib.Tile.*;
-import MahJavaLib.Player.CombinationType;
+import MahJavaLib.tile.*;
 
 public class TestHandInfo {
     @Test
@@ -511,10 +511,9 @@ public class TestHandInfo {
         // Since we can make a Pung with a Red Dragon, we compute all possible hands with that Pung.
         var possibleCombinationsForTile =
                 hand.getPossibleCombinationsForTile(new Tile(TileType.DRAGON, TileContent.RED))
-                .values().stream()
-                .flatMap(h -> h.values().stream())
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                        .values().stream()
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList());
 
         // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
@@ -636,7 +635,6 @@ public class TestHandInfo {
         var possibleCombinationsForTile =
                 hand.getPossibleCombinationsForTile(new Tile(TileType.BAMBOO, TileContent.SEVEN))
                         .values().stream()
-                        .flatMap(h -> h.values().stream())
                         .flatMap(Collection::stream)
                         .collect(Collectors.toList());
 

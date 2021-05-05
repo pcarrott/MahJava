@@ -1,5 +1,7 @@
-package MahJavaLib;
+package MahJavaLib.game;
 
+import MahJavaLib.tile.Tile;
+import MahJavaLib.tile.Combination;
 import MahJavaLib.exceptions.WallIsEmptyException;
 import MahJavaLib.hand.Hand;
 
@@ -8,46 +10,33 @@ import java.util.stream.Collectors;
 
 public class Game {
 
-    public enum PlayerTurn {
-        EAST,
-        SOUTH,
-        WEST,
-        NORTH;
+    private final Board board = new Board();
+    private PlayerTurn playerTurn = PlayerTurn.EAST;
+    private final Map<PlayerTurn, Player> players = new HashMap<>();
+    private final Map<Player, List<Tile>> discardedTiles = new HashMap<>();
 
-        public PlayerTurn next() {
-            PlayerTurn[] turns = PlayerTurn.values();
-            return turns[(this.ordinal() + 1) % turns.length];
-        }
-    }
-
-
-    private final MahJavaLib.Board _board = new MahJavaLib.Board();
-    private PlayerTurn _playerTurn = PlayerTurn.EAST;
-    private final Map<PlayerTurn, MahJavaLib.Player> _players = new HashMap<>();
-    private final Map<MahJavaLib.Player, List<MahJavaLib.Tile>> _discardedTiles = new HashMap<>();
-
-    public Game(List<MahJavaLib.Player> players) {
+    public Game(List<Player> players) {
         assert players.size() == 4 : "List of players doesn't have the correct size";
-        assert this._board.getWall().size() == (4*9*3 + 4*4 + 3*4);
+        assert this.board.getWall().size() == (4*9*3 + 4*4 + 3*4);
 
         PlayerTurn[] turns = PlayerTurn.values();
         for (int i = 0; i < turns.length; ++i) {
-            MahJavaLib.Player player = players.get(i);
+            Player player = players.get(i);
             PlayerTurn seatWind = turns[i];
 
             player.setGame(this);
             player.setSeatWind(seatWind);
-            List<MahJavaLib.Tile> hand = new ArrayList<>();
+            List<Tile> hand = new ArrayList<>();
             for (int j = 0; j < 13; ++j) {
                 try {
-                    hand.add(this._board.removeFirstTileFromWall());
+                    hand.add(this.board.removeFirstTileFromWall());
                 } catch (WallIsEmptyException ignored) {
                 }
             }
             player.setHand(new Hand(hand));
 
-            this._players.put(seatWind, player);
-            this._discardedTiles.put(player, new ArrayList<>());
+            this.players.put(seatWind, player);
+            this.discardedTiles.put(player, new ArrayList<>());
         }
     }
 
@@ -66,11 +55,11 @@ public class Game {
             // draw a tile from the Wall. It is also the next player to play. This is the "stealing" phase.
             // If no player has stolen the tile, then this tile is effectively discarded: it is added to the discard
             // pile of the turn's player, and the turn is passed onto the next player.
-            MahJavaLib.Player playerToPlay = this._players.get(this.getPlayerTurn());
+            Player playerToPlay = this.players.get(this.getPlayerTurn());
 
             if (noSteal) {
                 try {
-                    playerToPlay.addTile(this._board.removeFirstTileFromWall());
+                    playerToPlay.addTile(this.board.removeFirstTileFromWall());
                 } catch (WallIsEmptyException e) {
                     // This should really never happen, if it happens something went wrong, might as well
                     // abort everything
@@ -81,7 +70,7 @@ public class Game {
 
             System.out.println("\t(Discard Phase) Player to Play: " + playerToPlay.getSeatWind());
             // Query the player on which tile to discard
-            MahJavaLib.Tile tileToDiscard = playerToPlay.chooseTileToDiscard();
+            Tile tileToDiscard = playerToPlay.chooseTileToDiscard();
             // We need to check if this is even possible, meaning that we need to check
             // if the player has actually chosen a tile that it can discard.
             assert playerToPlay.hasTile(tileToDiscard, 1);
@@ -90,18 +79,18 @@ public class Game {
             System.out.println("\t\tPlayer discarded " + tileToDiscard);
 
             // Then we probe all other players, to see if anyone wants the discarded tile
-            List<MahJavaLib.Player> otherPlayers = this.getPlayers().values().stream()
+            List<Player> otherPlayers = this.getPlayers().values().stream()
                     .filter((player -> !player.equals(playerToPlay)))
                     .collect(Collectors.toList());
 
-            Map<MahJavaLib.Player, Optional<Combination>> wantsDiscardedTile = otherPlayers.stream()
+            Map<Player, Optional<Combination>> wantsDiscardedTile = otherPlayers.stream()
                     .collect(Collectors.toMap(
                             player -> player,
                             player -> player.wantsDiscardedTile(tileToDiscard)));
 
             System.out.println("\t(Stealing phase)");
             noSteal = true;
-            for (Map.Entry<MahJavaLib.Player, Optional<Combination>> entry : wantsDiscardedTile.entrySet()) {
+            for (Map.Entry<Player, Optional<Combination>> entry : wantsDiscardedTile.entrySet()) {
                 // If there is someone who wants it, then lets check if they can/should take it
                 // @TODO: in a real game, you can only take the tile if you make a combination with it AND you have
                 // the highest priority of every other requesting player. Need to check for that too.
@@ -123,10 +112,10 @@ public class Game {
 
                     // They do have the combination, then we need to handle this
                     if (hasCombination) {
-                        System.out.println("\t\tPlayer " + this._playerTurn + " has stolen " + tileToDiscard + " to make a " + possibleCombination);
+                        System.out.println("\t\tPlayer " + this.playerTurn + " has stolen " + tileToDiscard + " to make a " + possibleCombination);
                         // @TODO: open the combination
                         // The player that has stolen the tile gets to go next.
-                        this._playerTurn = entry.getKey().getSeatWind();
+                        this.playerTurn = entry.getKey().getSeatWind();
                         noSteal = false;
                         break;
                     }
@@ -139,12 +128,12 @@ public class Game {
             if (noSteal) {
                 System.out.println("\tNo one stole anything what a ripoff");
                 playerToPlay.addToDiscardPile(tileToDiscard);
-                this._discardedTiles.get(playerToPlay).add(tileToDiscard);
-                this._playerTurn = this._playerTurn.next();
+                this.discardedTiles.get(playerToPlay).add(tileToDiscard);
+                this.playerTurn = this.playerTurn.next();
             }
 
 
-            List<PlayerTurn> winningPlayers = this._players.entrySet().stream()
+            List<PlayerTurn> winningPlayers = this.players.entrySet().stream()
                     .filter(entry -> entry.getValue().hasWinningHand())
                     .map(Map.Entry::getKey)
                     .collect(Collectors.toList());
@@ -155,7 +144,7 @@ public class Game {
             // This is only for testing purposes, in the end it can be deleted
             turn += 1;
             if (turn > 5) {
-                winner = Optional.of(this._players.keySet().toArray(PlayerTurn[]::new)[0]);
+                winner = Optional.of(this.players.keySet().toArray(PlayerTurn[]::new)[0]);
             }
         }
 
@@ -163,27 +152,27 @@ public class Game {
     }
 
     public boolean isBoardWallEmpty() {
-        return this._board.isWallEmpty();
+        return this.board.isWallEmpty();
     }
 
     public PlayerTurn getPlayerTurn() {
-        return this._playerTurn;
+        return this.playerTurn;
     }
 
-    public Map<PlayerTurn, MahJavaLib.Player> getPlayers() {
-        return this._players;
+    public Map<PlayerTurn, Player> getPlayers() {
+        return this.players;
     }
 
-    public MahJavaLib.Player getPlayer(PlayerTurn seatWind) {
-        return this._players.get(seatWind);
+    public Player getPlayer(PlayerTurn seatWind) {
+        return this.players.get(seatWind);
     }
 
     @Override
     public String toString() {
         return "MahjongGame{" +
-                "_board=" + _board +
-                ", _playerTurn=" + _playerTurn +
-                ", _players=" + _players +
+                "board=" + board +
+                ", playerTurn=" + playerTurn +
+                ", players=" + players +
                 '}';
     }
 }

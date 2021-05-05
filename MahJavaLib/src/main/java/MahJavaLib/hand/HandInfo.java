@@ -1,7 +1,6 @@
 package MahJavaLib.hand;
 
-import MahJavaLib.Player.CombinationType;
-import MahJavaLib.Tile;
+import MahJavaLib.tile.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,7 +12,7 @@ import java.util.stream.Collectors;
  * This structure should be created right at the start of each game, with the starting hand
  * and it should be incrementally updated as the game progresses.
  */
-public class HandInfo {
+class HandInfo {
 
     // @NOTE: rename allPossibleHands to allPossibleCombinations, and add a Set that contains all pieces that can Pair
     private List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands;

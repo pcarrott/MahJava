@@ -1,10 +1,6 @@
 package MahJavaLib.hand;
 
-import MahJavaLib.Player;
-import MahJavaLib.Player.CombinationType;
-import MahJavaLib.Tile;
-import MahJavaLib.Tile.TileContent;
-import MahJavaLib.Tile.TileType;
+import MahJavaLib.tile.*;
 
 import java.util.*;
 import java.util.function.Function;
@@ -22,8 +18,8 @@ public class Hand {
     // the entry containing that tile should be fully removed from the hashmap, to save space. This means that no Value
     // should ever be 0. If a get() method call returns null, then that means that no tile of that specific type+content
     // exists.
-    private final Map<Tile, Integer> _hand = new HashMap<>();
-    private final HandInfo _info = new HandInfo();
+    private final Map<Tile, Integer> hand = new HashMap<>();
+    private final HandInfo info = new HandInfo();
 
     public Hand(List<Tile> startingHand) throws IllegalArgumentException {
         if (startingHand.size() != 13) {
@@ -36,7 +32,7 @@ public class Hand {
     }
 
     public boolean hasTile(Tile tile, Integer n) {
-        return this._hand.containsKey(tile) && (this._hand.get(tile) >= n);
+        return this.hand.containsKey(tile) && (this.hand.get(tile) >= n);
     }
 
     /*
@@ -69,7 +65,7 @@ public class Hand {
      * This method checks this for each possible hand we may have, given the necessary parameters.
      */
     private boolean checkCountForAllHands(int pairCount, int nonPairCount, int maxPungs, int maxKongs, int maxChows) {
-        for (Map<Player.CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+        for (Map<CombinationType, Map<Tile, Integer>> hand : this.info.getAllPossibleHands()) {
             if (this.checkCombinationCount(hand, pairCount, nonPairCount, maxPungs, maxKongs, maxChows))
                 return true;
         }
@@ -133,7 +129,7 @@ public class Hand {
             Map<TileContent, TileContent> mandatory,
             Function<Tile, T> pairValue, Function<T, Boolean> pairCondition) {
 
-        for (Map<CombinationType, Map<Tile, Integer>> hand : this._info.getAllPossibleHands()) {
+        for (Map<CombinationType, Map<Tile, Integer>> hand : this.info.getAllPossibleHands()) {
             if (!this.checkCombinationCount(hand, 1, 4, 4, 4, 0))
                 continue;
 
@@ -317,7 +313,7 @@ public class Hand {
 
         // The hand should have only one suite.
         // Note: it is not possible to compose a hand with only Winds or only Dragons.
-        List<TileType> handSuites = this._hand
+        List<TileType> handSuites = this.hand
                 .keySet().stream()
                 .map(Tile::getType)
                 .distinct()
@@ -329,15 +325,15 @@ public class Hand {
         TileType suite = handSuites.get(0);
         if (!TileContent.getNumbers().stream()
                 .map(num -> new Tile(suite, num))
-                .allMatch(this._hand::containsKey))
+                .allMatch(this.hand::containsKey))
             return false;
 
         // The hand should have at least 3 tiles of 1 and 3 tiles of 9 for the given suite.
         // Since we already checked that we only have one suite and that we have all tiles from 1 to 9,
         //     if there are three 1's and three 9's, then the extra tile must be one from 2 to 8
         //     which completes the hand.
-        return this._hand.get(new Tile(suite, TileContent.ONE)) >= 3 &&
-                this._hand.get(new Tile(suite, TileContent.NINE)) >= 3;
+        return this.hand.get(new Tile(suite, TileContent.ONE)) >= 3 &&
+                this.hand.get(new Tile(suite, TileContent.NINE)) >= 3;
     }
 
     /*
@@ -375,8 +371,8 @@ public class Hand {
 
         // If any of the necessary tiles are not present in the final hand, then it can't be a Thirteen Orphans
         // If it has all the necessary tiles, then we also need to check if we have a pair
-        return necessaryTilesToHave.stream().allMatch(this._hand::containsKey) &&
-                this._hand.containsValue(2);
+        return necessaryTilesToHave.stream().allMatch(this.hand::containsKey) &&
+                this.hand.containsValue(2);
     }
 
     /*
@@ -398,44 +394,44 @@ public class Hand {
     }
 
     public Map<Tile, Integer> getHand() {
-        return this._hand;
+        return this.hand;
     }
 
     public int getHandSize() {
         Integer count = 0;
-        for (Map.Entry<Tile, Integer> entry : this._hand.entrySet()) {
+        for (Map.Entry<Tile, Integer> entry : this.hand.entrySet()) {
             count += entry.getValue();
         }
         return count;
     }
 
     public List<Map<CombinationType, Map<Tile, Integer>>> getPossibleHands() {
-        return this._info.getAllPossibleHands();
+        return this.info.getAllPossibleHands();
     }
 
     public void addTile(Tile tileToAdd) throws IllegalArgumentException {
-        Integer count = this._hand.get(tileToAdd);
+        Integer count = this.hand.get(tileToAdd);
         if (count == null) {
-            this._hand.put(tileToAdd, 1);
+            this.hand.put(tileToAdd, 1);
         } else {
             if (count >= 4) {
                 throw new IllegalArgumentException("MahjongHand: Hand can only have 4 or less of the same tile");
             }
-            this._hand.put(tileToAdd, count + 1);
+            this.hand.put(tileToAdd, count + 1);
         }
-        this._info.updateHands(this._hand);
+        this.info.updateHands(this.hand);
     }
 
     private void removeTile(Tile tile) {
-        Integer count = this._hand.get(tile);
+        Integer count = this.hand.get(tile);
         if (count != null) {
             count -= 1;
             if (count > 0) {
-                this._hand.put(tile, count);
+                this.hand.put(tile, count);
             } else {
-                this._hand.remove(tile);
+                this.hand.remove(tile);
             }
-            this._info.updateHands(this._hand);
+            this.info.updateHands(this.hand);
         }
     }
 
@@ -446,21 +442,15 @@ public class Hand {
         this.removeTile(tileToDiscard);
     }
 
-    public Map<CombinationType, Map<Tile, List<Map<CombinationType, Map<Tile, Integer>>>>> getPossibleCombinationsForTile(
+    public Map<Combination, List<Map<CombinationType, Map<Tile, Integer>>>> getPossibleCombinationsForTile(
             Tile discardedTile) {
 
-        Map<CombinationType, Map<Tile, List<Map<CombinationType, Map<Tile, Integer>>>>> res =
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, new HashMap<>()),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, new HashMap<>())
-                ));
+        Map<Combination, List<Map<CombinationType, Map<Tile, Integer>>>> res = new HashMap<>();
 
         var chows = discardedTile.getPossibleChowCombinations()
                 .stream()
                 .filter(chow -> chow.stream().allMatch(
-                        tile -> tile.equals(discardedTile) || this._hand.containsKey(tile)
+                        tile -> tile.equals(discardedTile) || this.hand.containsKey(tile)
                 ))
                 .collect(Collectors.toList());
 
@@ -470,42 +460,45 @@ public class Hand {
                     .collect(Collectors.toList());
 
             remainingTiles.forEach(this::removeTile);
-            this._info.updateHands(this._hand);
-            this._info.getAllPossibleHands().forEach(
+            this.info.updateHands(this.hand);
+            this.info.getAllPossibleHands().forEach(
                     h -> h.get(CombinationType.CHOW).merge(chow.get(0), 1, Integer::sum)
             );
-            res.get(CombinationType.CHOW).put(chow.get(0), this._info.getAllPossibleHands());
+            Combination combination = new Combination(CombinationType.CHOW, chow);
+            res.put(combination, this.info.getAllPossibleHands());
             remainingTiles.forEach(this::addTile);
         }
 
-        Integer count = this._hand.get(discardedTile);
+        Integer count = this.hand.get(discardedTile);
 
         if (count != null && count == 3) {
-            this._hand.remove(discardedTile);
-            this._info.updateHands(this._hand);
-            this._info.getAllPossibleHands().forEach(
+            this.hand.remove(discardedTile);
+            this.info.updateHands(this.hand);
+            this.info.getAllPossibleHands().forEach(
                     h -> h.get(CombinationType.KONG).merge(discardedTile, 1, Integer::sum)
             );
-            res.get(CombinationType.KONG).put(discardedTile, this._info.getAllPossibleHands());
-            this._hand.put(discardedTile, 3);
+            Combination combination = new Combination(CombinationType.KONG, Collections.nCopies(4, discardedTile));
+            res.put(combination, this.info.getAllPossibleHands());
+            this.hand.put(discardedTile, 3);
         }
 
         if (count != null && count >= 2) {
             if (count == 2)
-                this._hand.remove(discardedTile);
+                this.hand.remove(discardedTile);
             else
-                this._hand.put(discardedTile, 1);
+                this.hand.put(discardedTile, 1);
 
-            this._info.updateHands(this._hand);
-            this._info.getAllPossibleHands().forEach(
+            this.info.updateHands(this.hand);
+            this.info.getAllPossibleHands().forEach(
                     h -> h.get(CombinationType.PUNG).merge(discardedTile, 1, Integer::sum)
             );
-            res.get(CombinationType.PUNG).put(discardedTile, this._info.getAllPossibleHands());
+            Combination combination = new Combination(CombinationType.PUNG, Collections.nCopies(3, discardedTile));
+            res.put(combination, this.info.getAllPossibleHands());
 
-            this._hand.merge(discardedTile, 2, Integer::sum);
+            this.hand.merge(discardedTile, 2, Integer::sum);
         }
 
-        this._info.updateHands(this._hand);
+        this.info.updateHands(this.hand);
         return res;
     }
 
@@ -536,7 +529,7 @@ public class Hand {
 
     @Override
     public String toString() {
-        return "Your Hand is: " + _hand;
+        return "Your Hand is: " + hand;
     }
 
     public static Hand generateRandomHand() {
