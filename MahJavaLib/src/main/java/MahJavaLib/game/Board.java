@@ -62,6 +62,10 @@ public class Board {
         return this.wall.removeLast();
     }
 
+    public void reset() {
+        this.wall = this.generateWall();
+    }
+
     @Override
     public String toString() {
         return "Board Wall = " + wall;

@@ -1,5 +1,6 @@
 package MahJavaLib.game;
 
+import MahJavaLib.player.Player;
 import MahJavaLib.tile.Combination;
 import MahJavaLib.tile.Tile;
 
@@ -20,10 +21,6 @@ public class OpenGame {
         this.discardedTiles.get(player).merge(discardedTile, 1, Integer::sum);
     }
 
-    public void addCombination(Player player, Combination combination) {
-        this.openCombinations.get(player).add(combination);
-    }
-
     public Map<Tile, Integer> getExposedTiles() {
         Map<Tile, Integer> res = new HashMap<>();
 
@@ -41,5 +38,10 @@ public class OpenGame {
 
     public List<Combination> getOpenCombinations(Player player) {
         return this.openCombinations.get(player);
+    }
+
+    public void reset() {
+        this.discardedTiles.values().forEach(Map::clear);
+        this.openCombinations.values().forEach(List::clear);
     }
 }

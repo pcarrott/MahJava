@@ -516,7 +516,13 @@ public class TestHandInfo {
                         .collect(Collectors.toList());
 
         // Add winning tile
-        hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
+        hand.claimTile(
+                new Tile(TileType.DRAGON, TileContent.RED),
+                new Combination(
+                        CombinationType.PUNG,
+                        Collections.nCopies(3, new Tile(TileType.DRAGON, TileContent.RED))
+                )
+        );
 
         // Generate expected hands from adding winning tile
         List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(

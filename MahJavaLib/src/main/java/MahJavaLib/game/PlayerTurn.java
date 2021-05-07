@@ -1,6 +1,6 @@
 package MahJavaLib.game;
 
-enum PlayerTurn {
+public enum PlayerTurn {
     EAST,
     SOUTH,
     WEST,
