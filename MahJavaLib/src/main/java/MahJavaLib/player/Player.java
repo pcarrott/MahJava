@@ -19,12 +19,11 @@ public class Player {
     private OpenGame game;
     private Hand hand;
     private PlayerTurn seatWind = PlayerTurn.EAST;
-
-    // @TODO: Player should have a DiscardProfile and a CommitProfile
+    private Profile profile;
 
     public Player(String name) {
-        // The player constructor is empty, since it is supposed to be initialized by the game it is currently in
         this.name = name;
+        // @TODO: Set player profile
     }
 
     public String getName() {
@@ -46,11 +45,14 @@ public class Player {
         // @TODO: when we do this in the client, we also need to remove it from our hand, we don't do that right now
         // since the server needs to check if we actually have it, but in the future, the player's hands data structures
         // will be different between the server and the player.
+
+        // Filter out all tiles with lowest count currently in hand
         Integer minCount = this.hand.getHand().values().stream().min(Integer::compare).get();
         Map<Tile, Integer> leftovers = this.hand.getHand().entrySet().stream()
                 .filter(e -> e.getValue().equals(minCount))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
+        // From those tiles, filter out the ones less likely to make a chow
         List<Tile> kek = leftovers.keySet().stream()
                 .filter(e -> e.getPossibleChowCombinations().stream().noneMatch(chow -> {
                     int i = 0;
@@ -58,11 +60,14 @@ public class Player {
                         if (leftovers.containsKey(t))
                             i++;
 
-                    return i == 2;
+                    return i > 1;
                 }))
                 .collect(Collectors.toList());
 
         return kek.size() != 0 ? kek.get(0) : (Tile) leftovers.keySet().toArray()[0];
+
+        // This is what should actually be done
+        // return this.profile.chooseTileToDiscard();
     }
 
     public void claimTile(Tile tileToAdd, Combination combination) {
@@ -98,7 +103,7 @@ public class Player {
                 break;
             }
 
-            // If we get a chow, we only consider it if it does not break a pair, pung or kong
+            // If we get a chow, we only consider it only if it does not break a pair, pung or kong
             if (kek.getCombinationType() == CombinationType.CHOW &&
                     kek.getTiles().keySet().stream().noneMatch(t -> this.hand.getHand().containsKey(t) && this.hand.getHand().get(t) > 1)) {
                 aux = Optional.of(kek);
@@ -107,18 +112,21 @@ public class Player {
         }
 
         return aux;
+
+        // This is what should actually be done
+        // return this.profile.wantsDiscardedTile();
     }
 
     public void removeTile(Tile tile) {
-        this.hand.discardTile(tile);
+        this.hand.removeTile(tile);
     }
 
     public boolean hasWinningHand() {
         return this.hand.isWinningHand();
     }
 
-    public Integer handValue(TileContent playerWind, TileContent roundWind) {
-        return this.hand.calculateHandValue(playerWind, roundWind);
+    public Integer handValue(TileContent playerWind, TileContent roundWind, boolean selfDrawn, boolean firstPlay) {
+        return this.hand.calculateHandValue(playerWind, roundWind, selfDrawn, firstPlay);
     }
 
     public boolean isWinningTile(Tile discardedTile) {

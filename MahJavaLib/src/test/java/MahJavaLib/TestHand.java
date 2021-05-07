@@ -298,7 +298,7 @@ public class TestHand {
 
     @Test
     public void testIsHiddenTreasure() {
-        assertTrue(this.hiddenTreasure.isHiddenTreasure());
+        assertTrue(this.hiddenTreasure.isHiddenTreasure(true));
     }
 
     @Test

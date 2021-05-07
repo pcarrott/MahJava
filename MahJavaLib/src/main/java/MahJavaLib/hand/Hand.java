@@ -101,11 +101,11 @@ public class Hand {
 
     /*
      * Any 4 pungs + any Pair.
-     * All concealed and win by Self-Drawn. TODO
+     * All concealed and win by Self-Drawn.
      * Scoring: 64 fan
      */
-    public Boolean isHiddenTreasure() {
-        return this.openCombinations.isEmpty() &&
+    public Boolean isHiddenTreasure(boolean selfDrawn) {
+        return selfDrawn && this.openCombinations.isEmpty() &&
                 this.checkCountForAllHands(1, 4,4, 0, 0);
     }
 
@@ -470,7 +470,7 @@ public class Hand {
         this.info.updateHands(this.concealedTiles);
     }
 
-    private void removeTile(Tile tile) {
+    public void removeTile(Tile tile) {
         Integer count = this.concealedTiles.get(tile);
         if (count != null) {
             count -= 1;
@@ -483,33 +483,17 @@ public class Hand {
         }
     }
 
-    public void discardTile(Tile tileToDiscard) {
-        // Right now the only thing this does is simply remove the tile from the internal HashMap.
-        // However, discarding a tile can have other game-changing consequences, that will have to be recorded.
-        // @TODO: encode those consequences somewhere in someway
-        this.removeTile(tileToDiscard);
-    }
-
-    public void claimTile(Tile tileToAdd, Combination combination) {
+    public void claimTile(Tile tileToAdd, Combination combination){
         this.addTile(tileToAdd);
-        if (combination.getTiles().entrySet().stream().allMatch(
-                e -> this.concealedTiles.containsKey(e.getKey()) && this.concealedTiles.get(e.getKey()) >= e.getValue()
-        )) {
-            for (Map.Entry<Tile, Integer> e : combination.getTiles().entrySet()) {
-                Integer count = this.concealedTiles.get(e.getKey());
-                if (count > e.getValue())
-                    this.concealedTiles.put(e.getKey(), count - e.getValue());
-                else
-                    this.concealedTiles.remove(e.getKey());
-
-                this.openTiles.merge(e.getKey(), e.getValue(), Integer::sum);
-            }
-
-            this.openCombinations.add(combination);
-        } else {
-            // @TODO: Probably throw an exception?
-            this.removeTile(tileToAdd);
+        for (Map.Entry<Tile, Integer> e : combination.getTiles().entrySet()) {
+            Integer count = this.concealedTiles.get(e.getKey());
+            if (count > e.getValue())
+                this.concealedTiles.put(e.getKey(), count - e.getValue());
+            else
+                this.concealedTiles.remove(e.getKey());
+            this.openTiles.merge(e.getKey(), e.getValue(), Integer::sum);
         }
+        this.openCombinations.add(combination);
     }
 
     public Map<Combination, List<Map<CombinationType, Map<Tile, Integer>>>> getPossibleCombinationsForTile(
@@ -586,10 +570,10 @@ public class Hand {
         return winningConditions.stream().anyMatch((func) -> (func.apply(this)));
     }
 
-    public boolean isMaxScoreWinningHand() {
-        // Every winning hand that is not just a regular 4 Sets + 1 Pair or a 7 Pairs
+    public boolean isMaxScoreWinningHand(boolean selfDrawn) {
+        // Every winning hand that is not just a regular 4 Sets + 1 Pair or a 7 Pairs or a Little Three Dragons
         ArrayList<Function<Hand, Boolean>> winningConditions = new ArrayList<>(Arrays.asList(
-                Hand::isHiddenTreasure,
+                h -> h.isHiddenTreasure(selfDrawn),
                 Hand::isAllKongs,
                 Hand::isLittleFourWinds,
                 Hand::isBigFourWinds,
@@ -612,19 +596,18 @@ public class Hand {
         return canWin;
     }
 
-    private Map<CombinationType, Map<Tile, Integer>> getFourCombinationsPlusPair() {
+    private List<Map<CombinationType, Map<Tile, Integer>>> getFourCombinationsPlusPair() {
+        List<Map<CombinationType, Map<Tile, Integer>>> res = new ArrayList<>();
         for (Map<CombinationType, Map<Tile, Integer>> hand : this.info.getAllPossibleHands())
             if (this.checkCombinationCount(hand, 1, 4, 4, 4, 4)) {
                 for (Combination combination : this.openCombinations) {
                     Tile t = combination.getTiles().keySet().stream().findFirst().get();
                     hand.get(combination.getCombinationType()).merge(t, 1, Integer::sum);
                 }
-                return hand;
+                res.add(hand);
             }
 
-        // This will never happen, because when the method is called,
-        // we already assured that a winning hand exists
-        return new HashMap<>();
+        return res;
     }
 
     private Map<CombinationType, Map<Tile, Integer>> getSevenPairs() {
@@ -636,57 +619,75 @@ public class Hand {
         );
     }
 
-    public Integer calculateHandValue(TileContent playerWind, TileContent roundWind) {
+    public Integer calculateHandValue(
+            TileContent playerWind, TileContent roundWind,
+            boolean selfDrawn, boolean firstPlay) {
+
         if (!this.isWinningHand())
             return 0;
 
-        if (this.isMaxScoreWinningHand())
+        // Winning in the first play implies one of two things:
+        //   - The dealer won with the dealt hand (Heavenly Hands)
+        //   - A non-dealer claimed the dealer's first discard (Earthly Hands)
+        if (firstPlay || this.isMaxScoreWinningHand(selfDrawn))
             return 64;
 
         int score = this.isLittleThreeDragons() ? 4 : 0;
 
-        Map<CombinationType, Map<Tile, Integer>> winningHand;
+        List<Map<CombinationType, Map<Tile, Integer>>> winningHands = new ArrayList<>();
 
         if (this.isSevenPairs()) {
             score = 4;
-            winningHand = this.getSevenPairs();
+            winningHands.add(this.getSevenPairs());
         } else {
-            winningHand = this.getFourCombinationsPlusPair();
+            winningHands.addAll(this.getFourCombinationsPlusPair());
         }
 
-        System.out.println(winningHand);
-        System.out.println(this.concealedTiles);
-        System.out.println(this.openTiles);
+        int maxScore = score;
+        for (Map<CombinationType, Map<Tile, Integer>> winningHand : winningHands) {
+            System.out.println("Winning hand: ");
+            winningHand.entrySet().stream()
+                    .filter(c -> !c.getValue().isEmpty())
+                    .forEach(c -> System.out.println("\t" + c));
 
-        Set<Tile> pungs = winningHand.get(CombinationType.PUNG).keySet();
-        Set<Tile> kongs = winningHand.get(CombinationType.KONG).keySet();
+            Set<Tile> pungs = winningHand.get(CombinationType.PUNG).keySet();
+            Set<Tile> kongs = winningHand.get(CombinationType.KONG).keySet();
 
-        score += pungs.stream().filter(t -> t.getType() == TileType.DRAGON).count();
-        score += kongs.stream().filter(t -> t.getType() == TileType.DRAGON).count();
-        score += pungs.stream().filter(t -> t.getType() == TileType.WIND && t.getContent() == playerWind).count();
-        score += kongs.stream().filter(t -> t.getType() == TileType.WIND && t.getContent() == playerWind).count();
-        score += pungs.stream().filter(t -> t.getType() == TileType.WIND && t.getContent() == roundWind).count();
-        score += kongs.stream().filter(t -> t.getType() == TileType.WIND && t.getContent() == roundWind).count();
+            int aux = score;
 
-        if (winningHand.get(CombinationType.CHOW).size() == 4)
-            score += 1;
-        else if (winningHand.get(CombinationType.PUNG).size() == 4)
-            score += 3;
+            // Every Pung/Kong of Dragons/Wind of the Round/Player's own wind is worth 1 Fan
+            aux += pungs.stream().filter(t -> t.getType() == TileType.DRAGON).count();
+            aux += kongs.stream().filter(t -> t.getType() == TileType.DRAGON).count();
+            aux += pungs.stream().filter(t -> t.getType() == TileType.WIND && t.getContent() == playerWind).count();
+            aux += kongs.stream().filter(t -> t.getType() == TileType.WIND && t.getContent() == playerWind).count();
+            aux += pungs.stream().filter(t -> t.getType() == TileType.WIND && t.getContent() == roundWind).count();
+            aux += kongs.stream().filter(t -> t.getType() == TileType.WIND && t.getContent() == roundWind).count();
 
-        List<TileType> handSuites = winningHand.values().stream()
-                .flatMap(m -> m.keySet().stream())
-                .map(Tile::getType)
-                .distinct()
-                .collect(Collectors.toList());
+            if (winningHand.get(CombinationType.CHOW).size() == 4)
+                aux += 1; // Hand composed of only Chows is worth 1 Fan
+            else if (pungs.size() + kongs.size() == 4)
+                aux += 3; // Hand composed of only Pungs/Kongs is worth 3 Fan
 
-        if (handSuites.size() == 1)
-            score += 6;
+            List<TileType> handSuites = winningHand.values().stream()
+                    .flatMap(m -> m.keySet().stream())
+                    .map(Tile::getType)
+                    .distinct()
+                    .collect(Collectors.toList());
 
-        handSuites = handSuites.stream().filter(tt -> !tt.isSpecialType()).collect(Collectors.toList());
-        if (handSuites.size() == 1)
-            score += 3;
+            if (handSuites.size() == 1)
+                aux += 6; // Hand composed of only 1 suite is worth 6 Fan
 
-        return score;
+            handSuites = handSuites.stream().filter(tt -> !tt.isSpecialType()).collect(Collectors.toList());
+            if (handSuites.size() == 1)
+                aux += 3; // Hand composed of 1 suite and Dragons/Winds is worth 3 Fan
+
+            // Consider only the maximum score over all possible winning hands
+            // Although rare, it is possible to have multiple winnings with the same set of tiles
+            if (aux > maxScore)
+                maxScore = aux;
+        }
+
+        return maxScore;
     }
 
     @Override
