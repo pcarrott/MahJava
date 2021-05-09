@@ -1,15 +1,15 @@
-package MahJavaLib;
+package MahJavaLib.game;
 
 import java.util.*;
 
-import MahJavaLib.Tile.*;
+import MahJavaLib.tile.*;
 import MahJavaLib.exceptions.WallIsEmptyException;
 
 public class Board {
-    private Deque<Tile> _wall;
+    private Deque<Tile> wall;
 
     public Board() {
-        this._wall = generateWall();
+        this.wall = generateWall();
     }
 
     private Deque<Tile> generateWall() {
@@ -39,31 +39,35 @@ public class Board {
     }
 
     public Deque<Tile> getWall() {
-        return this._wall;
+        return this.wall;
     }
 
     public boolean isWallEmpty() {
-        return this._wall.isEmpty();
+        return this.wall.isEmpty();
     }
 
     public Tile removeFirstTileFromWall() throws WallIsEmptyException {
-        if (this._wall.isEmpty()) {
+        if (this.wall.isEmpty()) {
             throw new WallIsEmptyException();
         }
 
-        return this._wall.removeFirst();
+        return this.wall.removeFirst();
     }
 
     public Tile removeLastTileFromWall() throws WallIsEmptyException {
-        if (this._wall.isEmpty()) {
+        if (this.wall.isEmpty()) {
             throw new WallIsEmptyException();
         }
 
-        return this._wall.removeLast();
+        return this.wall.removeLast();
+    }
+
+    public void reset() {
+        this.wall = this.generateWall();
     }
 
     @Override
     public String toString() {
-        return "Board Wall = " + _wall;
+        return "Board Wall = " + wall;
     }
 }

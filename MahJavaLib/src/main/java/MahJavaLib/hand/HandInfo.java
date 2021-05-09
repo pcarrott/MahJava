@@ -1,7 +1,6 @@
 package MahJavaLib.hand;
 
-import MahJavaLib.Player.CombinationType;
-import MahJavaLib.Tile;
+import MahJavaLib.tile.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,15 +12,17 @@ import java.util.stream.Collectors;
  * This structure should be created right at the start of each game, with the starting hand
  * and it should be incrementally updated as the game progresses.
  */
-public class HandInfo {
+class HandInfo {
 
     // @NOTE: rename allPossibleHands to allPossibleCombinations, and add a Set that contains all pieces that can Pair
-    private final List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands;
+    private List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands;
     private final Map<Tile, Tile> ignoredTiles = new HashMap<>();
 
-    public HandInfo(Hand hand) {
+    public HandInfo() {}
+
+    public void updateHands(Map<Tile, Integer> tileCounter) {
         // Distinct is used because there seems to be some cases where the same hand appears more than once.
-        this.allPossibleHands = computeHands(hand.getHand()).stream().distinct().collect(Collectors.toList());
+        this.allPossibleHands = computeHands(tileCounter).stream().distinct().collect(Collectors.toList());
     }
 
     /*
@@ -320,16 +321,6 @@ public class HandInfo {
         );
 
         currentHands.addAll(computedHands);
-    }
-
-    public boolean removeTile(Tile tile) {
-
-        return false;
-    }
-
-    public boolean addTile(Tile tile) {
-
-        return false;
     }
 
     public List<Map<CombinationType, Map<Tile, Integer>>> getAllPossibleHands() {

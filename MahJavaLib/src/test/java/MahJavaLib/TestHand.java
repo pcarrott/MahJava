@@ -1,6 +1,7 @@
 package MahJavaLib;
 
 import MahJavaLib.hand.Hand;
+import MahJavaLib.tile.Tile;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -10,7 +11,7 @@ import java.util.stream.Stream;
 
 import static org.testng.Assert.*;
 
-import MahJavaLib.Tile.*;
+import MahJavaLib.tile.*;
 
 public class TestHand {
 
@@ -33,26 +34,12 @@ public class TestHand {
 
     @BeforeMethod
     public void setUp() {
-        ArrayList<Tile> fourCombsPlusPair = new ArrayList<>();
-        ArrayList<Tile> sevenPairs = new ArrayList<>();
-        ArrayList<Tile> hiddenTreasure = new ArrayList<>();
-        ArrayList<Tile> littleFourWinds = new ArrayList<>();
-        ArrayList<Tile> bigFourWinds = new ArrayList<>();
-        ArrayList<Tile> threeGreatScholars = new ArrayList<>();
-        ArrayList<Tile> nineGates = new ArrayList<>();
-        ArrayList<Tile> thirteenOrphans = new ArrayList<>();
-        ArrayList<Tile> allKongs = new ArrayList<>();
-        ArrayList<Tile> allHonors = new ArrayList<>();
-        ArrayList<Tile> allTerminals = new ArrayList<>();
-        ArrayList<Tile> jadeDragon = new ArrayList<>();
-        ArrayList<Tile> rubyDragon = new ArrayList<>();
-        ArrayList<Tile> pearlDragon = new ArrayList<>();
-
         /*
          * Populate all the hands with a correct configuration
          */
 
         // 4 Combinations + 1 Pair
+        ArrayList<Tile> fourCombsPlusPair = new ArrayList<>();
         for (int i = 0; i < 4; ++i) {
             // Add 111 222 333 444 of Bamboo
             for (int j = 0; j < 3; ++j) {
@@ -61,26 +48,33 @@ public class TestHand {
         }
         // Add 55 of Bamboo
         fourCombsPlusPair.add(new Tile(TileType.BAMBOO, TileContent.fromValue(5)));
-        fourCombsPlusPair.add(new Tile(TileType.BAMBOO, TileContent.fromValue(5)));
+        this.fourCombsPlusPair = new Hand(fourCombsPlusPair);
+        this.fourCombsPlusPair.addTile(new Tile(TileType.BAMBOO, TileContent.fromValue(5)));
 
 
         // Seven Pairs
+        ArrayList<Tile> sevenPairs = new ArrayList<>();
         for (TileType tp : TileType.values()) {
             // Add 11 of every type (3 types * 2 = 6)
             if (!tp.isSpecialType()) {
                 sevenPairs.add(new Tile(tp, TileContent.ONE));
                 sevenPairs.add(new Tile(tp, TileContent.ONE));
-            } else if (tp == TileType.WIND) {
-                // And add a pair of winds of very direction (4 types * 2 = 8)
-                for (TileContent tc : TileContent.getDirections()) {
+            } else if (tp == TileType.DRAGON) {
+                // And add a pair of dragons of very color (3 types * 2 = 6)
+                for (TileContent tc : TileContent.getColors()) {
                     sevenPairs.add(new Tile(tp, tc));
                     sevenPairs.add(new Tile(tp, tc));
                 }
             }
         }
+        // Add EE (12 + 2 = 14)
+        sevenPairs.add(new Tile(TileType.WIND, TileContent.EAST));
+        this.sevenPairs = new Hand(sevenPairs);
+        this.sevenPairs.addTile(new Tile(TileType.WIND, TileContent.EAST));
 
 
         // Hidden Treasure
+        ArrayList<Tile> hiddenTreasure = new ArrayList<>();
         for (TileType tp : TileType.values()) {
             // Add 999 of every type (3 types * 3 = 9)
             if (!tp.isSpecialType()) {
@@ -93,11 +87,13 @@ public class TestHand {
         for (int i = 0; i < 3; i++)
             hiddenTreasure.add(new Tile(TileType.DRAGON, TileContent.RED));
         // Add EE (12 + 2 = 14)
-        for (int i = 0; i < 2; i++)
-            hiddenTreasure.add(new Tile(TileType.WIND, TileContent.EAST));
+        hiddenTreasure.add(new Tile(TileType.WIND, TileContent.EAST));
+        this.hiddenTreasure = new Hand(hiddenTreasure);
+        this.hiddenTreasure.addTile(new Tile(TileType.WIND, TileContent.EAST));
 
 
         // Little Four Winds
+        ArrayList<Tile> littleFourWinds = new ArrayList<>();
         for (int i = 0; i < 3; i ++) {
             // Add 3 of 3 winds (3 winds * 3 = 9)
             littleFourWinds.add(new Tile(TileType.WIND, TileContent.EAST));
@@ -108,11 +104,13 @@ public class TestHand {
             littleFourWinds.add(new Tile(TileType.BAMBOO, TileContent.FIVE));
         }
         // Add a pair of the last wind, NN (12 + 2 = 14)
-        for (int i = 0; i < 2; i++)
-            littleFourWinds.add(new Tile(TileType.WIND, TileContent.NORTH));
+        littleFourWinds.add(new Tile(TileType.WIND, TileContent.NORTH));
+        this.littleFourWinds = new Hand(littleFourWinds);
+        this.littleFourWinds.addTile(new Tile(TileType.WIND, TileContent.NORTH));
 
 
         // Big Four Winds
+        ArrayList<Tile> bigFourWinds = new ArrayList<>();
         for (TileContent tc : TileContent.getDirections()) {
             // Add 3 of every wind (4 winds * 3 = 12)
             bigFourWinds.add(new Tile(TileType.WIND, tc));
@@ -120,11 +118,13 @@ public class TestHand {
             bigFourWinds.add(new Tile(TileType.WIND, tc));
         }
         // Add a 22 of Dots (12 + 2 = 14)
-        for (int i = 0; i < 2; i++)
-            bigFourWinds.add(new Tile(TileType.DOTS, TileContent.TWO));
+        bigFourWinds.add(new Tile(TileType.DOTS, TileContent.TWO));
+        this.bigFourWinds = new Hand(bigFourWinds);
+        this.bigFourWinds.addTile(new Tile(TileType.DOTS, TileContent.TWO));
 
 
         // Three Great Scholars
+        ArrayList<Tile> threeGreatScholars = new ArrayList<>();
         for (TileContent tc : TileContent.getColors()) {
             // Add each dragon 3 times (3 dragons * 3 = 9)
             threeGreatScholars.add(new Tile(TileType.DRAGON, tc));
@@ -135,11 +135,13 @@ public class TestHand {
             threeGreatScholars.add(new Tile(TileType.CHARACTERS, TileContent.SIX));
         }
         // Add a 22 of Dots (12 + 2 = 14)
-        for (int i = 0; i < 2; i++)
-            threeGreatScholars.add(new Tile(TileType.DOTS, TileContent.TWO));
+        threeGreatScholars.add(new Tile(TileType.DOTS, TileContent.TWO));
+        this.threeGreatScholars = new Hand(threeGreatScholars);
+        this.threeGreatScholars.addTile(new Tile(TileType.DOTS, TileContent.TWO));
 
 
         // Nine Gates
+        ArrayList<Tile> nineGates = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             // Add a 1 and 9 two times (2 tiles * 2 = 4)
             nineGates.add(new Tile(TileType.BAMBOO, TileContent.ONE));
@@ -148,11 +150,13 @@ public class TestHand {
         // Add each of the remaining number from 1 to 9 (4 + 9 = 13)
         for (TileContent tc : TileContent.getNumbers())
             nineGates.add(new Tile(TileType.BAMBOO, tc));
+        this.nineGates = new Hand(nineGates);
         // Add an extra tile to complete the hand (13 + 1 = 14)
-        nineGates.add(new Tile(TileType.BAMBOO, TileContent.SIX));
+        this.nineGates.addTile(new Tile(TileType.BAMBOO, TileContent.SIX));
 
 
         // The Thirteen Orphans
+        ArrayList<Tile> thirteenOrphans = new ArrayList<>();
         for (TileType tp : TileType.values()) {
             if (!tp.isSpecialType()) {
                 thirteenOrphans.add(new Tile(tp, TileContent.ONE));
@@ -167,14 +171,18 @@ public class TestHand {
                 }
             }
         }
+        this.thirteenOrphans = new Hand(thirteenOrphans);
         // Add a 1 of Bamboo for the pair
-        thirteenOrphans.add(new Tile(TileType.BAMBOO, TileContent.ONE));
+        this.thirteenOrphans.addTile(new Tile(TileType.BAMBOO, TileContent.ONE));
 
 
         // All Kongs TODO
+        ArrayList<Tile> allKongs = new ArrayList<>();
+        // this.allKongs = new Hand(allKongs);
 
 
         // All Honors
+        ArrayList<Tile> allHonors = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             // Add 3 of 4 Honor tiles, RRR, GGG, EEE, WWW (3 tiles * 4 = 12)
             allHonors.add(new Tile(TileType.DRAGON, TileContent.RED));
@@ -182,12 +190,14 @@ public class TestHand {
             allHonors.add(new Tile(TileType.WIND, TileContent.EAST));
             allHonors.add(new Tile(TileType.WIND, TileContent.WEST));
         }
-        for (int i = 0; i < 2; i++)
-            // Add SS (12 + 2 = 14)
-            allHonors.add(new Tile(TileType.WIND, TileContent.SOUTH));
+        // Add SS (12 + 2 = 14)
+        allHonors.add(new Tile(TileType.WIND, TileContent.SOUTH));
+        this.allHonors = new Hand(allHonors);
+        this.allHonors.addTile(new Tile(TileType.WIND, TileContent.SOUTH));
 
 
         // All Terminals
+        ArrayList<Tile> allTerminals = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             // Add 3 of 4 Terminal tiles (1/9), 111B, 999B, 999D, 111C (3 tiles * 4 = 12)
             allTerminals.add(new Tile(TileType.BAMBOO, TileContent.ONE));
@@ -195,12 +205,14 @@ public class TestHand {
             allTerminals.add(new Tile(TileType.DOTS, TileContent.NINE));
             allTerminals.add(new Tile(TileType.CHARACTERS, TileContent.ONE));
         }
-        for (int i = 0; i < 2; i++)
-            // Add 99C (12 + 2 = 14)
-            allTerminals.add(new Tile(TileType.CHARACTERS, TileContent.NINE));
+        // Add 99C (12 + 2 = 14)
+        allTerminals.add(new Tile(TileType.CHARACTERS, TileContent.NINE));
+        this.allTerminals = new Hand(allTerminals);
+        this.allTerminals.addTile(new Tile(TileType.CHARACTERS, TileContent.NINE));
 
 
         // Jade Dragon
+        ArrayList<Tile> jadeDragon = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             // Add 3 Green Dragons
             jadeDragon.add(new Tile(TileType.DRAGON, TileContent.GREEN));
@@ -210,12 +222,14 @@ public class TestHand {
             jadeDragon.add(new Tile(TileType.BAMBOO, TileContent.THREE));
             jadeDragon.add(new Tile(TileType.BAMBOO, TileContent.FIVE));
         }
-        for (int i = 0; i < 2; i++)
-            // Add 77B (12 + 2 = 14)
-            jadeDragon.add(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+        // Add 77B (12 + 2 = 14)
+        jadeDragon.add(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+        this.jadeDragon = new Hand(jadeDragon);
+        this.jadeDragon.addTile(new Tile(TileType.BAMBOO, TileContent.SEVEN));
 
 
         // Ruby Dragon
+        ArrayList<Tile> rubyDragon = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             // Add 3 Red Dragons
             rubyDragon.add(new Tile(TileType.DRAGON, TileContent.RED));
@@ -225,12 +239,14 @@ public class TestHand {
             rubyDragon.add(new Tile(TileType.CHARACTERS, TileContent.THREE));
             rubyDragon.add(new Tile(TileType.CHARACTERS, TileContent.FIVE));
         }
-        for (int i = 0; i < 2; i++)
-            // Add 77C (12 + 2 = 14)
-            rubyDragon.add(new Tile(TileType.CHARACTERS, TileContent.SEVEN));
+        // Add 77C (12 + 2 = 14)
+        rubyDragon.add(new Tile(TileType.CHARACTERS, TileContent.SEVEN));
+        this.rubyDragon = new Hand(rubyDragon);
+        this.rubyDragon.addTile(new Tile(TileType.CHARACTERS, TileContent.SEVEN));
 
 
         // Pearl Dragon
+        ArrayList<Tile> pearlDragon = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             // Add 3 White Dragons
             pearlDragon.add(new Tile(TileType.DRAGON, TileContent.WHITE));
@@ -240,25 +256,11 @@ public class TestHand {
             pearlDragon.add(new Tile(TileType.DOTS, TileContent.THREE));
             pearlDragon.add(new Tile(TileType.DOTS, TileContent.FIVE));
         }
-        for (int i = 0; i < 2; i++)
-            // Add 77D (12 + 2 = 14)
-            pearlDragon.add(new Tile(TileType.DOTS, TileContent.SEVEN));
-
-
-        this.fourCombsPlusPair = new Hand(fourCombsPlusPair);
-        this.sevenPairs = new Hand(sevenPairs);
-        this.hiddenTreasure = new Hand(hiddenTreasure);
-        this.littleFourWinds = new Hand(littleFourWinds);
-        this.bigFourWinds = new Hand(bigFourWinds);
-        this.threeGreatScholars = new Hand(threeGreatScholars);
-        this.nineGates = new Hand(nineGates);
-        this.thirteenOrphans = new Hand(thirteenOrphans);
-        // this.allKongs = new Hand(allKongs);
-        this.allHonors = new Hand(allHonors);
-        this.allTerminals = new Hand(allTerminals);
-        this.jadeDragon = new Hand(jadeDragon);
-        this.rubyDragon = new Hand(rubyDragon);
+        // Add 77D (12 + 2 = 14)
+        pearlDragon.add(new Tile(TileType.DOTS, TileContent.SEVEN));
         this.pearlDragon = new Hand(pearlDragon);
+        this.pearlDragon.addTile(new Tile(TileType.DOTS, TileContent.SEVEN));
+
 
         this.allHands = Stream.of(
                 this.pearlDragon,
@@ -296,7 +298,7 @@ public class TestHand {
 
     @Test
     public void testIsHiddenTreasure() {
-        assertTrue(this.hiddenTreasure.isHiddenTreasure());
+        assertTrue(this.hiddenTreasure.isHiddenTreasure(true));
     }
 
     @Test
@@ -327,9 +329,9 @@ public class TestHand {
             tiles.add(new Tile(TileType.BAMBOO, TileContent.ONE));
         }
         // Add a pair of the last wind, NN (12 + 2 = 14)
-        for (int i = 0; i < 2; i++)
-            tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
+        tiles.add(new Tile(TileType.DRAGON, TileContent.RED));
         Hand notThreeGreatScholars = new Hand(tiles);
+        notThreeGreatScholars.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
         assertFalse(notThreeGreatScholars.isThreeGreatScholars());
     }
@@ -376,10 +378,10 @@ public class TestHand {
             tiles.add(new Tile(TileType.BAMBOO, TileContent.FOUR));
             tiles.add(new Tile(TileType.BAMBOO, TileContent.FIVE));
         }
-        for (int i = 0; i < 2; i++)
-            // Add 77D (12 + 2 = 14)
-            tiles.add(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+        // Add 77D (12 + 2 = 14)
+        tiles.add(new Tile(TileType.BAMBOO, TileContent.SEVEN));
         Hand notJadeDragon = new Hand(tiles);
+        notJadeDragon.addTile(new Tile(TileType.BAMBOO, TileContent.SEVEN));
 
         assertFalse(notJadeDragon.isJadeDragon());
     }
@@ -397,10 +399,10 @@ public class TestHand {
             tiles.add(new Tile(TileType.CHARACTERS, TileContent.FOUR));
             tiles.add(new Tile(TileType.CHARACTERS, TileContent.FIVE));
         }
-        for (int i = 0; i < 2; i++)
-            // Add 77D (12 + 2 = 14)
-            tiles.add(new Tile(TileType.CHARACTERS, TileContent.SEVEN));
+        // Add 77D (12 + 2 = 14)
+        tiles.add(new Tile(TileType.CHARACTERS, TileContent.SEVEN));
         Hand notRubyDragon = new Hand(tiles);
+        notRubyDragon.addTile(new Tile(TileType.CHARACTERS, TileContent.SEVEN));
 
         assertFalse(notRubyDragon.isRubyDragon());
     }
@@ -418,10 +420,10 @@ public class TestHand {
             tiles.add(new Tile(TileType.DOTS, TileContent.FOUR));
             tiles.add(new Tile(TileType.DOTS, TileContent.FIVE));
         }
-        for (int i = 0; i < 2; i++)
-            // Add 77D (12 + 2 = 14)
-            tiles.add(new Tile(TileType.DOTS, TileContent.SEVEN));
+        // Add 77D (12 + 2 = 14)
+        tiles.add(new Tile(TileType.DOTS, TileContent.SEVEN));
         Hand notPearlDragon = new Hand(tiles);
+        notPearlDragon.addTile(new Tile(TileType.DOTS, TileContent.SEVEN));
 
         assertFalse(notPearlDragon.isPearlDragon());
     }
@@ -434,7 +436,7 @@ public class TestHand {
     @Test
     public void testGenerateRandomHand() {
         Hand hand = Hand.generateRandomHand();
-        assertEquals(hand.getHandSize(), 14);
+        assertEquals(hand.getHandSize(), 13);
         assertTrue(hand.getHand().values().stream().noneMatch(v -> v > 4));
     }
 }
