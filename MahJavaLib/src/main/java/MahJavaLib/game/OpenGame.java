@@ -35,6 +35,10 @@ public class OpenGame {
                 for (Map.Entry<Tile, Integer> e : combination.getTiles().entrySet())
                     res.merge(e.getKey(), e.getValue(), Integer::sum);
 
+        for (List<Tile> kongs : this.concealedKongs.values())
+            for (Tile kongTile : kongs)
+                res.put(kongTile, 4);
+
         return res;
     }
 
