@@ -501,9 +501,6 @@ public class Hand {
     }
 
     public void declareConcealedKong(Tile kongTile) {
-        System.out.println("LEZ GO");
-        System.out.println(this.openCombinations);
-        System.out.println(this.concealedTiles);
         this.concealedTiles.remove(kongTile);
         this.concealedKongs.add(kongTile);
     }
