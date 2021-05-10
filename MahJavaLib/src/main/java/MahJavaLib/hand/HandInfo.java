@@ -96,7 +96,7 @@ class HandInfo {
              *   - chow + (any combo where chow == 3)
              * Scenarios left to be included:
              *   - pair + pair
-             *   - kong TODO
+             *   - kong (not relevant here since this only considers combinations with the concealed tiles)
              */
 
             this.setCombinations(

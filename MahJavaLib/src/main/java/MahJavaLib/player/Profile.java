@@ -6,6 +6,8 @@ import MahJavaLib.tile.Tile;
 import java.util.Optional;
 
 public interface Profile {
-    public Tile chooseTileToDiscard();
-    public Optional<Combination> wantsDiscardedTile();
+    // These methods should receive arguments but we'll leave them empty for now
+    Tile chooseTileToDiscard();
+    Optional<Combination> wantsDiscardedTile();
+    boolean declareConcealedKong();
 }

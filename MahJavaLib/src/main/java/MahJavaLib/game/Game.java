@@ -9,6 +9,7 @@ import MahJavaLib.exceptions.WallIsEmptyException;
 import MahJavaLib.hand.Hand;
 import MahJavaLib.tile.TileContent;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,7 @@ public class Game {
             List<Tile> hand = new ArrayList<>();
             for (int j = 0; j < 13; ++j) {
                 try {
-                    hand.add(this.board.removeFirstTileFromWall());
+                    hand.add(this.board.removeTileFromLiveWall());
                 } catch (WallIsEmptyException ignored) {
                 }
             }
@@ -61,7 +62,7 @@ public class Game {
             List<Tile> hand = new ArrayList<>();
             for (int j = 0; j < 13; ++j) {
                 try {
-                    hand.add(this.board.removeFirstTileFromWall());
+                    hand.add(this.board.removeTileFromLiveWall());
                 } catch (WallIsEmptyException ignored) {
                 }
             }
@@ -120,8 +121,9 @@ public class Game {
     public boolean singleGameLoop() throws NegativeScoreException {
         boolean firstPlay = true;
         boolean noSteal = true;
+        boolean claimedKong = false;
         List<PlayerTurn> winners = new ArrayList<>();
-        while (winners.isEmpty() && !this.isBoardWallEmpty()) {
+        while (!this.isBoardWallEmpty()) {
             // The whole game should stop if any player reaches a negative score
             if (this.scores.values().stream().anyMatch(s -> s < 0))
                 throw new NegativeScoreException();
@@ -141,22 +143,38 @@ public class Game {
                     .filter((player -> !player.equals(playerToPlay)))
                     .collect(Collectors.toList());
 
-            if (noSteal) {
-                try {
-                    playerToPlay.addTile(this.board.removeFirstTileFromWall());
+            try {
+                if (noSteal) {
+                    playerToPlay.addTile(this.board.removeTileFromLiveWall());
                     if (playerToPlay.hasWinningHand()) {
                         // Player won by self-drawn and all other players will have to pay up.
                         // Winning by self-drawn always grants a bonus point to the winner.
-                        this.setWinner(playerToPlay, 1, winners, otherPlayers, Optional.empty(), firstPlay);
+                        this.setWinner(playerToPlay, 1, winners, otherPlayers, null, firstPlay);
                         break;
                     }
-
-                } catch (WallIsEmptyException e) {
-                    // This should really never happen, if it happens something went wrong, might as well
-                    // abort everything
-                    e.printStackTrace();
-                    System.exit(-1);
+                } else if (claimedKong) {
+                    // A tile must be drawn from the Dead Wall to compensate for the declared kong
+                    playerToPlay.addTile(this.board.removeTileFromDeadWall());
+                    if (playerToPlay.hasWinningHand()) {
+                        // Player won by self-drawn and all other players will have to pay up.
+                        // Winning by self-drawn always grants a bonus point to the winner.
+                        this.setWinner(playerToPlay, 1, winners, otherPlayers, null, false);
+                        break;
+                    }
                 }
+            } catch (WallIsEmptyException e) {
+                // This should really never happen, if it happens something went wrong, might as well
+                // abort everything
+                e.printStackTrace();
+                System.exit(-1);
+            }
+
+            // Before discarding a tile, we must first check if the player wants to declare a concealed kong.
+            // If so, we simply claim the tile and continue to the next iteration, where the player will draw a tile
+            // from the Dead Wall.
+            if (playerToPlay.declareConcealedKong()) {
+                claimedKong = true;
+                continue;
             }
 
             //System.out.println("\t(Discard Phase) Player to Play: " + playerToPlay.getSeatWind());
@@ -201,7 +219,7 @@ public class Game {
                 winningPlayers.forEach(p -> this.setWinner(
                         p, wantsKong > 0 ? 1 : 0,
                         winners, losingPlayers,
-                        Optional.of(this.getPlayerTurn()), finalFirstPlay
+                        this.getPlayerTurn(), finalFirstPlay
                 ));
                 break;
             }
@@ -212,6 +230,7 @@ public class Game {
             Combination playerCombination = null;
 
             noSteal = true;
+            claimedKong = false;
             for (Map.Entry<Player, Optional<Combination>> entry : wantsDiscardedTile.entrySet()) {
                 // If there is someone who wants it, then lets check if they can/should take it
                 // In a real game, you can only take the tile if you make a combination with it AND you have
@@ -247,6 +266,7 @@ public class Game {
                         } else if (possibleCombination.getCombinationType() == CombinationType.KONG) {
                             playerWithCombination = requestingPlayer;
                             playerCombination = possibleCombination;
+                            claimedKong = true;
                             break;
 
                         } else if (possibleCombination.getCombinationType() == CombinationType.CHOW &&
@@ -341,24 +361,24 @@ public class Game {
     private void setWinner(
             Player winner, int bonus,
             List<PlayerTurn> winners, List<Player> losers,
-            Optional<PlayerTurn> discarded, boolean firstPlay) {
+            @Nullable PlayerTurn discarded, boolean firstPlay) {
 
         TileContent playerWind = this.turnToTile(winner.getSeatWind());
         TileContent roundWind = this.turnToTile(this.getRoundTurn());
 
         System.out.println("Setting " + winner.getName() + " as winner...");
 
-        // 1 Extra Fan if it's the last self-drawn or the last discarded tile
-        int fan = winner.handValue(playerWind, roundWind, discarded.isEmpty(), firstPlay) +
+        // 1 Extra Fan if it's the last drawable tile or the last discarded tile
+        int fan = winner.handValue(playerWind, roundWind, discarded == null, firstPlay) +
                 (this.isBoardWallEmpty() ? bonus + 1 : bonus);
 
         int points = this.points(fan);
 
         int score;
-        if (discarded.isPresent()) {
-            System.out.println("Won by claiming " + this.players.get(discarded.get()).getName() + "'s discarded tile");
+        if (discarded != null) {
+            System.out.println("Won by claiming " + this.players.get(discarded).getName() + "'s discarded tile");
             losers.forEach(p -> this.scores.computeIfPresent(p, (k, s) -> s - points));
-            this.scores.computeIfPresent(this.players.get(discarded.get()), (k, s) -> s - points);
+            this.scores.computeIfPresent(this.players.get(discarded), (k, s) -> s - points);
             score = (losers.size() + 1) * points;
         } else {
             System.out.println("Won by self-drawn");
@@ -366,7 +386,7 @@ public class Game {
             score = (losers.size()) * 2 * points;
         }
 
-        System.out.println(fan + " Fan -> " + points + " Points -> " + score + " Chips");
+        System.out.println(fan + " Fan -> " + points + " Points -> Total reward: " + score);
 
         this.scores.computeIfPresent(winner, (p, s) -> s + score);
         winners.add(winner.getSeatWind());
