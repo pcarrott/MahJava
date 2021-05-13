@@ -8,7 +8,6 @@ import MahJavaLib.tile.Combination;
 import MahJavaLib.hand.Hand;
 import MahJavaLib.tile.TileContent;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,26 +19,39 @@ public class Player {
     private OpenGame game;
     private Hand hand;
     private PlayerTurn seatWind = PlayerTurn.EAST;
-    private Profile profile;
+    private final Profile profile;
 
-    public Player(String name) {
+    private Player(String name, Profile profile) {
         this.name = name;
-        // @TODO: Set player profile
+        this.profile = profile;
     }
 
-    public String getName() {
-        return this.name;
+    static public Player EagerReactivePlayer(String name) {
+        return new Player(name, new EagerReactive());
     }
 
-    public void setHand(Hand hand) throws IllegalArgumentException {
-        // @TODO: check if hand is valid
-        this.hand = hand;
+    static public Player ComposedReactivePlayer(String name) {
+        return new Player(name, new ComposedReactive());
     }
 
-    public void setGame(OpenGame game) {
-        this.hand.setOpenHand(game.getOpenCombinations(this));
-        this.hand.setConcealedKongs(game.getConcealedKongs(this));
-        this.game = game;
+    static public Player DeliberativePlayer(String name) {
+        return new Player(name, new Deliberative());
+    }
+
+    public void claimTile(Tile tileToAdd, Combination combination) {
+        this.hand.claimTile(tileToAdd, combination);
+    }
+
+    public boolean hasTile(Tile tile, Integer n) {
+        return this.hand.hasTile(tile, n);
+    }
+
+    public void addTile(Tile tile) {
+        this.hand.addTile(tile);
+    }
+
+    public void removeTile(Tile tile) {
+        this.hand.removeTile(tile);
     }
 
     public Tile chooseTileToDiscard() {
@@ -69,43 +81,11 @@ public class Player {
         return kek.size() != 0 ? kek.get(0) : (Tile) leftovers.keySet().toArray()[0];
 
         // This is what should actually be done
-        // return this.profile.chooseTileToDiscard();
+        // return this.profile.chooseTileToDiscard(this.hand, this.game);
     }
 
-    public void claimTile(Tile tileToAdd, Combination combination) {
-        this.hand.claimTile(tileToAdd, combination);
-    }
-
-    // If we want 4 concealed tiles to count as a Kong, we must declare it in order to draw a supplement tile from the
-    // wall. Here, we define the decision-making process by the player regarding a Kong declaration.
-    // Returns true if the player can declare a concealed kong and wants to declare it; false otherwise.
     public boolean declareConcealedKong() {
-        // @TODO: Actually implement the logic for this
-        List<Tile> concealedKongs = this.hand.getConcealedKongs();
-        for (Tile kongTile : concealedKongs) {
-            this.hand.declareConcealedKong(kongTile);
-            return true;
-        }
-        return false;
-
-        // This is what should actually be done
-        // return this.profile.declareConcealedKong();
-    }
-
-    public boolean hasTile(Tile tile, Integer n) {
-        return this.hand.hasTile(tile, n);
-    }
-
-    public void addTile(Tile tile) {
-        this.hand.addTile(tile);
-    }
-
-    public PlayerTurn getSeatWind() {
-        return this.seatWind;
-    }
-
-    public void setSeatWind(PlayerTurn seatWind) {
-        this.seatWind = seatWind;
+        return this.profile.declareConcealedKong(this.hand, this.game);
     }
 
     public Optional<Combination> wantsDiscardedTile(Tile discardedTile) {
@@ -132,23 +112,42 @@ public class Player {
         return aux;
 
         // This is what should actually be done
-        // return this.profile.wantsDiscardedTile();
-    }
-
-    public void removeTile(Tile tile) {
-        this.hand.removeTile(tile);
+        // return this.profile.wantsDiscardedTile(discardedTile, this.hand, this.game);
     }
 
     public boolean hasWinningHand() {
         return this.hand.isWinningHand();
     }
 
+    public boolean isWinningTile(Tile discardedTile) {
+        return this.hand.isWinningTile(discardedTile);
+    }
+
     public Integer handValue(TileContent playerWind, TileContent roundWind, boolean selfDrawn, boolean firstPlay) {
         return this.hand.calculateHandValue(playerWind, roundWind, selfDrawn, firstPlay);
     }
 
-    public boolean isWinningTile(Tile discardedTile) {
-        return this.hand.isWinningTile(discardedTile);
+    public String getName() {
+        return this.name;
+    }
+
+    public void setGame(OpenGame game) {
+        this.hand.setOpenHand(game.getOpenCombinations(this));
+        this.hand.setConcealedKongs(game.getConcealedKongs(this));
+        this.game = game;
+    }
+
+    public void setHand(Hand hand) throws IllegalArgumentException {
+        // @TODO: check if hand is valid
+        this.hand = hand;
+    }
+
+    public PlayerTurn getSeatWind() {
+        return this.seatWind;
+    }
+
+    public void setSeatWind(PlayerTurn seatWind) {
+        this.seatWind = seatWind;
     }
 
     @Override

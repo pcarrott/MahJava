@@ -45,11 +45,13 @@ public class TestGame {
 
     @Test
     public void testMain() {
-        String[] names = {"Leonardo", "Raphael", "Donatello", "Michelangelo"};
         List<Player> players = new ArrayList<>();
-        for (int i = 0; i < 4; ++i) {
-            players.add(new Player(names[i]));
+        String[] names = {"Leonardo", "Raphael", "Donatello", "Michelangelo"};
+        for (int i = 0; i < 2; ++i) {
+            players.add(Player.EagerReactivePlayer(names[i]));
+            players.add(Player.ComposedReactivePlayer(names[i + 2]));
         }
+
         Game game = new Game(players);
         game.gameLoop();
     }
