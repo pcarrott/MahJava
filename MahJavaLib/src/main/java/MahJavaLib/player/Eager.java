@@ -6,7 +6,6 @@ import MahJavaLib.tile.Combination;
 import MahJavaLib.tile.Tile;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Reactive agent architecture that does minimum processing of the perceptions
@@ -15,19 +14,28 @@ import java.util.stream.Collectors;
  * Some decisions are made randomly, while others are constant without taking
  * into consideration the current state of the game.
  */
-class EagerReactive implements Profile {
+class Eager implements Profile {
+
     /*
      * Looks at the tiles with the lowest count and discards one of them random,
      * without any kind of deliberation.
      */
     @Override
     public Tile chooseTileToDiscard(Hand hand, OpenGame game) {
+        List<Tile> minTiles = new ArrayList<>();
+        Integer minCount = 5;
         // Filter all tiles with lowest count currently in hand
-        Integer minCount = hand.getHand().values().stream().min(Integer::compare).get();
-        List<Tile> minTiles = hand.getHand().entrySet().stream()
-                .filter(e -> e.getValue().equals(minCount))
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+        for (Map.Entry<Tile, Integer> e : hand.getHand().entrySet()) {
+            Tile tile = e.getKey();
+            Integer count = e.getValue();
+            if (count < minCount) { // Update the new lowest count
+                minTiles.clear();
+                minTiles.add(tile);
+                minCount = count;
+            } else if (count.equals(minCount)) { // We have another tile with the current lowest count
+                minTiles.add(tile);
+            }
+        }
 
         // We choose randomly from the collection of candidate tiles
         int rand = new Random().nextInt(minTiles.size());
@@ -41,6 +49,8 @@ class EagerReactive implements Profile {
     @Override
     public Optional<Combination> wantsDiscardedTile(Tile discardedTile, Hand hand, OpenGame game) {
         Set<Combination> combinations = hand.getPossibleCombinationsForTile(discardedTile).keySet();
+        if (combinations.isEmpty())
+            return Optional.empty();
 
         // We choose randomly from the collection of candidate tiles
         int rand = new Random().nextInt(combinations.size());

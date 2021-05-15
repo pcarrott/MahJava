@@ -26,16 +26,21 @@ public class Player {
         this.profile = profile;
     }
 
-    static public Player EagerReactivePlayer(String name) {
-        return new Player(name, new EagerReactive());
+    static public Player EagerPlayer(String name) {
+        return new Player(name, new Eager());
     }
 
-    static public Player ComposedReactivePlayer(String name) {
-        return new Player(name, new ComposedReactive());
+    static public Player ComposedPlayer(String name) {
+        return new Player(name, new Composed());
     }
 
-    static public Player DeliberativePlayer(String name) {
-        return new Player(name, new Deliberative());
+    static public Player ConcealedPlayer(String name) {
+        return new Player(name, new Concealed());
+    }
+
+    // @TODO: Make the profile decision random between games somehow
+    static public Player MixedPlayer(String name) {
+        return new Player(name, new Eager());
     }
 
     public void claimTile(Tile tileToAdd, Combination combination) {
@@ -89,30 +94,7 @@ public class Player {
     }
 
     public Optional<Combination> wantsDiscardedTile(Tile discardedTile) {
-        // @TODO: implement logic for this, also change return values since we should inform the Game on the type of
-        // combination we want to achieve with the discarded tile (both to make us eligible to get it, and to mark it
-        // as Open)
-        Optional<Combination> aux = Optional.empty();
-
-        for (var kek : this.hand.getPossibleCombinationsForTile(discardedTile).keySet()) {
-            // Pungs/Kongs are more valuable than Chows (not really but let's pretend they are)
-            if (kek.getCombinationType() == CombinationType.PUNG || kek.getCombinationType() == CombinationType.KONG) {
-                aux = Optional.of(kek);
-                break;
-            }
-
-            // If we get a chow, we only consider it only if it does not break a pair, pung or kong
-            if (kek.getCombinationType() == CombinationType.CHOW &&
-                    kek.getTiles().keySet().stream().noneMatch(t -> this.hand.getHand().containsKey(t) && this.hand.getHand().get(t) > 1)) {
-                aux = Optional.of(kek);
-                break;
-            }
-        }
-
-        return aux;
-
-        // This is what should actually be done
-        // return this.profile.wantsDiscardedTile(discardedTile, this.hand, this.game);
+        return this.profile.wantsDiscardedTile(discardedTile, this.hand, this.game);
     }
 
     public boolean hasWinningHand() {
