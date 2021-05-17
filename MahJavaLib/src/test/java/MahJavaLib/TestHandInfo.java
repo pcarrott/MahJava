@@ -1,5 +1,6 @@
 package MahJavaLib;
 
+import MahJavaLib.hand.CombinationSet;
 import MahJavaLib.hand.Hand;
 import MahJavaLib.tile.Tile;
 import org.testng.annotations.Test;
@@ -44,22 +45,16 @@ public class TestHandInfo {
         // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // 111|B 333|D 555|C EEE|W RR|D
+        CombinationSet set = new CombinationSet();
+        set.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.DOTS, TileContent.THREE), 3));
+        set.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.CHARACTERS, TileContent.FIVE), 3));
+        set.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.WIND, TileContent.EAST), 3));
+        set.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+
         // Generate expected hands from adding winning tile
-        List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Collections.singletonList(
-                // 111|B 333|D 555|C EEE|W RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.THREE), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.FIVE), 1),
-                                Map.entry(new Tile(TileType.WIND, TileContent.EAST), 1))),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, new HashMap<>())
-                ))
-        );
+        List<CombinationSet> allPossibleHands = Collections.singletonList(set);
 
         // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
@@ -97,24 +92,24 @@ public class TestHandInfo {
         // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // 111|B 123|D 555|C 789|C RR|D
+        CombinationSet set = new CombinationSet();
+        set.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.ONE), 1,
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1
+        ));
+        set.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.CHARACTERS, TileContent.FIVE), 3));
+        set.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+
         // Generate expected hands from adding winning tile
-        List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Collections.singletonList(
-                // 111|B 123|D 555|C 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.FIVE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, new HashMap<>(Map.ofEntries(
-                                Map.entry(new Tile(TileType.DOTS, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1)
-                        )))
-                ))
-        );
+        List<CombinationSet> allPossibleHands = Collections.singletonList(set);
 
         // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
@@ -148,52 +143,52 @@ public class TestHandInfo {
         // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // 111|B 999|C 123|C 456|C RR|D
+        CombinationSet set1 = new CombinationSet();
+        set1.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set1.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.CHARACTERS, TileContent.NINE), 3));
+        set1.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.ONE), 1,
+                new Tile(TileType.CHARACTERS, TileContent.TWO), 1,
+                new Tile(TileType.CHARACTERS, TileContent.THREE), 1
+        ));
+        set1.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.FOUR), 1,
+                new Tile(TileType.CHARACTERS, TileContent.FIVE), 1,
+                new Tile(TileType.CHARACTERS, TileContent.SIX), 1
+        ));
+        set1.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+
+        // 111|B 999|C 234|C RR|D
+        CombinationSet set2 = new CombinationSet();
+        set2.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set2.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.CHARACTERS, TileContent.NINE), 3));
+        set2.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.TWO), 1,
+                new Tile(TileType.CHARACTERS, TileContent.THREE), 1,
+                new Tile(TileType.CHARACTERS, TileContent.FOUR), 1
+        ));
+        set2.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+        set2.addIgnored(new Tile(TileType.CHARACTERS, TileContent.ONE));
+        set2.addIgnored(new Tile(TileType.CHARACTERS, TileContent.FIVE));
+        set2.addIgnored(new Tile(TileType.CHARACTERS, TileContent.SIX));
+
+        // 111|B 999|C 345|C RR|D
+        CombinationSet set3 = new CombinationSet();
+        set3.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set3.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.CHARACTERS, TileContent.NINE), 3));
+        set3.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.THREE), 1,
+                new Tile(TileType.CHARACTERS, TileContent.FOUR), 1,
+                new Tile(TileType.CHARACTERS, TileContent.FIVE), 1
+        ));
+        set3.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+        set3.addIgnored(new Tile(TileType.CHARACTERS, TileContent.ONE));
+        set3.addIgnored(new Tile(TileType.CHARACTERS, TileContent.TWO));
+        set3.addIgnored(new Tile(TileType.CHARACTERS, TileContent.SIX));
+
         // Generate expected hands from adding winning tile
-        List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
-                // 111|B 999|C 123|C 456|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.NINE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.FOUR), 1)
-                        ))
-                )),
-                // 111|B 999|C 234|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.NINE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                        Map.entry(new Tile(TileType.CHARACTERS, TileContent.TWO), 1)
-                                ))
-                )),
-                // 111|B 999|C 345|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.NINE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.THREE), 1)
-                        ))
-                ))
-        );
+        List<CombinationSet> allPossibleHands = Arrays.asList(set1, set2, set3);
 
         // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
@@ -223,114 +218,186 @@ public class TestHandInfo {
         // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // 123|D 456|D 789|D 789|C RR|D
+        CombinationSet set1 = new CombinationSet();
+        set1.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.ONE), 1,
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1
+        ));
+        set1.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.FOUR), 1,
+                new Tile(TileType.DOTS, TileContent.FIVE), 1,
+                new Tile(TileType.DOTS, TileContent.SIX), 1
+        ));
+        set1.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.SEVEN), 1,
+                new Tile(TileType.DOTS, TileContent.EIGHT), 1,
+                new Tile(TileType.DOTS, TileContent.NINE), 1
+        ));
+        set1.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set1.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+
+        // 123|D 567|D 789|C RR|D
+        CombinationSet set2 = new CombinationSet();
+        set2.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.ONE), 1,
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1
+        ));
+        set2.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.FIVE), 1,
+                new Tile(TileType.DOTS, TileContent.SIX), 1,
+                new Tile(TileType.DOTS, TileContent.SEVEN), 1
+        ));
+        set2.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set2.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+        set2.addIgnored(new Tile(TileType.DOTS, TileContent.FOUR));
+        set2.addIgnored(new Tile(TileType.DOTS, TileContent.EIGHT));
+        set2.addIgnored(new Tile(TileType.DOTS, TileContent.NINE));
+
+        // 123|D 678|D 789|C RR|D
+        CombinationSet set3 = new CombinationSet();
+        set3.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.ONE), 1,
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1
+        ));
+        set3.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.SIX), 1,
+                new Tile(TileType.DOTS, TileContent.SEVEN), 1,
+                new Tile(TileType.DOTS, TileContent.EIGHT), 1
+        ));
+        set3.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set3.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+        set3.addIgnored(new Tile(TileType.DOTS, TileContent.FOUR));
+        set3.addIgnored(new Tile(TileType.DOTS, TileContent.FIVE));
+        set3.addIgnored(new Tile(TileType.DOTS, TileContent.NINE));
+
+        // 234|D 567|D 789|C RR|D
+        CombinationSet set4 = new CombinationSet();
+        set4.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1,
+                new Tile(TileType.DOTS, TileContent.FOUR), 1
+        ));
+        set4.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.FIVE), 1,
+                new Tile(TileType.DOTS, TileContent.SIX), 1,
+                new Tile(TileType.DOTS, TileContent.SEVEN), 1
+        ));
+        set4.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set4.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+        set4.addIgnored(new Tile(TileType.DOTS, TileContent.ONE));
+        set4.addIgnored(new Tile(TileType.DOTS, TileContent.EIGHT));
+        set4.addIgnored(new Tile(TileType.DOTS, TileContent.NINE));
+
+        // 234|D 678|D 789|C RR|D
+        CombinationSet set5 = new CombinationSet();
+        set5.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1,
+                new Tile(TileType.DOTS, TileContent.FOUR), 1
+        ));
+        set5.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.SIX), 1,
+                new Tile(TileType.DOTS, TileContent.SEVEN), 1,
+                new Tile(TileType.DOTS, TileContent.EIGHT), 1
+        ));
+        set5.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set5.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+        set5.addIgnored(new Tile(TileType.DOTS, TileContent.ONE));
+        set5.addIgnored(new Tile(TileType.DOTS, TileContent.FIVE));
+        set5.addIgnored(new Tile(TileType.DOTS, TileContent.NINE));
+
+        // 234|D 789|D 789|C RR|D
+        CombinationSet set6 = new CombinationSet();
+        set6.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1,
+                new Tile(TileType.DOTS, TileContent.FOUR), 1
+        ));
+        set6.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.SEVEN), 1,
+                new Tile(TileType.DOTS, TileContent.EIGHT), 1,
+                new Tile(TileType.DOTS, TileContent.NINE), 1
+        ));
+        set6.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set6.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+        set6.addIgnored(new Tile(TileType.DOTS, TileContent.ONE));
+        set6.addIgnored(new Tile(TileType.DOTS, TileContent.FIVE));
+        set6.addIgnored(new Tile(TileType.DOTS, TileContent.SIX));
+
+        // 345|D 678|D 789|C RR|D
+        CombinationSet set7 = new CombinationSet();
+        set7.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.THREE), 1,
+                new Tile(TileType.DOTS, TileContent.FOUR), 1,
+                new Tile(TileType.DOTS, TileContent.FIVE), 1
+        ));
+        set7.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.SIX), 1,
+                new Tile(TileType.DOTS, TileContent.SEVEN), 1,
+                new Tile(TileType.DOTS, TileContent.EIGHT), 1
+        ));
+        set7.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set7.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+        set7.addIgnored(new Tile(TileType.DOTS, TileContent.ONE));
+        set7.addIgnored(new Tile(TileType.DOTS, TileContent.TWO));
+        set7.addIgnored(new Tile(TileType.DOTS, TileContent.NINE));
+
+        // 345|D 789|D 789|C RR|D
+        CombinationSet set8 = new CombinationSet();
+        set8.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.THREE), 1,
+                new Tile(TileType.DOTS, TileContent.FOUR), 1,
+                new Tile(TileType.DOTS, TileContent.FIVE), 1
+        ));
+        set8.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.SEVEN), 1,
+                new Tile(TileType.DOTS, TileContent.EIGHT), 1,
+                new Tile(TileType.DOTS, TileContent.NINE), 1
+        ));
+        set8.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set8.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+        set8.addIgnored(new Tile(TileType.DOTS, TileContent.ONE));
+        set8.addIgnored(new Tile(TileType.DOTS, TileContent.TWO));
+        set8.addIgnored(new Tile(TileType.DOTS, TileContent.SIX));
+
         // Generate expected hands from adding winning tile
-        List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
-                // 123|D 456|D 789|D 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DOTS, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.FOUR), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.SEVEN), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1)
-                        ))
-                )),
-                // 123|D 567|D 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DOTS, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.FIVE), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1)
-                        ))
-                )),
-                // 123|D 678|D 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DOTS, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.SIX), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1)
-                        ))
-                )),
-                // 234|D 567|D 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DOTS, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.FIVE), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1)
-                        ))
-                )),
-                // 234|D 678|D 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DOTS, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.SIX), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1)
-                        ))
-                )),
-                // 234|D 789|D 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DOTS, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.SEVEN), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1)
-                        ))
-                )),
-                // 345|D 678|D 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DOTS, TileContent.THREE), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.SIX), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1)
-                        ))
-                )),
-                // 345|D 789|D 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DOTS, TileContent.THREE), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.SEVEN), 1),
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1)
-                        ))
-                ))
-        );
+        List<CombinationSet> allPossibleHands = Arrays.asList(set1, set2, set3, set4, set5, set6, set7, set8);
 
         // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
@@ -372,39 +439,36 @@ public class TestHandInfo {
         // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // 111|B 11|D 22|D 33|D 789|C RR|D
+        CombinationSet set1 = new CombinationSet();
+        set1.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set1.addPair(new Tile(TileType.DOTS, TileContent.ONE));
+        set1.addPair(new Tile(TileType.DOTS, TileContent.TWO));
+        set1.addPair(new Tile(TileType.DOTS, TileContent.THREE));
+        set1.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set1.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+
+        // 111|B 123|D 123|D 789|C RR|D
+        CombinationSet set2 = new CombinationSet();
+        set2.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set2.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.ONE), 1,
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1
+        ), 2);
+        set2.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set2.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+
         // Generate expected hands from adding winning tile
-        List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
-                // 111|B 11|D 22|D 33|D 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.THREE), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1)
-                        ))
-                )),
-                // 111|B 123|D 123|D 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.ONE), 2)
-                        ))
-                ))
-        );
+        List<CombinationSet> allPossibleHands = Arrays.asList(set1, set2);
 
         // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
@@ -439,39 +503,42 @@ public class TestHandInfo {
         // Add winning tile
         hand.addTile(new Tile(TileType.DRAGON, TileContent.RED));
 
+        // 111|B 22|D 33|D 789|C RR|D
+        CombinationSet set1 = new CombinationSet();
+        set1.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set1.addPair(new Tile(TileType.DOTS, TileContent.TWO));
+        set1.addPair(new Tile(TileType.DOTS, TileContent.THREE));
+        set1.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set1.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+        set1.addIgnored(new Tile(TileType.DOTS, TileContent.ONE));
+        set1.addIgnored(new Tile(TileType.DOTS, TileContent.FOUR));
+
+        // 111|B 123|D 234|D 789|C RR|D
+        CombinationSet set2 = new CombinationSet();
+        set2.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set2.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.ONE), 1,
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1
+        ));
+        set2.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1,
+                new Tile(TileType.DOTS, TileContent.FOUR), 1
+        ));
+        set2.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set2.addPair(new Tile(TileType.DRAGON, TileContent.RED));
+
         // Generate expected hands from adding winning tile
-        List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
-                // 111|B 22|D 33|D 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.THREE), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1)
-                        ))
-                )),
-                // 111|B 123|D 234|D 789|C RR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.TWO), 1)
-                        ))
-                ))
-        );
+        List<CombinationSet> allPossibleHands = Arrays.asList(set1, set2);
 
         // Compare generated hands with computed hands
         this.assertHands(hand, allPossibleHands);
@@ -524,76 +591,93 @@ public class TestHandInfo {
                 )
         );
 
+        // 123|D 33|D 345|D 789|C RRR|D
+        CombinationSet set1 = new CombinationSet();
+        set1.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.ONE), 1,
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1
+        ));
+        set1.addPair(new Tile(TileType.DOTS, TileContent.THREE));
+        set1.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.THREE), 1,
+                new Tile(TileType.DOTS, TileContent.FOUR), 1,
+                new Tile(TileType.DOTS, TileContent.FIVE), 1
+        ));
+        set1.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set1.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.DRAGON, TileContent.RED), 3));
+
+        // 123|D 333|D 789|C RRR|D
+        CombinationSet set2 = new CombinationSet();
+        set2.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.ONE), 1,
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1
+        ));
+        set2.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.DOTS, TileContent.THREE), 3));
+        set2.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set2.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.DRAGON, TileContent.RED), 3));
+        set2.addIgnored(new Tile(TileType.DOTS, TileContent.FOUR));
+        set2.addIgnored(new Tile(TileType.DOTS, TileContent.FIVE));
+
+        // 234|D 333|D 789|C RRR|D
+        CombinationSet set3 = new CombinationSet();
+        set3.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.TWO), 1,
+                new Tile(TileType.DOTS, TileContent.THREE), 1,
+                new Tile(TileType.DOTS, TileContent.FOUR), 1
+        ));
+        set3.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.DOTS, TileContent.THREE), 3));
+        set3.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set3.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.DRAGON, TileContent.RED), 3));
+        set3.addIgnored(new Tile(TileType.DOTS, TileContent.ONE));
+        set3.addIgnored(new Tile(TileType.DOTS, TileContent.FIVE));
+
+        // 333|D 345|D 789|C RRR|D
+        CombinationSet set4 = new CombinationSet();
+        set4.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.DOTS, TileContent.THREE), 3));
+        set4.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.DOTS, TileContent.THREE), 1,
+                new Tile(TileType.DOTS, TileContent.FOUR), 1,
+                new Tile(TileType.DOTS, TileContent.FIVE), 1
+        ));
+        set4.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set4.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.DRAGON, TileContent.RED), 3));
+        set4.addIgnored(new Tile(TileType.DOTS, TileContent.ONE));
+        set4.addIgnored(new Tile(TileType.DOTS, TileContent.TWO));
+
+        // 33|D 33|D 789|C RRR|D
+        CombinationSet set5 = new CombinationSet();
+        set5.addPair(new Tile(TileType.DOTS, TileContent.THREE), 2);
+        set5.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1,
+                new Tile(TileType.CHARACTERS, TileContent.EIGHT), 1,
+                new Tile(TileType.CHARACTERS, TileContent.NINE), 1
+        ));
+        set5.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.DRAGON, TileContent.RED), 3));
+        set5.addIgnored(new Tile(TileType.DOTS, TileContent.ONE));
+        set5.addIgnored(new Tile(TileType.DOTS, TileContent.TWO));
+        set5.addIgnored(new Tile(TileType.DOTS, TileContent.FOUR));
+        set5.addIgnored(new Tile(TileType.DOTS, TileContent.FIVE));
+
         // Generate expected hands from adding winning tile
-        List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
-                // 123|D 33|D 345|D 789|C RRR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DOTS, TileContent.THREE), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.THREE), 1)
-                        ))
-                )),
-                // 123|D 333|D 789|C RRR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, new HashMap<>()),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.THREE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.ONE), 1)
-                        ))
-                )),
-                // 234|D 333|D 789|C RRR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, new HashMap<>()),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.THREE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.TWO), 1)
-                        ))
-                )),
-                // 333|D 345|D 789|C RRR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, new HashMap<>()),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.THREE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1),
-                                Map.entry(new Tile(TileType.DOTS, TileContent.THREE), 1)
-                        ))
-                )),
-                // 33|D 33|D 789|C RRR|D
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DOTS, TileContent.THREE), 2)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.DRAGON, TileContent.RED), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.CHARACTERS, TileContent.SEVEN), 1)
-                        ))
-                ))
-        );
+        List<CombinationSet> allPossibleHands = Arrays.asList(set1, set2, set3, set4, set5);
 
         // Computed hands from the Pung must be in the generated hands
         assertEquals(possibleCombinationsForTile.size(), 5);
@@ -642,207 +726,256 @@ public class TestHandInfo {
         // Add winning tile
         hand.addTile(new Tile(TileType.BAMBOO, TileContent.SEVEN));
 
+        // 111|B 222|B 333|B 456|B 77|B
+        CombinationSet set1 = new CombinationSet();
+        set1.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set1.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.TWO), 3));
+        set1.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.THREE), 3));
+        set1.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.FOUR), 1,
+                new Tile(TileType.BAMBOO, TileContent.FIVE), 1,
+                new Tile(TileType.BAMBOO, TileContent.SIX), 1
+        ));
+        set1.addPair(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+
+        // 111|B 222|B 333|B 567|B
+        CombinationSet set2 = new CombinationSet();
+        set2.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set2.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.TWO), 3));
+        set2.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.THREE), 3));
+        set2.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.FIVE), 1,
+                new Tile(TileType.BAMBOO, TileContent.SIX), 1,
+                new Tile(TileType.BAMBOO, TileContent.SEVEN), 1
+        ));
+        set2.addIgnored(new Tile(TileType.BAMBOO, TileContent.FOUR));
+        set2.addIgnored(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+
+        // 111|B 222|B 33|B 345|B 77|B
+        CombinationSet set3 = new CombinationSet();
+        set3.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set3.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.TWO), 3));
+        set3.addPair(new Tile(TileType.BAMBOO, TileContent.THREE));
+        set3.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1,
+                new Tile(TileType.BAMBOO, TileContent.FOUR), 1,
+                new Tile(TileType.BAMBOO, TileContent.FIVE), 1
+        ));
+        set3.addIgnored(new Tile(TileType.BAMBOO, TileContent.SIX));
+        set3.addPair(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+
+        // 111|B 22|B 33|B 234|B 567|B
+        CombinationSet set4 = new CombinationSet();
+        set4.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set4.addPair(new Tile(TileType.BAMBOO, TileContent.TWO));
+        set4.addPair(new Tile(TileType.BAMBOO, TileContent.THREE));
+        set4.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1,
+                new Tile(TileType.BAMBOO, TileContent.FOUR), 1
+        ));
+        set4.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.FIVE), 1,
+                new Tile(TileType.BAMBOO, TileContent.SIX), 1,
+                new Tile(TileType.BAMBOO, TileContent.SEVEN), 1
+        ));
+        set4.addIgnored(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+
+        // 111|B 22|B 33|B 234|B 77|B
+        CombinationSet set5 = new CombinationSet();
+        set5.addCombination(CombinationType.PUNG, Map.of(new Tile(TileType.BAMBOO, TileContent.ONE), 3));
+        set5.addPair(new Tile(TileType.BAMBOO, TileContent.TWO));
+        set5.addPair(new Tile(TileType.BAMBOO, TileContent.THREE));
+        set5.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1,
+                new Tile(TileType.BAMBOO, TileContent.FOUR), 1
+        ));
+        set5.addPair(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+        set5.addIgnored(new Tile(TileType.BAMBOO, TileContent.FIVE));
+        set5.addIgnored(new Tile(TileType.BAMBOO, TileContent.SIX));
+
+        // 11|B 22|B 33|B 123|B 456|B 77|B
+        CombinationSet set6 = new CombinationSet();
+        set6.addPair(new Tile(TileType.BAMBOO, TileContent.ONE));
+        set6.addPair(new Tile(TileType.BAMBOO, TileContent.TWO));
+        set6.addPair(new Tile(TileType.BAMBOO, TileContent.THREE));
+        set6.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.ONE), 1,
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1
+        ));
+        set6.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.FOUR), 1,
+                new Tile(TileType.BAMBOO, TileContent.FIVE), 1,
+                new Tile(TileType.BAMBOO, TileContent.SIX), 1
+        ));
+        set6.addPair(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+
+        // 11|B 22|B 33|B 123|B 567|B
+        CombinationSet set7 = new CombinationSet();
+        set7.addPair(new Tile(TileType.BAMBOO, TileContent.ONE));
+        set7.addPair(new Tile(TileType.BAMBOO, TileContent.TWO));
+        set7.addPair(new Tile(TileType.BAMBOO, TileContent.THREE));
+        set7.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.ONE), 1,
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1
+        ));
+        set7.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.FIVE), 1,
+                new Tile(TileType.BAMBOO, TileContent.SIX), 1,
+                new Tile(TileType.BAMBOO, TileContent.SEVEN), 1
+        ));
+        set7.addIgnored(new Tile(TileType.BAMBOO, TileContent.FOUR));
+        set7.addIgnored(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+
+        // 11|B 22|B 123|B 345|B 77|B
+        CombinationSet set8 = new CombinationSet();
+        set8.addPair(new Tile(TileType.BAMBOO, TileContent.ONE));
+        set8.addPair(new Tile(TileType.BAMBOO, TileContent.TWO));
+        set8.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.ONE), 1,
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1
+        ));
+        set8.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1,
+                new Tile(TileType.BAMBOO, TileContent.FOUR), 1,
+                new Tile(TileType.BAMBOO, TileContent.FIVE), 1
+        ));
+        set8.addPair(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+        set8.addIgnored(new Tile(TileType.BAMBOO, TileContent.THREE));
+        set8.addIgnored(new Tile(TileType.BAMBOO, TileContent.SIX));
+
+        // 11|B 123|B 234|B 567|B
+        CombinationSet set9 = new CombinationSet();
+        set9.addPair(new Tile(TileType.BAMBOO, TileContent.ONE));
+        set9.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.ONE), 1,
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1
+        ));
+        set9.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1,
+                new Tile(TileType.BAMBOO, TileContent.FOUR), 1
+        ));
+        set9.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.FIVE), 1,
+                new Tile(TileType.BAMBOO, TileContent.SIX), 1,
+                new Tile(TileType.BAMBOO, TileContent.SEVEN), 1
+        ));
+        set9.addIgnored(new Tile(TileType.BAMBOO, TileContent.TWO));
+        set9.addIgnored(new Tile(TileType.BAMBOO, TileContent.THREE));
+        set9.addIgnored(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+
+        // 11|B 123|B 234|B 77|B
+        CombinationSet set10 = new CombinationSet();
+        set10.addPair(new Tile(TileType.BAMBOO, TileContent.ONE));
+        set10.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.ONE), 1,
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1
+        ));
+        set10.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1,
+                new Tile(TileType.BAMBOO, TileContent.FOUR), 1
+        ));
+        set10.addPair(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+        set10.addIgnored(new Tile(TileType.BAMBOO, TileContent.TWO));
+        set10.addIgnored(new Tile(TileType.BAMBOO, TileContent.THREE));
+        set10.addIgnored(new Tile(TileType.BAMBOO, TileContent.FIVE));
+        set10.addIgnored(new Tile(TileType.BAMBOO, TileContent.SIX));
+
+        // 123|B 123|B 123|B 456|B 77|B
+        CombinationSet set11 = new CombinationSet();
+        set11.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.ONE), 1,
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1
+        ), 3);
+        set11.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.FOUR), 1,
+                new Tile(TileType.BAMBOO, TileContent.FIVE), 1,
+                new Tile(TileType.BAMBOO, TileContent.SIX), 1
+        ));
+        set11.addPair(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+
+        // 123|B 123|B 123|B 567|B
+        CombinationSet set12 = new CombinationSet();
+        set12.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.ONE), 1,
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1
+        ), 3);
+        set12.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.FIVE), 1,
+                new Tile(TileType.BAMBOO, TileContent.SIX), 1,
+                new Tile(TileType.BAMBOO, TileContent.SEVEN), 1
+        ));
+        set12.addIgnored(new Tile(TileType.BAMBOO, TileContent.FOUR));
+        set12.addIgnored(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+
+        // 123|B 123|B 234|B 567|B
+        CombinationSet set13 = new CombinationSet();
+        set13.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.ONE), 1,
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1
+        ), 2);
+        set13.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1,
+                new Tile(TileType.BAMBOO, TileContent.FOUR), 1
+        ));
+        set13.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.FIVE), 1,
+                new Tile(TileType.BAMBOO, TileContent.SIX), 1,
+                new Tile(TileType.BAMBOO, TileContent.SEVEN), 1
+        ));
+        set13.addIgnored(new Tile(TileType.BAMBOO, TileContent.ONE));
+        set13.addIgnored(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+
+        // 123|B 123|B 234|B 77|B
+        CombinationSet set14 = new CombinationSet();
+        set14.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.ONE), 1,
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1
+        ), 2);
+        set14.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1,
+                new Tile(TileType.BAMBOO, TileContent.FOUR), 1
+        ));
+        set14.addPair(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+        set14.addIgnored(new Tile(TileType.BAMBOO, TileContent.ONE));
+        set14.addIgnored(new Tile(TileType.BAMBOO, TileContent.FIVE));
+        set14.addIgnored(new Tile(TileType.BAMBOO, TileContent.SIX));
+
+        // 123|B 123|B 345|B 77|B
+        CombinationSet set15 = new CombinationSet();
+        set15.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.ONE), 1,
+                new Tile(TileType.BAMBOO, TileContent.TWO), 1,
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1
+        ), 2);
+        set15.addCombination(CombinationType.CHOW, Map.of(
+                new Tile(TileType.BAMBOO, TileContent.THREE), 1,
+                new Tile(TileType.BAMBOO, TileContent.FOUR), 1,
+                new Tile(TileType.BAMBOO, TileContent.FIVE), 1
+        ));
+        set15.addPair(new Tile(TileType.BAMBOO, TileContent.SEVEN));
+        set15.addIgnored(new Tile(TileType.BAMBOO, TileContent.ONE));
+        set15.addIgnored(new Tile(TileType.BAMBOO, TileContent.TWO));
+        set15.addIgnored(new Tile(TileType.BAMBOO, TileContent.SIX));
+
         // Generate expected hands from adding winning tile
-        List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands = Arrays.asList(
-                // 111|B 222|B 333|B 456|B 77|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.SEVEN), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.THREE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.FOUR), 1)
-                        ))
-                )),
-                // 111|B 222|B 333|B 567|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, new HashMap<>()),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.THREE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.FIVE), 1)
-                        ))
-                )),
-                // 111|B 222|B 33|B 345|B 77|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.THREE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.SEVEN), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.THREE), 1)
-                        ))
-                )),
-                // 111|B 22|B 33|B 234|B 567|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.THREE), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.FIVE), 1)
-                        ))
-                )),
-                // 111|B 22|B 33|B 234|B 77|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.THREE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.SEVEN), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1)
-                        )),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1)
-                        ))
-                )),
-                // 11|B 22|B 33|B 123|B 456|B 77|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.THREE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.SEVEN), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.FOUR), 1)
-                        ))
-                )),
-                // 11|B 22|B 33|B 123|B 567|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.THREE), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.FIVE), 1)
-                        ))
-                )),
-                // 11|B 22|B 123|B 345|B 77|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.SEVEN), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.THREE), 1)
-                        ))
-                )),
-                // 11|B 123|B 234|B 567|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.FIVE), 1)
-                        ))
-                )),
-                // 11|B 123|B 234|B 77|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.SEVEN), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1)
-                        ))
-                )),
-                // 123|B 123|B 123|B 456|B 77|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.SEVEN), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 3),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.FOUR), 1)
-                        ))
-                )),
-                // 123|B 123|B 123|B 567|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, new HashMap<>()),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 3),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.FIVE), 1)
-                        ))
-                )),
-                // 123|B 123|B 234|B 567|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, new HashMap<>()),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 2),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.FIVE), 1)
-                        ))
-                )),
-                // 123|B 123|B 234|B 77|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.SEVEN), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 2),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.TWO), 1)
-                        ))
-                )),
-                // 123|B 123|B 345|B 77|B
-                new HashMap<>(Map.ofEntries(
-                        Map.entry(CombinationType.PAIR, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.SEVEN), 1)
-                        )),
-                        Map.entry(CombinationType.PUNG, new HashMap<>()),
-                        Map.entry(CombinationType.KONG, new HashMap<>()),
-                        Map.entry(CombinationType.CHOW, Map.ofEntries(
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.ONE), 2),
-                                Map.entry(new Tile(TileType.BAMBOO, TileContent.THREE), 1)
-                        ))
-                ))
+        List<CombinationSet> allPossibleHands = Arrays.asList(
+                set1, set2, set3, set4, set5, set6, set7, set8,
+                set9, set10, set11, set12, set13, set14, set15
         );
 
         // Computed hands from the Chow must be in the generated hands
@@ -853,27 +986,9 @@ public class TestHandInfo {
         this.assertHands(hand, allPossibleHands);
     }
 
-    private void assertHands(Hand hand, List<Map<CombinationType, Map<Tile, Integer>>> allPossibleHands) {
-        var res = hand.getPossibleHands();
-
-        int handCount = res.size();
-        assertEquals(handCount, allPossibleHands.size());
-
-        assertTrue(allPossibleHands.stream().allMatch(
-                possibleHand -> res.stream().anyMatch(
-                     resHand -> possibleHand.get(CombinationType.PAIR).size() == resHand.get(CombinationType.PAIR).size() &&
-                                possibleHand.get(CombinationType.PUNG).size() == resHand.get(CombinationType.PUNG).size() &&
-                                possibleHand.get(CombinationType.KONG).size() == resHand.get(CombinationType.KONG).size() &&
-                                possibleHand.get(CombinationType.CHOW).size() == resHand.get(CombinationType.CHOW).size() &&
-                                possibleHand.get(CombinationType.PAIR).entrySet().stream().allMatch(
-                                        e -> e.getValue().equals(resHand.get(CombinationType.PAIR).get(e.getKey()))) &&
-                                possibleHand.get(CombinationType.PUNG).entrySet().stream().allMatch(
-                                        e -> e.getValue().equals(resHand.get(CombinationType.PUNG).get(e.getKey()))) &&
-                                possibleHand.get(CombinationType.KONG).entrySet().stream().allMatch(
-                                        e -> e.getValue().equals(resHand.get(CombinationType.KONG).get(e.getKey()))) &&
-                                possibleHand.get(CombinationType.CHOW).entrySet().stream().allMatch(
-                                        e -> e.getValue().equals(resHand.get(CombinationType.CHOW).get(e.getKey())))
-                )
-        ));
+    private void assertHands(Hand hand, List<CombinationSet> allPossibleHands) {
+        List<CombinationSet> res = hand.getPossibleHands();
+        assertEquals(res.size(), allPossibleHands.size());
+        assertTrue(allPossibleHands.containsAll(res));
     }
 }

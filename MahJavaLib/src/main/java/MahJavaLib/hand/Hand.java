@@ -56,14 +56,15 @@ public class Hand {
      *   - the maximum number of Chows allowed
      */
     private boolean checkCombinationCount(
-            Map<CombinationType, Map<Tile, Integer>> hand,
+            CombinationSet set,
             int pairCount, int nonPairCount,
             int maxPungs, int maxKongs, int maxChows) {
 
-        int pairs = hand.get(CombinationType.PAIR).values().stream().reduce(0, Integer::sum);
-        int pungs = hand.get(CombinationType.PUNG).values().stream().reduce(0, Integer::sum);
-        int kongs = hand.get(CombinationType.KONG).values().stream().reduce(0, Integer::sum);
-        int chows = hand.get(CombinationType.CHOW).values().stream().reduce(0, Integer::sum);
+        int pairs = set.getPairs().size();
+        int pungs = set.getCombinations(CombinationType.PUNG).size();
+        int kongs = set.getCombinations(CombinationType.KONG).size();
+        int chows = set.getCombinations(CombinationType.CHOW).size();
+        int ignored = set.getIgnored().size();
 
         pungs += this.openCombinations.stream()
                 .map(Combination::getCombinationType).filter(c -> c == CombinationType.PUNG).count();
@@ -74,7 +75,7 @@ public class Hand {
 
         kongs += this.concealedKongs.size();
 
-        return pairs == pairCount && pungs+kongs+chows == nonPairCount &&
+        return ignored == 0 && pairs == pairCount && pungs+kongs+chows == nonPairCount &&
                 pungs <= maxPungs && kongs <= maxKongs && chows <= maxChows;
     }
 
@@ -84,8 +85,8 @@ public class Hand {
      * This method checks this for each possible hand we may have, given the necessary parameters.
      */
     private boolean checkCountForAllHands(int pairCount, int nonPairCount, int maxPungs, int maxKongs, int maxChows) {
-        for (Map<CombinationType, Map<Tile, Integer>> hand : this.info.getAllPossibleHands()) {
-            if (this.checkCombinationCount(hand, pairCount, nonPairCount, maxPungs, maxKongs, maxChows))
+        for (CombinationSet set : this.info.getAllPossibleHands()) {
+            if (this.checkCombinationCount(set, pairCount, nonPairCount, maxPungs, maxKongs, maxChows))
                 return true;
         }
 
@@ -150,11 +151,11 @@ public class Hand {
             Function<Tile, T> pairValue, Function<T, Boolean> pairCondition,
             int maxChows) {
 
-        for (Map<CombinationType, Map<Tile, Integer>> hand : this.info.getAllPossibleHands()) {
-            if (!this.checkCombinationCount(hand, 1, 4, 4, 4, maxChows))
+        for (CombinationSet set : this.info.getAllPossibleHands()) {
+            if (!this.checkCombinationCount(set, 1, 4, 4, 4, maxChows))
                 continue;
 
-            Tile pair = new ArrayList<>(hand.get(CombinationType.PAIR).keySet()).get(0);
+            Tile pair = set.getPairs().get(0);
             // We extract the type/content of the Pair tile and apply the pairCondition.
             // Ignores the hand if the allowed Pair values do not contain the Pair tile.
             if (!pairCondition.apply(pairValue.apply(pair)))
@@ -169,7 +170,7 @@ public class Hand {
             boolean allTilesMatch = true;
 
             // Check all pungs
-            for (Tile t : hand.get(CombinationType.PUNG).keySet()) {
+            for (Tile t : set.getCombinationTiles(CombinationType.PUNG)) {
                 // If it is a mandatory tile, then it will be updated to true. Otherwise, it will keep the stored value.
                 conditions.replaceAll((k, v) -> v || t.getContent() == k);
                 // If the tile's type/content is allowed, then all tiles still match. Otherwise, it will become false.
@@ -178,7 +179,7 @@ public class Hand {
             }
 
             // Check all kongs
-            for (Tile t : hand.get(CombinationType.KONG).keySet()) {
+            for (Tile t : set.getCombinationTiles(CombinationType.KONG)) {
                 // If it is a mandatory tile, then it will be updated to true. Otherwise, it will keep the stored value.
                 conditions.replaceAll((k, v) -> v || t.getContent() == k);
                 // If the tile's type/content is allowed, then all tiles still match. Otherwise, it will become false.
@@ -186,7 +187,7 @@ public class Hand {
                         (contents.containsKey(t.getContent()) || types.containsKey(t.getType()));
             }
 
-            for (Tile t : hand.get(CombinationType.CHOW).keySet()) {
+            for (Tile t : set.getCombinationTiles(CombinationType.CHOW)) {
                 // If the tile's type/content is allowed, then all tiles still match. Otherwise, it will become false.
                 allTilesMatch = allTilesMatch &&
                         (contents.containsKey(t.getContent()) || types.containsKey(t.getType()));
@@ -457,7 +458,7 @@ public class Hand {
         return count;
     }
 
-    public List<Map<CombinationType, Map<Tile, Integer>>> getPossibleHands() {
+    public List<CombinationSet> getPossibleHands() {
         return this.info.getAllPossibleHands();
     }
 
@@ -505,10 +506,10 @@ public class Hand {
         this.concealedKongs.add(kongTile);
     }
 
-    public Map<Combination, List<Map<CombinationType, Map<Tile, Integer>>>> getPossibleCombinationsForTile(
+    public Map<Combination, List<CombinationSet>> getPossibleCombinationsForTile(
             Tile discardedTile) {
 
-        Map<Combination, List<Map<CombinationType, Map<Tile, Integer>>>> res = new HashMap<>();
+        Map<Combination, List<CombinationSet>> res = new HashMap<>();
 
         var chows = discardedTile.getPossibleChowCombinations()
                 .stream()
@@ -524,13 +525,12 @@ public class Hand {
 
             remainingTiles.forEach(this::removeTile);
             this.info.updateHands(this.concealedTiles);
-            this.info.getAllPossibleHands().forEach(h -> {
-                h.get(CombinationType.CHOW).merge(chow.get(0), 1, Integer::sum);
-                this.openCombinations.forEach(c -> {
-                    Tile t = (Tile) c.getTiles().keySet().stream().sorted().toArray()[0];
-                    h.get(c.getCombinationType()).merge(t, c.getTiles().get(t), Integer::sum);
-                });
-                this.concealedKongs.forEach(k -> h.get(CombinationType.KONG).put(k, 1));
+            this.info.getAllPossibleHands().forEach(set -> {
+                Map<Tile, Integer> chowTiles = new HashMap<>();
+                chow.forEach(t -> chowTiles.put(t, 1));
+                set.addCombination(CombinationType.CHOW, chowTiles);
+                this.openCombinations.forEach(c -> set.addCombination(c.getCombinationType(), c.getTiles()));
+                this.concealedKongs.forEach(k -> set.addCombination(CombinationType.KONG, Map.of(k, 4)));
             });
             Combination combination = new Combination(CombinationType.CHOW, chow);
             res.put(combination, this.info.getAllPossibleHands());
@@ -542,13 +542,10 @@ public class Hand {
         if (count != null && count == 3) {
             this.concealedTiles.remove(discardedTile);
             this.info.updateHands(this.concealedTiles);
-            this.info.getAllPossibleHands().forEach(h -> {
-                h.get(CombinationType.KONG).merge(discardedTile, 1, Integer::sum);
-                this.openCombinations.forEach(c -> {
-                    Tile t = (Tile) c.getTiles().keySet().stream().sorted().toArray()[0];
-                    h.get(c.getCombinationType()).merge(t, c.getTiles().get(t), Integer::sum);
-                });
-                this.concealedKongs.forEach(k -> h.get(CombinationType.KONG).put(k, 1));
+            this.info.getAllPossibleHands().forEach(set -> {
+                set.addCombination(CombinationType.KONG, Map.of(discardedTile, 4));
+                this.openCombinations.forEach(c -> set.addCombination(c.getCombinationType(), c.getTiles()));
+                this.concealedKongs.forEach(k -> set.addCombination(CombinationType.KONG, Map.of(k, 4)));
             });
             Combination combination = new Combination(CombinationType.KONG, Collections.nCopies(4, discardedTile));
             res.put(combination, this.info.getAllPossibleHands());
@@ -562,13 +559,10 @@ public class Hand {
                 this.concealedTiles.put(discardedTile, 1);
 
             this.info.updateHands(this.concealedTiles);
-            this.info.getAllPossibleHands().forEach(h -> {
-                        h.get(CombinationType.PUNG).merge(discardedTile, 1, Integer::sum);
-                        this.openCombinations.forEach(c -> {
-                            Tile t = (Tile) c.getTiles().keySet().stream().sorted().toArray()[0];
-                            h.get(c.getCombinationType()).merge(t, c.getTiles().get(t), Integer::sum);
-                        });
-                        this.concealedKongs.forEach(k -> h.get(CombinationType.KONG).put(k, 1));
+            this.info.getAllPossibleHands().forEach(set -> {
+                set.addCombination(CombinationType.PUNG, Map.of(discardedTile, 3));
+                this.openCombinations.forEach(c -> set.addCombination(c.getCombinationType(), c.getTiles()));
+                this.concealedKongs.forEach(k -> set.addCombination(CombinationType.KONG, Map.of(k, 4)));
             });
             Combination combination = new Combination(CombinationType.PUNG, Collections.nCopies(3, discardedTile));
             res.put(combination, this.info.getAllPossibleHands());
@@ -620,30 +614,23 @@ public class Hand {
         return canWin;
     }
 
-    private List<Map<CombinationType, Map<Tile, Integer>>> getFourCombinationsPlusPair() {
-        List<Map<CombinationType, Map<Tile, Integer>>> res = new ArrayList<>();
-        for (Map<CombinationType, Map<Tile, Integer>> hand : this.info.getAllPossibleHands())
-            if (this.checkCombinationCount(hand, 1, 4, 4, 4, 4)) {
-                for (Combination combination : this.openCombinations) {
-                    Tile t = combination.getTiles().keySet().stream().findFirst().get();
-                    hand.get(combination.getCombinationType()).merge(t, 1, Integer::sum);
-                }
-                for (Tile kongTile : this.concealedKongs) {
-                    hand.get(CombinationType.KONG).put(kongTile, 1);
-                }
-                res.add(hand);
+    private List<CombinationSet> getFourCombinationsPlusPair() {
+        List<CombinationSet> res = new ArrayList<>();
+        for (CombinationSet set : this.info.getAllPossibleHands())
+            if (this.checkCombinationCount(set, 1, 4, 4, 4, 4)) {
+                for (Combination combination : this.openCombinations)
+                    set.addCombination(combination);
+                for (Tile kongTile : this.concealedKongs)
+                    set.addCombination(CombinationType.KONG, Map.of(kongTile, 4));
+                res.add(set);
             }
-
         return res;
     }
 
-    private Map<CombinationType, Map<Tile, Integer>> getSevenPairs() {
-        return Map.of(
-                CombinationType.PUNG, new HashMap<>(),
-                CombinationType.KONG, new HashMap<>(),
-                CombinationType.CHOW, new HashMap<>(),
-                CombinationType.PAIR, this.concealedTiles
-        );
+    private CombinationSet getSevenPairs() {
+        CombinationSet set = new CombinationSet();
+        this.concealedTiles.keySet().forEach(set::addPair);
+        return set;
     }
 
     public Integer calculateHandValue(
@@ -661,7 +648,7 @@ public class Hand {
 
         int score = this.isLittleThreeDragons() ? 4 : 0;
 
-        List<Map<CombinationType, Map<Tile, Integer>>> winningHands = new ArrayList<>();
+        List<CombinationSet> winningHands = new ArrayList<>();
 
         if (this.isSevenPairs()) {
             score = 4;
@@ -671,14 +658,12 @@ public class Hand {
         }
 
         int maxScore = score;
-        for (Map<CombinationType, Map<Tile, Integer>> winningHand : winningHands) {
-            System.out.println("Winning hand: ");
-            winningHand.entrySet().stream()
-                    .filter(c -> !c.getValue().isEmpty())
-                    .forEach(c -> System.out.println("\t" + c));
+        for (CombinationSet winningHand : winningHands) {
+            System.out.println("Winning hand:");
+            System.out.println(winningHand);
 
-            Set<Tile> pungs = winningHand.get(CombinationType.PUNG).keySet();
-            Set<Tile> kongs = winningHand.get(CombinationType.KONG).keySet();
+            List<Tile> pungs = winningHand.getCombinationTiles(CombinationType.PUNG);
+            List<Tile> kongs = winningHand.getCombinationTiles(CombinationType.KONG);
 
             int aux = score;
 
@@ -690,22 +675,15 @@ public class Hand {
             aux += pungs.stream().filter(t -> t.getType() == TileType.WIND && t.getContent() == roundWind).count();
             aux += kongs.stream().filter(t -> t.getType() == TileType.WIND && t.getContent() == roundWind).count();
 
-            if (winningHand.get(CombinationType.CHOW).size() == 4)
+            if (winningHand.getCombinations(CombinationType.CHOW).size() == 4)
                 aux += 1; // Hand composed of only Chows is worth 1 Fan
             else if (pungs.size() + kongs.size() == 4)
                 aux += 3; // Hand composed of only Pungs/Kongs is worth 3 Fan
 
-            List<TileType> handSuites = winningHand.values().stream()
-                    .flatMap(m -> m.keySet().stream())
-                    .map(Tile::getType)
-                    .distinct()
-                    .collect(Collectors.toList());
-
+            List<TileType> handSuites = winningHand.getSuites();
             if (handSuites.size() == 1)
                 aux += 6; // Hand composed of only 1 suite is worth 6 Fan
-
-            handSuites = handSuites.stream().filter(tt -> !tt.isSpecialType()).collect(Collectors.toList());
-            if (handSuites.size() == 1)
+            else if (handSuites.stream().filter(tt -> !tt.isSpecialType()).count() == 1)
                 aux += 3; // Hand composed of 1 suite and Dragons/Winds is worth 3 Fan
 
             // Consider only the maximum score over all possible winning hands

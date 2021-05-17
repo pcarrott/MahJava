@@ -1,6 +1,7 @@
 package MahJavaLib.player;
 
 import MahJavaLib.game.OpenGame;
+import MahJavaLib.hand.CombinationSet;
 import MahJavaLib.hand.Hand;
 import MahJavaLib.tile.Combination;
 import MahJavaLib.tile.CombinationType;
@@ -82,7 +83,7 @@ class Composed implements Profile {
      */
     @Override
     public Optional<Combination> wantsDiscardedTile(Tile discardedTile, Hand hand, OpenGame game) {
-        var combinations = hand.getPossibleCombinationsForTile(discardedTile);
+        Map<Combination, List<CombinationSet>> combinations = hand.getPossibleCombinationsForTile(discardedTile);
         Integer count = hand.getHand().get(discardedTile);
         List<Combination> options = new ArrayList<>();
         boolean hasChow = false;
@@ -126,15 +127,15 @@ class Composed implements Profile {
         // if we declare it and extract the Chow with the highest amount.
         Combination combination = options.stream().map(c -> {
                     long maxChows = combinations.get(c).stream()
-                            .map(h -> h.entrySet().stream()
-                                    .filter(e -> e.getKey() == CombinationType.CHOW)
-                                    .count() // Count the chows for each possible hand
-                            )
-                            .max(Long::compareTo).get(); // Get the maximum Chows if we declare this Chow
+                            // Count the chows for each possible hand
+                            .map(set -> set.getCombinations(CombinationType.CHOW).size())
+                            // Get the maximum Chows if we declare this Chow
+                            .max(Integer::compareTo).get();
                     return Map.entry(c, maxChows);
                 }
         )
-        .reduce((e1, e2) -> e1.getValue() > e2.getValue() ? e1 : e2).get().getKey(); // Get the Chow with the highest maximum
+        // Get the Chow with the highest maximum
+        .reduce((e1, e2) -> e1.getValue() > e2.getValue() ? e1 : e2).get().getKey();
         return Optional.of(combination);
     }
 
