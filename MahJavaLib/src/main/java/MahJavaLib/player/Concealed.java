@@ -25,7 +25,7 @@ public class Concealed implements Profile {
      */
     @Override
     public Tile chooseTileToDiscard(Hand hand, OpenGame game) {
-        return null;
+        return (Tile) hand.getHand().keySet().toArray()[0];
     }
 
     /*

@@ -85,7 +85,7 @@ public class Hand {
      * This method checks this for each possible hand we may have, given the necessary parameters.
      */
     private boolean checkCountForAllHands(int pairCount, int nonPairCount, int maxPungs, int maxKongs, int maxChows) {
-        for (CombinationSet set : this.info.getAllPossibleHands()) {
+        for (CombinationSet set : this.info.getAllPossibleCombinationSets()) {
             if (this.checkCombinationCount(set, pairCount, nonPairCount, maxPungs, maxKongs, maxChows))
                 return true;
         }
@@ -151,7 +151,7 @@ public class Hand {
             Function<Tile, T> pairValue, Function<T, Boolean> pairCondition,
             int maxChows) {
 
-        for (CombinationSet set : this.info.getAllPossibleHands()) {
+        for (CombinationSet set : this.info.getAllPossibleCombinationSets()) {
             if (!this.checkCombinationCount(set, 1, 4, 4, 4, maxChows))
                 continue;
 
@@ -458,8 +458,8 @@ public class Hand {
         return count;
     }
 
-    public List<CombinationSet> getPossibleHands() {
-        return this.info.getAllPossibleHands();
+    public List<CombinationSet> getPossibleCombinationSets() {
+        return this.info.getAllPossibleCombinationSets();
     }
 
     public void addTile(Tile tileToAdd) throws IllegalArgumentException {
@@ -472,7 +472,7 @@ public class Hand {
             }
             this.concealedTiles.put(tileToAdd, count + 1);
         }
-        this.info.updateHands(this.concealedTiles);
+        this.info.updateCombinationSets(this.concealedTiles);
     }
 
     public void removeTile(Tile tile) {
@@ -484,7 +484,7 @@ public class Hand {
             } else {
                 this.concealedTiles.remove(tile);
             }
-            this.info.updateHands(this.concealedTiles);
+            this.info.updateCombinationSets(this.concealedTiles);
         }
     }
 
@@ -524,8 +524,8 @@ public class Hand {
                     .collect(Collectors.toList());
 
             remainingTiles.forEach(this::removeTile);
-            this.info.updateHands(this.concealedTiles);
-            this.info.getAllPossibleHands().forEach(set -> {
+            this.info.updateCombinationSets(this.concealedTiles);
+            this.info.getAllPossibleCombinationSets().forEach(set -> {
                 Map<Tile, Integer> chowTiles = new HashMap<>();
                 chow.forEach(t -> chowTiles.put(t, 1));
                 set.addCombination(CombinationType.CHOW, chowTiles);
@@ -533,7 +533,7 @@ public class Hand {
                 this.concealedKongs.forEach(k -> set.addCombination(CombinationType.KONG, Map.of(k, 4)));
             });
             Combination combination = new Combination(CombinationType.CHOW, chow);
-            res.put(combination, this.info.getAllPossibleHands());
+            res.put(combination, this.info.getAllPossibleCombinationSets());
             remainingTiles.forEach(this::addTile);
         }
 
@@ -541,14 +541,14 @@ public class Hand {
 
         if (count != null && count == 3) {
             this.concealedTiles.remove(discardedTile);
-            this.info.updateHands(this.concealedTiles);
-            this.info.getAllPossibleHands().forEach(set -> {
+            this.info.updateCombinationSets(this.concealedTiles);
+            this.info.getAllPossibleCombinationSets().forEach(set -> {
                 set.addCombination(CombinationType.KONG, Map.of(discardedTile, 4));
                 this.openCombinations.forEach(c -> set.addCombination(c.getCombinationType(), c.getTiles()));
                 this.concealedKongs.forEach(k -> set.addCombination(CombinationType.KONG, Map.of(k, 4)));
             });
             Combination combination = new Combination(CombinationType.KONG, Collections.nCopies(4, discardedTile));
-            res.put(combination, this.info.getAllPossibleHands());
+            res.put(combination, this.info.getAllPossibleCombinationSets());
             this.concealedTiles.put(discardedTile, 3);
         }
 
@@ -558,19 +558,19 @@ public class Hand {
             else
                 this.concealedTiles.put(discardedTile, 1);
 
-            this.info.updateHands(this.concealedTiles);
-            this.info.getAllPossibleHands().forEach(set -> {
+            this.info.updateCombinationSets(this.concealedTiles);
+            this.info.getAllPossibleCombinationSets().forEach(set -> {
                 set.addCombination(CombinationType.PUNG, Map.of(discardedTile, 3));
                 this.openCombinations.forEach(c -> set.addCombination(c.getCombinationType(), c.getTiles()));
                 this.concealedKongs.forEach(k -> set.addCombination(CombinationType.KONG, Map.of(k, 4)));
             });
             Combination combination = new Combination(CombinationType.PUNG, Collections.nCopies(3, discardedTile));
-            res.put(combination, this.info.getAllPossibleHands());
+            res.put(combination, this.info.getAllPossibleCombinationSets());
 
             this.concealedTiles.merge(discardedTile, 2, Integer::sum);
         }
 
-        this.info.updateHands(this.concealedTiles);
+        this.info.updateCombinationSets(this.concealedTiles);
         return res;
     }
 
@@ -616,7 +616,7 @@ public class Hand {
 
     private List<CombinationSet> getFourCombinationsPlusPair() {
         List<CombinationSet> res = new ArrayList<>();
-        for (CombinationSet set : this.info.getAllPossibleHands())
+        for (CombinationSet set : this.info.getAllPossibleCombinationSets())
             if (this.checkCombinationCount(set, 1, 4, 4, 4, 4)) {
                 for (Combination combination : this.openCombinations)
                     set.addCombination(combination);

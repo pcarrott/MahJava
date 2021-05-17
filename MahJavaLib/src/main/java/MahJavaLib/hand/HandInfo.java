@@ -14,21 +14,21 @@ import java.util.stream.Collectors;
  */
 class HandInfo {
 
-    // @NOTE: rename allPossibleHands to allPossibleCombinations, and add a Set that contains all pieces that can Pair
-    private List<CombinationSet> allPossibleHands;
+    private List<CombinationSet> allPossibleCombinationSets;
     private final Map<Tile, Tile> ignoredTiles = new HashMap<>();
 
     public HandInfo() {}
 
-    public void updateHands(Map<Tile, Integer> tileCounter) {
-        // Distinct is used because there seems to be some cases where the same hand appears more than once.
-        this.allPossibleHands = computeHands(tileCounter).stream().distinct().collect(Collectors.toList());
+    public void updateCombinationSets(Map<Tile, Integer> tileCounter) {
+        // Distinct is used because there seems to be some cases where the same combination set appears more than once.
+        this.allPossibleCombinationSets = this.computeCombinationSets(tileCounter)
+                .stream().distinct().collect(Collectors.toList());
     }
 
     /*
-     * Recursive function to obtain all possible different combinations for the given hand.
+     * Recursive function to obtain all possible different combination sets for the given hand.
      */
-    private List<CombinationSet> computeHands(Map<Tile, Integer> tileCounter) {
+    private List<CombinationSet> computeCombinationSets(Map<Tile, Integer> tileCounter) {
 
         /*
          * No tiles are left to check, so we have the stop case of the recursion:
@@ -39,17 +39,17 @@ class HandInfo {
 
         Tile tile = (Tile) tileCounter.keySet().toArray()[0];
         Integer count = tileCounter.get(tile);
-        List<CombinationSet> currentHands = new ArrayList<>();
+        List<CombinationSet> currentCombinationSets = new ArrayList<>();
 
         /*
          * For every tile we must consider the possibility of doing a chow with it
          */
-        tryChow(tile, tileCounter, currentHands);
+        tryChow(tile, tileCounter, currentCombinationSets);
 
         if (count == 1 && this.canIgnore(tile, tileCounter)) {
             /*
              * We already checked the scenario where the tile is used for a chow.
-             * We must now see the hands we can make if we ignore the tile in question.
+             * We must now see the combination sets we can make if we ignore the tile in question.
              * For example, if we have the tiles 1, 2, 3 and 4 of one suite, must consider the following scenarios:
              *   - 123 chow and ignore 4
              *   - 234 chow and ignore 1
@@ -59,9 +59,9 @@ class HandInfo {
 
             this.ignoredTiles.put(tile, tile);
             tileCounter.remove(tile);
-            List<CombinationSet> computedHands = computeHands(tileCounter);
-            computedHands.forEach(set -> set.addIgnored(tile));
-            currentHands.addAll(computedHands);
+            List<CombinationSet> computeCombinationSets = this.computeCombinationSets(tileCounter);
+            computeCombinationSets.forEach(set -> set.addIgnored(tile));
+            currentCombinationSets.addAll(computeCombinationSets);
             tileCounter.put(tile, count);
             this.ignoredTiles.remove(tile);
 
@@ -74,9 +74,9 @@ class HandInfo {
              */
 
             tileCounter.remove(tile);
-            List<CombinationSet> computedHands = computeHands(tileCounter);
-            computedHands.forEach(set -> set.addPair(tile));
-            currentHands.addAll(computedHands);
+            List<CombinationSet> computeCombinationSets = this.computeCombinationSets(tileCounter);
+            computeCombinationSets.forEach(set -> set.addPair(tile));
+            currentCombinationSets.addAll(computeCombinationSets);
             tileCounter.put(tile, count);
 
         } else if (count == 3) {
@@ -89,9 +89,9 @@ class HandInfo {
              */
 
             tileCounter.remove(tile);
-            List<CombinationSet> computedHands = computeHands(tileCounter);
-            computedHands.forEach(set -> set.addCombination(CombinationType.PUNG, Map.of(tile, 3)));
-            currentHands.addAll(computedHands);
+            List<CombinationSet> computeCombinationSets = this.computeCombinationSets(tileCounter);
+            computeCombinationSets.forEach(set -> set.addCombination(CombinationType.PUNG, Map.of(tile, 3)));
+            currentCombinationSets.addAll(computeCombinationSets);
             tileCounter.put(tile, count);
 
         } else if (count == 4) {
@@ -105,23 +105,22 @@ class HandInfo {
              */
 
             tileCounter.remove(tile);
-            List<CombinationSet> computedHands = computeHands(tileCounter);
-            computedHands.forEach(set -> set.addPair(tile, 2));
-            currentHands.addAll(computedHands);
+            List<CombinationSet> computeCombinationSets = this.computeCombinationSets(tileCounter);
+            computeCombinationSets.forEach(set -> set.addPair(tile, 2));
+            currentCombinationSets.addAll(computeCombinationSets);
             tileCounter.put(tile, count);
         }
 
-        return currentHands;
+        return currentCombinationSets;
     }
 
     /*
-     * For the given tile, we try to see what combinations we can get with each chow.
-     * We call setCurrentHands directly instead of calling setCombinations because the tiles are removed differently.
+     * For the given tile, we try to see what combination sets we can get with each chow.
      */
     private void tryChow(
             Tile tile,
             Map<Tile, Integer> tileCounter,
-            List<CombinationSet> currentHands) {
+            List<CombinationSet> currentCombinationSets) {
 
         var chows = tile.getPossibleChowCombinations();
 
@@ -140,12 +139,12 @@ class HandInfo {
                     tileCounter.put(t, count - 1);
             }
 
-            // We call the recursion and add a chow to each generated hand
-            List<CombinationSet> computedHands = computeHands(tileCounter);
+            // We call the recursion and add a chow to each generated combination set
+            List<CombinationSet> computedCombinationSets = this.computeCombinationSets(tileCounter);
             Map<Tile, Integer> chowTiles = new HashMap<>();
             chow.forEach(t -> chowTiles.put(t, 1));
-            computedHands.forEach(set -> set.addCombination(CombinationType.CHOW, chowTiles));
-            currentHands.addAll(computedHands);
+            computedCombinationSets.forEach(set -> set.addCombination(CombinationType.CHOW, chowTiles));
+            currentCombinationSets.addAll(computedCombinationSets);
 
             // We no longer need the chow, so we increment each tile's count so that they have the same count as before
             // Tile that were removed are re-put
@@ -163,8 +162,7 @@ class HandInfo {
     private List<List<Tile>> getPossibleChows(Tile tile, Map<Tile, Integer> tileCounter) {
         return tile.getPossibleChowCombinations().stream()
                 .filter(chow -> chow.stream().allMatch(
-                        t -> tileCounter.containsKey(t) || this.ignoredTiles.containsKey(t))
-                )
+                        t -> tileCounter.containsKey(t) || this.ignoredTiles.containsKey(t)))
                 .collect(Collectors.toList());
     }
 
@@ -188,18 +186,14 @@ class HandInfo {
      *
      * (I can't believe this method has more comments than code...)
      */
-    private boolean canIgnore(
-            Tile tile,
-            Map<Tile, Integer> tileCounter) {
-
+    private boolean canIgnore(Tile tile, Map<Tile, Integer> tileCounter) {
         // We get the possible chows for this tile, given the remaining tiles available.
         var chows = this.getPossibleChows(tile, tileCounter);
 
         // Here we check if there is a chow with two ignored tiles.
         // If so, then we cannot ignore the tile because we would be ignoring a full chow.
         if (chows.stream().anyMatch(
-                c -> c.stream().filter(t -> !t.equals(tile)).allMatch(this.ignoredTiles::containsKey)
-        ))
+                c -> c.stream().filter(t -> !t.equals(tile)).allMatch(this.ignoredTiles::containsKey)))
             return false;
 
         if (chows.size() == 1) {
@@ -221,8 +215,7 @@ class HandInfo {
              */
             return chows.get(0).stream().anyMatch(
                     t -> this.getPossibleChows(t, tileCounter).size() > 1 ||
-                            (tileCounter.get(t) != null && tileCounter.get(t) > 1)
-            );
+                            (tileCounter.get(t) != null && tileCounter.get(t) > 1));
 
         } else if (chows.size() == 2) {
             /*
@@ -253,7 +246,7 @@ class HandInfo {
             Tile smallest = chows.get(0).get(0);
             Tile largest = chows.get(1).get(2);
             return this.getPossibleChows(smallest, tileCounter).size() > 1 ||
-                    this.getPossibleChows(largest, tileCounter).size() > 1;
+                   this.getPossibleChows(largest, tileCounter).size() > 1;
 
         } else if (chows.size() == 3) {
             /*
@@ -296,7 +289,7 @@ class HandInfo {
         return true;
     }
 
-    public List<CombinationSet> getAllPossibleHands() {
-        return this.allPossibleHands;
+    public List<CombinationSet> getAllPossibleCombinationSets() {
+        return this.allPossibleCombinationSets;
     }
 }

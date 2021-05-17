@@ -987,7 +987,7 @@ public class TestHandInfo {
     }
 
     private void assertHands(Hand hand, List<CombinationSet> allPossibleHands) {
-        List<CombinationSet> res = hand.getPossibleHands();
+        List<CombinationSet> res = hand.getPossibleCombinationSets();
         assertEquals(res.size(), allPossibleHands.size());
         assertTrue(allPossibleHands.containsAll(res));
     }

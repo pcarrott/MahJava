@@ -57,7 +57,7 @@ class Composed implements Profile {
         List<Tile> maxTiles = new ArrayList<>();
         Integer maxCount = 0;
         // Filter all tiles with highest count currently in the open
-        for (Map.Entry<Tile, Integer> e : hand.getHand().entrySet()) {
+        for (Map.Entry<Tile, Integer> e : candidateTiles.entrySet()) {
             Tile tile = e.getKey();
             Integer count = e.getValue();
             if (count > maxCount) { // Update the new highest count
@@ -79,7 +79,7 @@ class Composed implements Profile {
      *   1. Can claim a Pung without a fourth equal tile
      *   2. Can claim a Pung with a fourth tile belonging to a Chow
      *   3. Can claim a Kong if there is no Chow being made with the tile
-     *   4. Can claim a Chow if it does not break a concealed Pair/Pung
+     *   4. Can claim a Chow if it does not break a concealed Pair/Pung and if they do not have the tile yet
      */
     @Override
     public Optional<Combination> wantsDiscardedTile(Tile discardedTile, Hand hand, OpenGame game) {
@@ -89,7 +89,7 @@ class Composed implements Profile {
         boolean hasChow = false;
         for (Combination combination : combinations.keySet()) {
             CombinationType type = combination.getCombinationType();
-            List<Tile> tiles = new ArrayList<>(combination.getTiles().keySet());
+            Set<Tile> tiles = combination.getTiles().keySet();
 
             if (type == CombinationType.PUNG && count == 2) {
                 return Optional.of(combination); // Scenario 1.
@@ -97,15 +97,13 @@ class Composed implements Profile {
             } else if (type == CombinationType.KONG && !hasChow) {
                 options.add(combination); // Scenario 3.
 
-            } else if (type == CombinationType.CHOW &&
+            } else if (type == CombinationType.CHOW && !hand.getHand().containsKey(discardedTile) &&
                     tiles.stream().noneMatch(t -> hand.getHand().containsKey(t) && hand.getHand().get(t) > 1)) {
 
-                if (Integer.valueOf(3).equals(count)) {
+                if (Integer.valueOf(3).equals(count))
                     return Optional.of(
                             new Combination(CombinationType.PUNG, Collections.nCopies(3, discardedTile))
                     ); // Scenario 2.
-
-                }
 
                 hasChow = true; // Scenario 3. no longer possible
                 if (!options.isEmpty() && options.get(0).getCombinationType() == CombinationType.KONG)
@@ -126,8 +124,8 @@ class Composed implements Profile {
         // Here we map each Chow to the maximum number of chows possibles in our hand
         // if we declare it and extract the Chow with the highest amount.
         Combination combination = options.stream().map(c -> {
-                    long maxChows = combinations.get(c).stream()
-                            // Count the chows for each possible hand
+                    int maxChows = combinations.get(c).stream()
+                            // Count the chows for each possible combination set
                             .map(set -> set.getCombinations(CombinationType.CHOW).size())
                             // Get the maximum Chows if we declare this Chow
                             .max(Integer::compareTo).get();
