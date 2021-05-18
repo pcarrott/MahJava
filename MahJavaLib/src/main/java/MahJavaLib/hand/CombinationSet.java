@@ -49,6 +49,13 @@ public class CombinationSet {
         return new ArrayList<>(this.combinations.get(type));
     }
 
+    public long getCombinationCount(Tile tile) {
+        return this.combinations.values().stream()
+                .flatMap(Collection::stream)
+                .filter(m -> m.containsKey(tile))
+                .count();
+    }
+
     public List<Tile> getCombinationTiles(CombinationType type) {
         return this.combinations.get(type).stream().flatMap(m -> m.keySet().stream()).collect(Collectors.toList());
     }

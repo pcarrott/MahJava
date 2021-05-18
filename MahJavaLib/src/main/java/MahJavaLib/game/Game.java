@@ -371,6 +371,7 @@ public class Game {
         // 1 Extra Fan if it's the last drawable tile or the last discarded tile
         int fan = winner.handValue(playerWind, roundWind, discarded == null, firstPlay) +
                 (this.isBoardWallEmpty() ? bonus + 1 : bonus);
+        fan = Math.min(fan, 64); // Max Fan is 64
 
         int points = this.points(fan);
 
