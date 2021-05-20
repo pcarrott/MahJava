@@ -1,60 +1,61 @@
 package MahJavaLib.analysisData;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class AnalysisData {
-    Map<String, Double> _eagerWins = new HashMap<>();
-    Map<String, Double> _mixedWins = new HashMap<>();
-    Map<String, Double> _concealedWins = new HashMap<>();
-    Map<String, Double> _composedWins = new HashMap<>();
+    Map<String, List<Integer>> _eagerWins = new HashMap<>();
+    Map<String, List<Integer>> _mixedWins = new HashMap<>();
+    Map<String, List<Integer>> _concealedWins = new HashMap<>();
+    Map<String, List<Integer>> _composedWins = new HashMap<>();
 
-    Map<String, Double> _eagerPoints = new HashMap<>();
-    Map<String, Double> _mixedPoints = new HashMap<>();
-    Map<String, Double> _concealedPoints = new HashMap<>();
-    Map<String, Double> _composedPoints = new HashMap<>();
+    Map<String, List<Integer>> _eagerPoints = new HashMap<>();
+    Map<String, List<Integer>> _mixedPoints = new HashMap<>();
+    Map<String, List<Integer>> _concealedPoints = new HashMap<>();
+    Map<String, List<Integer>> _composedPoints = new HashMap<>();
 
-    Map<String, Double> _numberOfMaxScorePlays = new HashMap<>();
+    Map<String, List<Integer>> _numberOfMaxScorePlays = new HashMap<>();
 
-    public Map<String, Double> getEagerWins() {
+    public Map<String, List<Integer>> getEagerWins() {
         return this._eagerWins;
     }
 
-    public Map<String, Double> getMixedWins() {
+    public Map<String, List<Integer>> getMixedWins() {
         return this._mixedWins;
     }
 
-    public Map<String, Double> getConcealedWins() {
+    public Map<String, List<Integer>> getConcealedWins() {
         return this._concealedWins;
     }
 
-    public Map<String, Double> getComposedWins() {
+    public Map<String, List<Integer>> getComposedWins() {
         return this._composedWins;
     }
 
-    public Map<String, Double> getEagerPoints() {
+    public Map<String, List<Integer>> getEagerPoints() {
         return _eagerPoints;
     }
 
-    public Map<String, Double> getMixedPoints() {
+    public Map<String, List<Integer>> getMixedPoints() {
         return _mixedPoints;
     }
 
-    public Map<String, Double> getConcealedPoints() {
+    public Map<String, List<Integer>> getConcealedPoints() {
         return _concealedPoints;
     }
 
-    public Map<String, Double> getComposedPoints() {
+    public Map<String, List<Integer>> getComposedPoints() {
         return _composedPoints;
     }
     
-    public Map<String, Double> getNumberOfMaxScorePlays() {
+    public Map<String, List<Integer>> getNumberOfMaxScorePlays() {
         return _numberOfMaxScorePlays;
     }
 
-    public Map<String, Double> getWinsOf(String str) throws IllegalStateException {
+    public Map<String, List<Integer>> getWinsOf(String str) throws IllegalStateException {
         switch(str) {
             case "EAGER":
                 return this._eagerWins; 
@@ -70,7 +71,7 @@ public class AnalysisData {
         }
     }
 
-    public Map<String, Double> getPointsOf(String str) {
+    public Map<String, List<Integer>> getPointsOf(String str) {
         switch(str) {
             case "EAGER":
                 return this._eagerPoints; 
@@ -87,104 +88,394 @@ public class AnalysisData {
     }
 
     public void printWinsData() {
-        System.out.println("EAGER: " + this._eagerWins.entrySet());
-        System.out.println("MIXED: " + this._mixedWins.entrySet());
-        System.out.println("CONCEALED: " + this._concealedWins.entrySet());
-        System.out.println("COMPOSED: " + this._composedWins.entrySet());
+        Map<String,Double> eagerWins = new HashMap<>();
+        Map<String,Double> mixedWins = new HashMap<>();
+        Map<String,Double> concealedWins = new HashMap<>();
+        Map<String,Double> composedWins = new HashMap<>();
+
+
+        List<String> keys = Arrays.asList("EAGER", "COMPOSED", "CONCEALED", "MIXED", "TOTAL", "DRAW");
+        for(String key : keys) {
+            eagerWins.put(key, 0.0);
+        }
+        for(String key : keys) {
+            mixedWins.put(key, 0.0);
+        }
+
+        for(String key : keys) {
+            concealedWins.put(key, 0.0);
+        }
+
+        for(String key : keys) {
+            composedWins.put(key, 0.0);
+        }
+
+        Map<String,Map<String,Double>> winsMap = new HashMap<>();
+        winsMap.put("EAGER",eagerWins);
+        winsMap.put("MIXED",mixedWins);
+        winsMap.put("CONCEALED",concealedWins);
+        winsMap.put("COMPOSED",composedWins);
+
+        keys = Arrays.asList("EAGER", "COMPOSED", "CONCEALED", "MIXED");
+        List<Integer> list = new ArrayList<>();
+
+        for(String key : keys) {
+            for(Map.Entry<String, List<Integer>> entry : this.getWinsOf(key).entrySet()) {
+                list = entry.getValue();
+                for(Integer i : list) {
+                    winsMap.get(key).replace( entry.getKey(), winsMap.get(key).get(entry.getKey()) + i );
+                }
+            }      
+        }
+
+        
+        System.out.println("EAGER: " + eagerWins.entrySet());
+        System.out.println("MIXED: " + mixedWins.entrySet());
+        System.out.println("CONCEALED: " + concealedWins.entrySet());
+        System.out.println("COMPOSED: " + composedWins.entrySet());
     }
     
     public void printPointsData() {
-        System.out.println("EAGER: " + this._eagerPoints.entrySet());
-        System.out.println("MIXED: " + this._mixedPoints.entrySet());
-        System.out.println("CONCEALED: " + this._concealedPoints.entrySet());
-        System.out.println("COMPOSED: " + this._composedPoints.entrySet());
+        Map<String,Double> eagerPoints = new HashMap<>();
+        Map<String,Double> mixedPoints = new HashMap<>();
+        Map<String,Double> concealedPoints = new HashMap<>();
+        Map<String,Double> composedPoints = new HashMap<>();
+
+
+        List<String> keys = Arrays.asList("EAGER", "COMPOSED", "CONCEALED", "MIXED", "TOTAL", "DRAW");
+        for(String key : keys) {
+            eagerPoints.put(key, 0.0);
+        }
+        for(String key : keys) {
+            mixedPoints.put(key, 0.0);
+        }
+
+        for(String key : keys) {
+            concealedPoints.put(key, 0.0);
+        }
+
+        for(String key : keys) {
+            composedPoints.put(key, 0.0);
+        }
+
+        Map<String,Map<String,Double>> pointsMap = new HashMap<>();
+        pointsMap.put("EAGER",eagerPoints);
+        pointsMap.put("MIXED",mixedPoints);
+        pointsMap.put("CONCEALED",concealedPoints);
+        pointsMap.put("COMPOSED",composedPoints);
+
+        keys = Arrays.asList("EAGER", "COMPOSED", "CONCEALED", "MIXED");
+        List<Integer> list = new ArrayList<>();
+
+        for(String key : keys) {
+            for(Map.Entry<String, List<Integer>> entry : this.getPointsOf(key).entrySet()) {
+                list = entry.getValue();
+                for(Integer i : list) {
+                    pointsMap.get(key).replace( entry.getKey(), pointsMap.get(key).get(entry.getKey()) + i );
+                }
+            }      
+        }
+
+        System.out.println("EAGER: " + eagerPoints.entrySet());
+        System.out.println("MIXED: " + mixedPoints.entrySet());
+        System.out.println("CONCEALED: " + concealedPoints.entrySet());
+        System.out.println("COMPOSED: " + composedPoints.entrySet());
     }
 
-    public AnalysisData() {
-        this._eagerWins.put("EAGER",0.0);
-        this._eagerWins.put("MIXED",0.0);
-        this._eagerWins.put("CONCEALED",0.0);
-        this._eagerWins.put("COMPOSED",0.0);
-        this._eagerWins.put("TOTAL",0.0);
+    public void printNumberOfMaxScorePlays() {
+        Map<String,Double> numberOfMaxScorePlays = new HashMap<>();
 
-        this._numberOfMaxScorePlays = new HashMap<String, Double>(this._eagerWins);
 
-        this._eagerWins.put("DRAW",0.0);
+        List<String> keys = Arrays.asList("EAGER", "COMPOSED", "CONCEALED", "MIXED", "TOTAL");
+        for(String key : keys) {
+            numberOfMaxScorePlays.put(key, 0.0);
+        }
 
-        this._mixedWins = new HashMap<String, Double>(this._eagerWins);
-        this._concealedWins = new HashMap<String, Double>(this._eagerWins);
-        this._composedWins = new HashMap<String, Double>(this._eagerWins);
+        keys = Arrays.asList("EAGER", "COMPOSED", "CONCEALED", "MIXED");
+        List<Integer> list = new ArrayList<>();
 
-        this._eagerPoints = new HashMap<String, Double>(this._eagerWins);
-        this._mixedPoints = new HashMap<String, Double>(this._eagerWins);
-        this._concealedPoints = new HashMap<String, Double>(this._eagerWins);
-        this._composedPoints = new HashMap<String, Double>(this._eagerWins);
+        for(Map.Entry<String, List<Integer>> entry : this.getNumberOfMaxScorePlays().entrySet()) {
+            list = entry.getValue();
+            for(Integer i : list) {
+                numberOfMaxScorePlays.replace(entry.getKey(), numberOfMaxScorePlays.get(entry.getKey()) + i);
+            }
+        }
+
+        System.out.println(numberOfMaxScorePlays.entrySet());
+    }
+
+    public void printDataCalculations(int totalGamesPlayed) {
+        Map<String,Double> eagerWins = new HashMap<>();
+        Map<String,Double> mixedWins = new HashMap<>();
+        Map<String,Double> concealedWins = new HashMap<>();
+        Map<String,Double> composedWins = new HashMap<>();
+
+        Map<String,Double> eagerPoints = new HashMap<>();
+        Map<String,Double> mixedPoints = new HashMap<>();
+        Map<String,Double> concealedPoints = new HashMap<>();
+        Map<String,Double> composedPoints = new HashMap<>();
+
+        Map<String,Double> numberOfMaxScorePlays = new HashMap<>();
+
+        List<String> keys = Arrays.asList("EAGER", "COMPOSED", "CONCEALED", "MIXED", "TOTAL", "DRAW");
+        
+        for(String key : keys) {
+            eagerWins.put(key, 0.0);
+            eagerPoints.put(key, 0.0);
+            numberOfMaxScorePlays.put(key, 0.0);
+        }
+        numberOfMaxScorePlays.remove("DRAW");
+
+        for(String key : keys) {
+            mixedWins.put(key, 0.0);
+            mixedPoints.put(key, 0.0);
+        }
+
+        for(String key : keys) {
+            concealedWins.put(key, 0.0);
+            concealedPoints.put(key, 0.0);
+        }
+
+        for(String key : keys) {
+            composedWins.put(key, 0.0);
+            composedPoints.put(key, 0.0);
+        }
+
+        Map<String,Map<String,Double>> winsMap = new HashMap<>();
+        winsMap.put("EAGER",eagerWins);
+        winsMap.put("MIXED",mixedWins);
+        winsMap.put("CONCEALED",concealedWins);
+        winsMap.put("COMPOSED",composedWins);
+
+        Map<String,Map<String,Double>> pointsMap = new HashMap<>();
+        pointsMap.put("EAGER",eagerPoints);
+        pointsMap.put("MIXED",mixedPoints);
+        pointsMap.put("CONCEALED",concealedPoints);
+        pointsMap.put("COMPOSED",composedPoints);
+
+        keys = Arrays.asList("EAGER", "COMPOSED", "CONCEALED", "MIXED");
+        List<Integer> list = new ArrayList<>();
+        double totalWinsForKey = 0;
+        double totalPointsForKey = 0;
+        double totalNumberOfMaxScorePlays = 0;
+
+        for(String key : keys) {
+            for(Integer j : this.getWinsOf(key).get("TOTAL"))  {
+                winsMap.get(key).replace( "TOTAL", winsMap.get(key).get("TOTAL") + j );
+            }
+            totalWinsForKey = winsMap.get(key).get("TOTAL").doubleValue();
+            for(Map.Entry<String, List<Integer>> entry : this.getWinsOf(key).entrySet()) {
+                if(entry.getKey() == "TOTAL") {
+                    winsMap.get(key).replace( entry.getKey(), Math.round((totalWinsForKey/totalGamesPlayed)*1000.0)/1000.0 );
+                    continue;
+                }
+                else {
+                    list = entry.getValue();
+                    for(Integer i : list) {
+                        winsMap.get(key).replace( entry.getKey(), winsMap.get(key).get(entry.getKey()) + i );
+                    }
+                    if(totalWinsForKey > 0) {
+                        winsMap.get(key).replace( entry.getKey(), Math.round((winsMap.get(key).get(entry.getKey())/totalWinsForKey)*1000.0)/1000.0 );
+                    }
+                }
+            }      
+        }
+
+        for(String key : keys) {
+            for(Integer j : this.getPointsOf(key).get("TOTAL"))  {
+                pointsMap.get(key).replace( "TOTAL", pointsMap.get(key).get("TOTAL") + j );
+            }
+            totalPointsForKey = pointsMap.get(key).get("TOTAL").doubleValue();
+            for(Map.Entry<String, List<Integer>> entry : this.getPointsOf(key).entrySet()) {
+                if(entry.getKey() == "TOTAL") {
+                    pointsMap.get(key).replace( entry.getKey(), Math.round((totalPointsForKey/totalGamesPlayed)*1000.0)/1000.0 );
+                    continue;
+                }
+                else {
+                    list = entry.getValue();
+                    for(Integer i : list) {
+                        pointsMap.get(key).replace( entry.getKey(), pointsMap.get(key).get(entry.getKey()) + i );
+                    }
+                    if(totalPointsForKey > 0) {
+                        pointsMap.get(key).replace( entry.getKey(), Math.round((pointsMap.get(key).get(entry.getKey())/totalPointsForKey)*1000.0)/1000.0);
+                    }
+                    
+                }
+            }      
+        }
+
+        for(Integer j : this.getNumberOfMaxScorePlays().get("TOTAL"))  {
+            numberOfMaxScorePlays.replace( "TOTAL", numberOfMaxScorePlays.get("TOTAL") + j );
+        }
+        totalNumberOfMaxScorePlays = numberOfMaxScorePlays.get("TOTAL").doubleValue();
+        for(Map.Entry<String, List<Integer>> entry : this.getNumberOfMaxScorePlays().entrySet()) {
+            if(entry.getKey() == "TOTAL") {
+                numberOfMaxScorePlays.replace( "TOTAL", Math.round((numberOfMaxScorePlays.get("TOTAL")/totalGamesPlayed)*1000.0)/1000.0 );
+                continue;
+            }            
+            else {
+                list = entry.getValue();
+                for(Integer i : list) {
+                    numberOfMaxScorePlays.replace(entry.getKey(), numberOfMaxScorePlays.get(entry.getKey()) + i);
+                }
+                if(totalNumberOfMaxScorePlays > 0) {
+                    numberOfMaxScorePlays.replace(entry.getKey(), Math.round((numberOfMaxScorePlays.get(entry.getKey())/totalNumberOfMaxScorePlays)*1000.0)/1000.0);
+                }
+            }
+        }
+
+        System.out.println("------------ Average ------------");
+        System.out.println("Calculated Average Wins Data:");
+        System.out.println("EAGER: " + eagerWins.entrySet());
+        System.out.println("MIXED: " + mixedWins.entrySet());
+        System.out.println("CONCEALED: " + concealedWins.entrySet());
+        System.out.println("COMPOSED: " + composedWins.entrySet());
+
+        System.out.println("Calculated Average Points Data:");
+        System.out.println("EAGER: " + eagerPoints.entrySet());
+        System.out.println("MIXED: " + mixedPoints.entrySet());
+        System.out.println("CONCEALED: " + concealedPoints.entrySet());
+        System.out.println("COMPOSED: " + composedPoints.entrySet());
+
+        System.out.println("Calculated Average Number of Max Score Plays");
+        System.out.println(numberOfMaxScorePlays.entrySet());
+
+        // Onto calculating the variance
+
+        double sum = 0.0;
+        double mean = 0.0;
+        double variance = 0.0;
+        for(String key : keys) {
+            sum = 0;
+            for(Integer j : this.getWinsOf(key).get("TOTAL"))  {
+                sum += j;
+            }
+            totalWinsForKey = sum;
+            for(Map.Entry<String, List<Integer>> entry : this.getWinsOf(key).entrySet()) {
+                list = entry.getValue();
+                sum = 0;
+                mean = winsMap.get(key).get(entry.getKey()).doubleValue();
+                for(Integer xi : list) {
+                    sum += Math.pow(xi - mean, 2);
+                }
+                if(entry.getKey() == "TOTAL") {
+                    variance = Math.sqrt(sum/(totalGamesPlayed));
+                    winsMap.get(key).replace( entry.getKey(), Math.round((variance)*1000.0)/1000.0 );
+                }
+                else if(totalWinsForKey > 0) {
+                    variance = Math.sqrt(sum/(totalWinsForKey));
+                    winsMap.get(key).replace( entry.getKey(), Math.round((variance)*1000.0)/1000.0);
+                }
+            }    
+        }
+
+        for(String key : keys) {
+            sum = 0;
+            for(Integer j : this.getPointsOf(key).get("TOTAL"))  {
+                sum += j;
+            }
+            totalPointsForKey = sum;
+            for(Map.Entry<String, List<Integer>> entry : this.getPointsOf(key).entrySet()) {
+                list = entry.getValue();
+                sum = 0;
+                mean = pointsMap.get(key).get(entry.getKey()).doubleValue();
+                for(Integer xi : list) {
+                    sum += Math.pow(xi - mean, 2);
+
+                }
+                if(entry.getKey() == "TOTAL") {
+                    variance = Math.sqrt(sum/(totalGamesPlayed));
+                    pointsMap.get(key).replace( entry.getKey(), Math.round((variance)*1000.0)/1000.0 );
+                }
+                else if(totalPointsForKey > 0) {
+                    variance = Math.sqrt(sum/(totalPointsForKey));
+                    pointsMap.get(key).replace( entry.getKey(), Math.round((variance)*1000.0)/1000.0 );
+                }
+            }
+        }
+
+        sum = 0;
+        for(Integer j : this.getNumberOfMaxScorePlays().get("TOTAL"))  {
+            sum += j;
+        }
+        totalNumberOfMaxScorePlays = sum;
+        for(Map.Entry<String, List<Integer>> entry : this.getNumberOfMaxScorePlays().entrySet()) {
+            list = entry.getValue();
+            sum = 0;
+            mean = numberOfMaxScorePlays.get(entry.getKey()).doubleValue();
+            for(Integer xi : list) {
+                sum += Math.pow(xi - mean, 2);
+            }
+            if(entry.getKey() == "TOTAL") {
+                variance = Math.sqrt(sum/(totalGamesPlayed));
+                numberOfMaxScorePlays.replace( entry.getKey(), Math.round((variance)*1000.0)/1000.0 );
+            }
+            else if(totalNumberOfMaxScorePlays > 0) {
+                variance = Math.sqrt(sum/(totalNumberOfMaxScorePlays));
+                numberOfMaxScorePlays.replace( entry.getKey(), Math.round((variance)*1000.0)/1000.0 );
+            }
+        }
+
+        System.out.println("------------ Variance ------------");
+        System.out.println("Calculated Variance Wins Data:");
+        System.out.println("EAGER: " + eagerWins.entrySet());
+        System.out.println("MIXED: " + mixedWins.entrySet());
+        System.out.println("CONCEALED: " + concealedWins.entrySet());
+        System.out.println("COMPOSED: " + composedWins.entrySet());
+
+        System.out.println("Calculated Variance Points Data:");
+        System.out.println("EAGER: " + eagerPoints.entrySet());
+        System.out.println("MIXED: " + mixedPoints.entrySet());
+        System.out.println("CONCEALED: " + concealedPoints.entrySet());
+        System.out.println("COMPOSED: " + composedPoints.entrySet());
+
+        System.out.println("Calculated Variance Number of Max Score Plays");
+        System.out.println(numberOfMaxScorePlays.entrySet());
     }
 
     public void combineAnalysisData(AnalysisData data) {
-        // Combine Wins data
-        data.getEagerWins().forEach(
-            (key, value) -> this._eagerWins.merge( key, value, (v1, v2) -> v1 + v2)
-        );
-        data.getMixedWins().forEach(
-            (key, value) -> this._mixedWins.merge( key, value, (v1, v2) -> v1 + v2)
-        );
-        data.getConcealedWins().forEach(
-            (key, value) -> this._concealedWins.merge( key, value, (v1, v2) -> v1 + v2)
-        );
-        data.getComposedWins().forEach(
-            (key, value) -> this._composedWins.merge( key, value, (v1, v2) -> v1 + v2)
-        );
-
-        // Combine Points data
-        data.getEagerPoints().forEach(
-            (key, value) -> this._eagerPoints.merge( key, value, (v1, v2) -> v1 + v2)
-        );
-        data.getMixedPoints().forEach(
-            (key, value) -> this._mixedPoints.merge( key, value, (v1, v2) -> v1 + v2)
-        );
-        data.getConcealedPoints().forEach(
-            (key, value) -> this._concealedPoints.merge( key, value, (v1, v2) -> v1 + v2)
-        );
-        data.getComposedPoints().forEach(
-            (key, value) -> this._composedPoints.merge( key, value, (v1, v2) -> v1 + v2)
-        );
-
-        // Combine Max Score data
-        data.getNumberOfMaxScorePlays().forEach(
-            (key, value) -> this._numberOfMaxScorePlays.merge( key, value, (v1, v2) -> v1 + v2)
-        );
-    }
-
-    public void turnDataIntoAverages(int totalGamesPlayed) {
-        System.out.println("TESTING");
         List<String> keys = Arrays.asList("EAGER", "COMPOSED", "CONCEALED", "MIXED");
-        double numberOfMaxScorePlaysTotal = this._numberOfMaxScorePlays.get("TOTAL");
 
         for(String key : keys) {
-            double totalWinsForKey = this.getWinsOf(key).get("TOTAL");
-            for(Map.Entry<String,Double> entry : this.getWinsOf(key).entrySet()) {
-                if(entry.getKey() == "TOTAL") {
-                    entry.setValue(totalWinsForKey/totalGamesPlayed);
-                }
-                else {
-                    entry.setValue(entry.getValue()/totalWinsForKey);
-                }
+            // Combine Win Data
+            for(Map.Entry<String, List<Integer>> entry : this.getWinsOf(key).entrySet()) {
+                entry.getValue().addAll( data.getWinsOf(key).get(entry.getKey()) );
             }  
 
-            double totalPointsForKey = this.getPointsOf(key).get("TOTAL");
-            for(Map.Entry<String,Double> entry : this.getPointsOf(key).entrySet()) {
-                if(entry.getKey() == "TOTAL") {
-                    entry.setValue(totalPointsForKey/totalGamesPlayed);
-                }
-                else {
-                    entry.setValue(entry.getValue()/totalPointsForKey);
-                }
-            }
-        
-            this._numberOfMaxScorePlays.replace(key,this._numberOfMaxScorePlays.get(key).intValue()/numberOfMaxScorePlaysTotal);
+            // Combine Point Data
+            for(Map.Entry<String, List<Integer>> entry : this.getPointsOf(key).entrySet()) {
+                entry.getValue().addAll( data.getPointsOf(key).get(entry.getKey()) );
+            }     
         }
-        this._numberOfMaxScorePlays.replace("TOTAL",numberOfMaxScorePlaysTotal/totalGamesPlayed);
-        System.out.println("TESTING");
+
+        // Combine Max Score Data
+        for(Map.Entry<String, List<Integer>> entry : this.getNumberOfMaxScorePlays().entrySet()) {
+            entry.getValue().addAll( data.getNumberOfMaxScorePlays().get(entry.getKey()) );
+        }   
+    }
+
+    public AnalysisData() {
+        List<String> keys = Arrays.asList("EAGER", "COMPOSED", "CONCEALED", "MIXED", "TOTAL", "DRAW");
+        for(String key : keys) {
+            this._eagerWins.put(key, new ArrayList<>());
+            this._eagerPoints.put(key, new ArrayList<>());
+            this._numberOfMaxScorePlays.put(key, new ArrayList<>());
+        }
+        this._numberOfMaxScorePlays.remove("DRAW");
+
+        for(String key : keys) {
+            this._mixedWins.put(key, new ArrayList<>());
+            this._mixedPoints.put(key, new ArrayList<>());
+        }
+
+        for(String key : keys) {
+            this._concealedWins.put(key, new ArrayList<>());
+            this._concealedPoints.put(key, new ArrayList<>());
+        }
+
+        for(String key : keys) {
+            this._composedWins.put(key, new ArrayList<>());
+            this._composedPoints.put(key, new ArrayList<>());
+        }
     }
 }

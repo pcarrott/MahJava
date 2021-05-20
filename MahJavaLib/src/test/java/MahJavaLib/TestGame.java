@@ -28,23 +28,16 @@ public class TestGame {
 
     @AfterSuite
     public void suiteTearDown() {
-        System.out.println("----------- FINAL RESULTS -----------");
+        System.out.println("----------- RESULTS -----------");
         System.out.println("Win Data: ");
         data.printWinsData();
         System.out.println("Point Data: ");
         data.printPointsData();
         System.out.println("Max Score Data: ");
-        System.out.println(data.getNumberOfMaxScorePlays().entrySet());
+        data.printNumberOfMaxScorePlays();
 
-        System.out.println("----------- FINAL CALCULATIONS -----------");
-        data.turnDataIntoAverages(10);
-
-        System.out.println("Win Data: ");
-        data.printWinsData();
-        System.out.println("Point Data: ");
-        data.printPointsData();
-        System.out.println("Max Score Data: ");
-        System.out.println(data.getNumberOfMaxScorePlays().entrySet());
+        System.out.println("----------- RESULTING CALCULATIONS -----------");
+        data.printDataCalculations(10);
     }
 
     @DataProvider
@@ -342,18 +335,19 @@ public class TestGame {
 
         for(String key : keys) {
             for(String entry : entries) {
-                analysisData.getWinsOf(key).replace(entry, 1.0);
-                analysisData.getPointsOf(key).replace(entry, 1.0);
+                analysisData.getWinsOf(key).get(entry).add(1);
+                analysisData.getPointsOf(key).get(entry).add(1);
             }
         }
         for(String key : keys) {
             for(String entry : entries) {
-                analysisData1.getWinsOf(key).replace(entry, 1.0);
-                analysisData1.getPointsOf(key).replace(entry, 1.0);
+                analysisData1.getWinsOf(key).get(entry).add(1);
+                analysisData1.getPointsOf(key).get(entry).add(1);
             }
         }
-        analysisData.getNumberOfMaxScorePlays().replace("EAGER",1.0);
-        analysisData1.getNumberOfMaxScorePlays().replace("MIXED",1.0);
+
+        analysisData.getNumberOfMaxScorePlays().get("EAGER").add(1);
+        analysisData1.getNumberOfMaxScorePlays().get("MIXED").add(1);
 
         analysisData.combineAnalysisData(analysisData1);
         
@@ -362,6 +356,6 @@ public class TestGame {
         System.out.println("Point Data: ");
         analysisData.printPointsData();
         System.out.println("Max Score Data: ");
-        System.out.println(analysisData.getNumberOfMaxScorePlays().entrySet());
+        analysisData.printNumberOfMaxScorePlays();
     }
 }
