@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-public class Tile {
+public class Tile implements Comparable<Tile> {
 
     private TileType type;
     private TileContent content;
@@ -62,14 +62,12 @@ public class Tile {
         return this.type.hashCode() ^ this.content.hashCode();
     }
 
-    static class MahjongTileComparator implements Comparator<Tile> {
-        @Override
-        public int compare(Tile a, Tile b) {
-            if (a.type.equals(b.type)) {
-                return a.content.compareTo(b.content);
-            }
-            return a.type.compareTo(b.type);
+    @Override
+    public int compareTo(Tile tile) {
+        if (this.type.equals(tile.type)) {
+            return this.content.compareTo(tile.content);
         }
+        return this.type.compareTo(tile.type);
     }
 
     public List<ArrayList<Tile>> getPossibleChowCombinations() {

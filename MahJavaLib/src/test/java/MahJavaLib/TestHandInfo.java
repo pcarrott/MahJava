@@ -604,11 +604,6 @@ public class TestHandInfo {
     }
 
     @Test
-    public void testKongs() {
-        // Not sure how to test the kongs
-    }
-
-    @Test
     public void testMultipleWinningHands() {
         ArrayList<Tile> tiles = new ArrayList<>();
 

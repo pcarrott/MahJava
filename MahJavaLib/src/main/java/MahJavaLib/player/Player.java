@@ -8,6 +8,7 @@ import MahJavaLib.tile.Combination;
 import MahJavaLib.hand.Hand;
 import MahJavaLib.tile.TileContent;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +38,7 @@ public class Player {
 
     public void setGame(OpenGame game) {
         this.hand.setOpenHand(game.getOpenCombinations(this));
+        this.hand.setConcealedKongs(game.getConcealedKongs(this));
         this.game = game;
     }
 
@@ -74,6 +76,22 @@ public class Player {
         this.hand.claimTile(tileToAdd, combination);
     }
 
+    // If we want 4 concealed tiles to count as a Kong, we must declare it in order to draw a supplement tile from the
+    // wall. Here, we define the decision-making process by the player regarding a Kong declaration.
+    // Returns true if the player can declare a concealed kong and wants to declare it; false otherwise.
+    public boolean declareConcealedKong() {
+        // @TODO: Actually implement the logic for this
+        List<Tile> concealedKongs = this.hand.getConcealedKongs();
+        for (Tile kongTile : concealedKongs) {
+            this.hand.declareConcealedKong(kongTile);
+            return true;
+        }
+        return false;
+
+        // This is what should actually be done
+        // return this.profile.declareConcealedKong();
+    }
+
     public boolean hasTile(Tile tile, Integer n) {
         return this.hand.hasTile(tile, n);
     }
@@ -97,8 +115,8 @@ public class Player {
         Optional<Combination> aux = Optional.empty();
 
         for (var kek : this.hand.getPossibleCombinationsForTile(discardedTile).keySet()) {
-            // Pungs have priority over Chows
-            if (kek.getCombinationType() == CombinationType.PUNG) {
+            // Pungs/Kongs are more valuable than Chows (not really but let's pretend they are)
+            if (kek.getCombinationType() == CombinationType.PUNG || kek.getCombinationType() == CombinationType.KONG) {
                 aux = Optional.of(kek);
                 break;
             }

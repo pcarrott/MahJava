@@ -91,7 +91,7 @@ public class TestBoard {
         // Act
         int originalSize = wall.size();
         Tile tilePeeked = wall.getFirst();
-        Tile tileRemoved = this.board.removeFirstTileFromWall();
+        Tile tileRemoved = this.board.removeTileFromLiveWall();
 
         // Assert
         assertEquals(tileRemoved, tilePeeked);
@@ -107,7 +107,7 @@ public class TestBoard {
         // Act
         int originalSize = wall.size();
         Tile tilePeeked = wall.getLast();
-        Tile tileRemoved = this.board.removeLastTileFromWall();
+        Tile tileRemoved = this.board.removeTileFromLiveWall();
 
         // Assert
         assertEquals(tileRemoved, tilePeeked);
@@ -123,7 +123,7 @@ public class TestBoard {
         // Act
         // Exception at maxSize
         for (int i = 0; i <= maxSize; i++) {
-            this.board.removeFirstTileFromWall();
+            this.board.removeTileFromLiveWall();
         }
 
         // Assert
@@ -138,7 +138,7 @@ public class TestBoard {
         // Act
         // Exception at maxSize
         for (int i = 0; i <= maxSize; i++) {
-            this.board.removeLastTileFromWall();
+            this.board.removeTileFromLiveWall();
         }
 
         // Assert

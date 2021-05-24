@@ -23,7 +23,6 @@ public class TestHand {
     private Hand threeGreatScholars;
     private Hand nineGates;
     private Hand thirteenOrphans;
-    private Hand allKongs;
     private Hand allHonors;
     private Hand allTerminals;
     private Hand jadeDragon;
@@ -176,11 +175,6 @@ public class TestHand {
         this.thirteenOrphans.addTile(new Tile(TileType.BAMBOO, TileContent.ONE));
 
 
-        // All Kongs TODO
-        ArrayList<Tile> allKongs = new ArrayList<>();
-        // this.allKongs = new Hand(allKongs);
-
-
         // All Honors
         ArrayList<Tile> allHonors = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
@@ -268,7 +262,6 @@ public class TestHand {
                 this.jadeDragon,
                 this.allTerminals,
                 this.allHonors,
-                //this.allKongs,
                 this.thirteenOrphans,
                 this.nineGates,
                 this.threeGreatScholars,
@@ -286,7 +279,6 @@ public class TestHand {
     @Test
     public void testIsFourCombinationsPlusPair() {
         assertTrue(this.fourCombsPlusPair.isFourCombinationsPlusPair());
-        // Change this to 12 for allKongs
         assertEquals(this.allHands.filter(Hand::isFourCombinationsPlusPair).count(), 11);
     }
 
@@ -346,11 +338,6 @@ public class TestHand {
     public void testIsThirteenOrphans() {
         assertTrue(this.thirteenOrphans.isThirteenOrphans());
         assertEquals(this.allHands.filter(Hand::isThirteenOrphans).count(), 1);
-    }
-
-    @Test
-    public void testIsAllKongs() {
-        // assertTrue(this.allKongs.isAllKongs());
     }
 
     @Test

@@ -43,10 +43,13 @@ public class Board {
     }
 
     public boolean isWallEmpty() {
-        return this.wall.isEmpty();
+        // The last 14 pieces are what is called the Dead Wall.
+        // These tiles can only be used when a Kong is declared.
+        // Otherwise, the game ends when only these 14 tiles remain.
+        return this.wall.size() <= 14;
     }
 
-    public Tile removeFirstTileFromWall() throws WallIsEmptyException {
+    public Tile removeTileFromLiveWall() throws WallIsEmptyException {
         if (this.wall.isEmpty()) {
             throw new WallIsEmptyException();
         }
@@ -54,7 +57,7 @@ public class Board {
         return this.wall.removeFirst();
     }
 
-    public Tile removeLastTileFromWall() throws WallIsEmptyException {
+    public Tile removeTileFromDeadWall() throws WallIsEmptyException {
         if (this.wall.isEmpty()) {
             throw new WallIsEmptyException();
         }
