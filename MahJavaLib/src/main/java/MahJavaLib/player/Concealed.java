@@ -6,6 +6,7 @@ import MahJavaLib.hand.Hand;
 import MahJavaLib.tile.Combination;
 import MahJavaLib.tile.Tile;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,6 +18,14 @@ import java.util.stream.Collectors;
  * the disadvantage from this restriction.
  */
 public class Concealed implements Profile {
+
+    /*
+     * No state is kept, so nothing happens.
+     */
+    @Override
+    public void seeClaimedTile(@Nullable Player discarded, Tile tile, List<Player> claimed) {
+        // Do nothing
+    }
 
     /*
      * We first check for the possible combination set with the least ignored tiles,

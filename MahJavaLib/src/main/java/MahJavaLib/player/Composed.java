@@ -7,6 +7,7 @@ import MahJavaLib.tile.Combination;
 import MahJavaLib.tile.CombinationType;
 import MahJavaLib.tile.Tile;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,14 @@ import java.util.stream.Collectors;
  * with less randomness involved.
  */
 class Composed implements Profile {
+
+    /*
+     * No state is kept, so nothing happens.
+     */
+    @Override
+    public void seeClaimedTile(@Nullable Player discarded, Tile tile, List<Player> claimed) {
+        // Do nothing
+    }
 
     /*
      * From the tiles at hand, the player will discard the tile that was discarded and/or claimed the most,

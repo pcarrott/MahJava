@@ -5,6 +5,8 @@ import MahJavaLib.hand.Hand;
 import MahJavaLib.tile.Combination;
 import MahJavaLib.tile.Tile;
 
+import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -17,6 +19,16 @@ import java.util.Optional;
  */
 interface Profile {
 
+    // SENSORS
+
+    /*
+     * If some player claims our discarded tile, then we may wish to rethink our strategy.
+     */
+    void seeClaimedTile(@Nullable Player discarded, Tile tile, List<Player> claimed);
+
+
+    // ACTUATORS
+
     /*
      * After drawing a tile from the wall or claiming a tile from another player, one of the concealed tiles should
      * be discarded. This method should encapsulate the deliberation for which tile to discard, given the player's
@@ -28,6 +40,9 @@ interface Profile {
      * After discarding a tile, the other players may claim the tile to complete a combination (Pung/Kong/Chow).
      * This method should encapsulate all the logic for the player to choose which tiles to claim and which to ignore.
      * Since the player may choose to ignore the tile, this method returns an optional value for the combination.
+     *
+     * Note: seeing the discarded tile is actually sensorial input, however we combine it with the decision-making
+     * process, because it makes integration with the game logic easier to implement.
      */
     Optional<Combination> wantsDiscardedTile(Tile discardedTile, Hand hand, OpenGame game);
 

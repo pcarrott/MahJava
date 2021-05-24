@@ -5,6 +5,7 @@ import MahJavaLib.hand.Hand;
 import MahJavaLib.tile.Combination;
 import MahJavaLib.tile.Tile;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -15,6 +16,14 @@ import java.util.*;
  * into consideration the current state of the game.
  */
 class Eager implements Profile {
+
+    /*
+     * No state is kept, so nothing happens.
+     */
+    @Override
+    public void seeClaimedTile(@Nullable Player discarded, Tile tile, List<Player> claimed) {
+        // Do nothing
+    }
 
     /*
      * Looks at the tiles with the lowest count and discards one of them random,

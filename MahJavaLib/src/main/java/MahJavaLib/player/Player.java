@@ -7,6 +7,9 @@ import MahJavaLib.tile.Combination;
 import MahJavaLib.hand.Hand;
 import MahJavaLib.tile.TileContent;
 
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class Player {
@@ -34,9 +37,12 @@ public class Player {
         return new Player(name, new Concealed());
     }
 
-    // @TODO: Make the profile decision random between games somehow
     static public Player MixedPlayer(String name) {
-        return new Player(name, new Eager());
+        return new Player(name, new Mixed(name));
+    }
+
+    public void seeClaimedTile(@Nullable Player discarded, Tile tile, List<Player> claimed) {
+        this.profile.seeClaimedTile(discarded, tile, claimed);
     }
 
     public void claimTile(Tile tileToAdd, Combination combination) {
@@ -100,6 +106,19 @@ public class Player {
 
     public void setSeatWind(PlayerTurn seatWind) {
         this.seatWind = seatWind;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Player player = (Player) o;
+        return Objects.equals(this.name, player.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.name);
     }
 
     @Override
