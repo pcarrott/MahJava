@@ -1,5 +1,11 @@
 package MahJavaLib.analysisData;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -133,6 +139,11 @@ public class AnalysisData {
         System.out.println("MIXED: " + mixedWins.entrySet());
         System.out.println("CONCEALED: " + concealedWins.entrySet());
         System.out.println("COMPOSED: " + composedWins.entrySet());
+
+        this.writeToCSV(this._eagerWins, "eagerWins");
+        this.writeToCSV(this._mixedWins, "mixedWins");
+        this.writeToCSV(this._concealedWins, "concealedWins");
+        this.writeToCSV(this._composedWins, "composedWins");
     }
     
     public void printPointsData() {
@@ -180,6 +191,11 @@ public class AnalysisData {
         System.out.println("MIXED: " + mixedPoints.entrySet());
         System.out.println("CONCEALED: " + concealedPoints.entrySet());
         System.out.println("COMPOSED: " + composedPoints.entrySet());
+
+        this.writeToCSV(this._eagerPoints, "eagerPoints");
+        this.writeToCSV(this._mixedPoints, "mixedPoints");
+        this.writeToCSV(this._concealedPoints, "concealedPoints");
+        this.writeToCSV(this._composedPoints, "composedPoints");
     }
 
     public void printNumberOfMaxScorePlays() {
@@ -202,6 +218,7 @@ public class AnalysisData {
         }
 
         System.out.println(numberOfMaxScorePlays.entrySet());
+        this.writeToCSV(this._numberOfMaxScorePlays, "numberOfMaxScorePlays");
     }
 
     public void printDataCalculations(int totalGamesPlayed) {
@@ -452,6 +469,24 @@ public class AnalysisData {
         for(Map.Entry<String, List<Integer>> entry : this.getNumberOfMaxScorePlays().entrySet()) {
             entry.getValue().addAll( data.getNumberOfMaxScorePlays().get(entry.getKey()) );
         }   
+    }
+
+    public void writeToCSV(Map<String,List<Integer>> map, String filename) {
+        String str = null;
+
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("csv_files/" + filename + ".csv"), "utf-8"))) {
+            for(Map.Entry<String,List<Integer>> entry : map.entrySet()) {
+                str = entry.getKey() + ",";
+                for(Integer i : entry.getValue()) {
+                    str += i + ",";
+                }
+                str = str.substring(0, str.length()-1);
+                writer.write(str);
+                writer.write("\n");
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
 
     public AnalysisData() {

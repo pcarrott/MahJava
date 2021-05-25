@@ -142,8 +142,8 @@ public class Game {
                 winningPlayers.forEach( winner -> analysisData.getWinsOf( winner.getName() ).get(k.getName()).add(1));
             }
         });
-        System.out.println("Win Data: ");
-        analysisData.printWinsData();
+        //System.out.println("Win Data: ");
+        //analysisData.printWinsData();
     }
 
     public boolean singleGameLoop() throws NegativeScoreException {
@@ -368,6 +368,10 @@ public class Game {
         return analysisData;
     }
 
+    public Map<Player, Integer> getScores() {
+        return scores;
+    }
+
     private TileContent turnToTile(PlayerTurn turn) {
         TileContent t;
         switch (turn) {
@@ -415,7 +419,6 @@ public class Game {
             losers.forEach(l -> {
                 if(l == this.players.get(discarded)) {
                     analysisData.getPointsOf( winner.getName() ).get(l.getName()).add(2 * points);
-                //  analysisData.getWinsOf(winningPlayers.get(0).getName()).get("TOTAL").add(0);
                 }
                 else {
                     analysisData.getPointsOf( winner.getName() ).get(l.getName()).add(points);
@@ -443,10 +446,10 @@ public class Game {
         this.scores.computeIfPresent(winner, (p, s) -> s + score);
         winners.add(winner.getSeatWind());
 
-        System.out.println("Point Data: ");
-        analysisData.printPointsData();
-        System.out.println("Max Score Data: ");
-        analysisData.printNumberOfMaxScorePlays();
+        //System.out.println("Point Data: ");
+        //analysisData.printPointsData();
+        //System.out.println("Max Score Data: ");
+        //analysisData.printNumberOfMaxScorePlays();
     }
 
     @Override
