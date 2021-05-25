@@ -145,11 +145,13 @@ public class Game {
 
             try {
                 if (noSteal) {
-                    playerToPlay.addTile(this.board.removeTileFromLiveWall());
+                    Tile drawnTile = this.board.removeTileFromLiveWall();
+                    playerToPlay.addTile(drawnTile);
                     if (playerToPlay.hasWinningHand()) {
                         // Player won by self-drawn and all other players will have to pay up.
                         // Winning by self-drawn always grants a bonus point to the winner.
                         this.setWinner(playerToPlay, 1, winners, otherPlayers, null, firstPlay);
+                        playerToPlay.seeClaimedTile(null, drawnTile, Collections.singletonList(playerToPlay));
                         break;
                     }
                 } else if (claimedKong) {
@@ -221,6 +223,8 @@ public class Game {
                         winners, losingPlayers,
                         this.getPlayerTurn(), finalFirstPlay
                 ));
+                for (Player p : this.players.values())
+                    p.seeClaimedTile(playerToPlay, tileToDiscard, winningPlayers);
                 break;
             }
 
@@ -285,6 +289,8 @@ public class Game {
                 //System.out.println("\t\tPlayer " + this.playerTurn + " has stolen " + tileToDiscard + " to make a " + possibleCombination);
                 // We claim the tile associated with the correct combination.
                 playerWithCombination.claimTile(tileToDiscard, playerCombination);
+                for (Player p : this.players.values())
+                    p.seeClaimedTile(playerToPlay, tileToDiscard, Collections.singletonList(playerWithCombination));
                 // The player that has stolen the tile gets to go next.
                 this.playerTurn = playerWithCombination.getSeatWind();
                 noSteal = false;
@@ -371,6 +377,7 @@ public class Game {
         // 1 Extra Fan if it's the last drawable tile or the last discarded tile
         int fan = winner.handValue(playerWind, roundWind, discarded == null, firstPlay) +
                 (this.isBoardWallEmpty() ? bonus + 1 : bonus);
+        fan = Math.min(fan, 64); // Max Fan is 64
 
         int points = this.points(fan);
 

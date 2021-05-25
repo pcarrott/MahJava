@@ -2,17 +2,15 @@ package MahJavaLib.player;
 
 import MahJavaLib.game.OpenGame;
 import MahJavaLib.game.PlayerTurn;
-import MahJavaLib.tile.CombinationType;
 import MahJavaLib.tile.Tile;
 import MahJavaLib.tile.Combination;
 import MahJavaLib.hand.Hand;
 import MahJavaLib.tile.TileContent;
 
-import java.util.Collections;
+import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class Player {
 
@@ -20,76 +18,35 @@ public class Player {
     private OpenGame game;
     private Hand hand;
     private PlayerTurn seatWind = PlayerTurn.EAST;
-    private Profile profile;
+    private final Profile profile;
 
-    public Player(String name) {
+    private Player(String name, Profile profile) {
         this.name = name;
-        // @TODO: Set player profile
+        this.profile = profile;
     }
 
-    public String getName() {
-        return this.name;
+    static public Player EagerPlayer(String name) {
+        return new Player(name, new Eager());
     }
 
-    public void setHand(Hand hand) throws IllegalArgumentException {
-        // @TODO: check if hand is valid
-        this.hand = hand;
+    static public Player ComposedPlayer(String name) {
+        return new Player(name, new Composed());
     }
 
-    public void setGame(OpenGame game) {
-        this.hand.setOpenHand(game.getOpenCombinations(this));
-        this.hand.setConcealedKongs(game.getConcealedKongs(this));
-        this.game = game;
+    static public Player ConcealedPlayer(String name) {
+        return new Player(name, new Concealed());
     }
 
-    public Tile chooseTileToDiscard() {
-        // @TODO: actually implement decent logic for this, right now it is kinda random
-        // @TODO: when we do this in the client, we also need to remove it from our hand, we don't do that right now
-        // since the server needs to check if we actually have it, but in the future, the player's hands data structures
-        // will be different between the server and the player.
+    static public Player MixedPlayer(String name) {
+        return new Player(name, new Mixed(name));
+    }
 
-        // Filter out all tiles with lowest count currently in hand
-        Integer minCount = this.hand.getHand().values().stream().min(Integer::compare).get();
-        Map<Tile, Integer> leftovers = this.hand.getHand().entrySet().stream()
-                .filter(e -> e.getValue().equals(minCount))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        // From those tiles, filter out the ones less likely to make a chow
-        List<Tile> kek = leftovers.keySet().stream()
-                .filter(e -> e.getPossibleChowCombinations().stream().noneMatch(chow -> {
-                    int i = 0;
-                    for (Tile t : chow)
-                        if (leftovers.containsKey(t))
-                            i++;
-
-                    return i > 1;
-                }))
-                .collect(Collectors.toList());
-
-        return kek.size() != 0 ? kek.get(0) : (Tile) leftovers.keySet().toArray()[0];
-
-        // This is what should actually be done
-        // return this.profile.chooseTileToDiscard();
+    public void seeClaimedTile(@Nullable Player discarded, Tile tile, List<Player> claimed) {
+        this.profile.seeClaimedTile(discarded, tile, claimed);
     }
 
     public void claimTile(Tile tileToAdd, Combination combination) {
         this.hand.claimTile(tileToAdd, combination);
-    }
-
-    // If we want 4 concealed tiles to count as a Kong, we must declare it in order to draw a supplement tile from the
-    // wall. Here, we define the decision-making process by the player regarding a Kong declaration.
-    // Returns true if the player can declare a concealed kong and wants to declare it; false otherwise.
-    public boolean declareConcealedKong() {
-        // @TODO: Actually implement the logic for this
-        List<Tile> concealedKongs = this.hand.getConcealedKongs();
-        for (Tile kongTile : concealedKongs) {
-            this.hand.declareConcealedKong(kongTile);
-            return true;
-        }
-        return false;
-
-        // This is what should actually be done
-        // return this.profile.declareConcealedKong();
     }
 
     public boolean hasTile(Tile tile, Integer n) {
@@ -100,6 +57,49 @@ public class Player {
         this.hand.addTile(tile);
     }
 
+    public void removeTile(Tile tile) {
+        this.hand.removeTile(tile);
+    }
+
+    public Tile chooseTileToDiscard() {
+        return this.profile.chooseTileToDiscard(this.hand, this.game);
+    }
+
+    public boolean declareConcealedKong() {
+        return this.profile.declareConcealedKong(this.hand, this.game);
+    }
+
+    public Optional<Combination> wantsDiscardedTile(Tile discardedTile) {
+        return this.profile.wantsDiscardedTile(discardedTile, this.hand, this.game);
+    }
+
+    public boolean hasWinningHand() {
+        return this.hand.isWinningHand();
+    }
+
+    public boolean isWinningTile(Tile discardedTile) {
+        return this.hand.isWinningTile(discardedTile);
+    }
+
+    public Integer handValue(TileContent playerWind, TileContent roundWind, boolean selfDrawn, boolean firstPlay) {
+        return this.hand.calculateHandValue(playerWind, roundWind, selfDrawn, firstPlay);
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setGame(OpenGame game) {
+        this.hand.setOpenHand(game.getOpenCombinations(this));
+        this.hand.setConcealedKongs(game.getConcealedKongs(this));
+        this.game = game;
+    }
+
+    public void setHand(Hand hand) throws IllegalArgumentException {
+        // @TODO: check if hand is valid
+        this.hand = hand;
+    }
+
     public PlayerTurn getSeatWind() {
         return this.seatWind;
     }
@@ -108,47 +108,17 @@ public class Player {
         this.seatWind = seatWind;
     }
 
-    public Optional<Combination> wantsDiscardedTile(Tile discardedTile) {
-        // @TODO: implement logic for this, also change return values since we should inform the Game on the type of
-        // combination we want to achieve with the discarded tile (both to make us eligible to get it, and to mark it
-        // as Open)
-        Optional<Combination> aux = Optional.empty();
-
-        for (var kek : this.hand.getPossibleCombinationsForTile(discardedTile).keySet()) {
-            // Pungs/Kongs are more valuable than Chows (not really but let's pretend they are)
-            if (kek.getCombinationType() == CombinationType.PUNG || kek.getCombinationType() == CombinationType.KONG) {
-                aux = Optional.of(kek);
-                break;
-            }
-
-            // If we get a chow, we only consider it only if it does not break a pair, pung or kong
-            if (kek.getCombinationType() == CombinationType.CHOW &&
-                    kek.getTiles().keySet().stream().noneMatch(t -> this.hand.getHand().containsKey(t) && this.hand.getHand().get(t) > 1)) {
-                aux = Optional.of(kek);
-                break;
-            }
-        }
-
-        return aux;
-
-        // This is what should actually be done
-        // return this.profile.wantsDiscardedTile();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Player player = (Player) o;
+        return Objects.equals(this.name, player.name);
     }
 
-    public void removeTile(Tile tile) {
-        this.hand.removeTile(tile);
-    }
-
-    public boolean hasWinningHand() {
-        return this.hand.isWinningHand();
-    }
-
-    public Integer handValue(TileContent playerWind, TileContent roundWind, boolean selfDrawn, boolean firstPlay) {
-        return this.hand.calculateHandValue(playerWind, roundWind, selfDrawn, firstPlay);
-    }
-
-    public boolean isWinningTile(Tile discardedTile) {
-        return this.hand.isWinningTile(discardedTile);
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.name);
     }
 
     @Override

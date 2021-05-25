@@ -12,7 +12,6 @@ public class Combination {
     private final Map<Tile, Integer> tiles;
 
     public Combination(CombinationType type, List<Tile> tiles) {
-        assert !type.equals(CombinationType.PAIR);
         assert ((tiles.size() == 4) && type.equals(CombinationType.KONG)) ||
                 (tiles.size() == 3 && (type.equals(CombinationType.CHOW) || type.equals(CombinationType.PUNG)));
 
