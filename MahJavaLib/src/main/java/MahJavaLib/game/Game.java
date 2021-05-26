@@ -1,5 +1,6 @@
 package MahJavaLib.game;
 
+import MahJavaLib.analysisData.AnalysisData;
 import MahJavaLib.exceptions.NegativeScoreException;
 import MahJavaLib.player.Player;
 import MahJavaLib.tile.CombinationType;
@@ -23,6 +24,7 @@ public class Game {
     private final Map<PlayerTurn, Player> players = new HashMap<>();
     private final Map<Player, Integer> scores = new HashMap<>();
     private final OpenGame open;
+    private AnalysisData analysisData = new AnalysisData();
 
     public Game(List<Player> players) {
         assert players.size() == 4 : "List of players doesn't have the correct size";
@@ -113,9 +115,35 @@ public class Game {
 
         System.out.println("Final scores:");
         int finalMaxScore = maxScore;
-        this.scores.forEach((k, v) -> System.out.println(
-                (v == finalMaxScore ? "\tW - " : "\tL - ") + k.getName() + " with " + v + " points"
-        ));
+
+        List<Player> winningPlayers = new ArrayList<>();
+
+        this.scores.forEach((k,v) -> {
+            if(v == finalMaxScore) {
+                if(!winningPlayers.isEmpty()) {
+                    if(winningPlayers.size() == 1) {
+                        analysisData.getWinsOf(winningPlayers.get(0).getName()).get("TOTAL").add(0);
+                        analysisData.getWinsOf(winningPlayers.get(0).getName()).get("TOTAL").add(0);
+                    }
+                    winningPlayers.add(k);
+                    analysisData.getWinsOf(k.getName()).get("DRAW").add(1);
+                    
+                }
+                else {
+                    winningPlayers.add(k);
+                    analysisData.getWinsOf(k.getName()).get("TOTAL").add(1);
+                }
+            }
+            System.out.println((v == finalMaxScore ? "\tW - " : "\tL - ") + k.getName() + " with " + v + " points");
+        }); 
+
+        this.scores.forEach((k,v) -> {
+            if(!winningPlayers.contains(k)) {
+                winningPlayers.forEach( winner -> analysisData.getWinsOf( winner.getName() ).get(k.getName()).add(1));
+            }
+        });
+        //System.out.println("Win Data: ");
+        //analysisData.printWinsData();
     }
 
     public boolean singleGameLoop() throws NegativeScoreException {
@@ -342,6 +370,14 @@ public class Game {
         return this.players.get(seatWind);
     }
 
+    public AnalysisData getAnalysisData() {
+        return analysisData;
+    }
+
+    public Map<Player, Integer> getScores() {
+        return scores;
+    }
+
     private TileContent turnToTile(PlayerTurn turn) {
         TileContent t;
         switch (turn) {
@@ -385,18 +421,41 @@ public class Game {
         if (discarded != null) {
             System.out.println("Won by claiming " + this.players.get(discarded).getName() + "'s discarded tile");
             losers.forEach(p -> this.scores.computeIfPresent(p, (k, s) -> s - points));
+            //Update points for winner
+            losers.forEach(l -> {
+                if(l == this.players.get(discarded)) {
+                    analysisData.getPointsOf( winner.getName() ).get(l.getName()).add(2 * points);
+                }
+                else {
+                    analysisData.getPointsOf( winner.getName() ).get(l.getName()).add(points);
+                }
+            });
+            // Player who discarded the tile loses double the points, so we take them again here
             this.scores.computeIfPresent(this.players.get(discarded), (k, s) -> s - points);
             score = (losers.size() + 1) * points;
+            analysisData.getPointsOf(winner.getName()).get("TOTAL").add(score);
         } else {
             System.out.println("Won by self-drawn");
             losers.forEach(p -> this.scores.computeIfPresent(p, (k, s) -> s - 2 * points));
+            losers.forEach(l -> analysisData.getPointsOf( winner.getName() ).get(l.getName()).add(2 * points) );
             score = (losers.size()) * 2 * points;
+            analysisData.getPointsOf(winner.getName()).get("TOTAL").add(score);
         }
 
         System.out.println(fan + " Fan -> " + points + " Points -> Total reward: " + score);
 
+        if(fan == 64) {
+            analysisData.getNumberOfMaxScorePlays().get(winner.getName()).add(1);
+            analysisData.getNumberOfMaxScorePlays().get("TOTAL").add(1);
+        }
+
         this.scores.computeIfPresent(winner, (p, s) -> s + score);
         winners.add(winner.getSeatWind());
+
+        //System.out.println("Point Data: ");
+        //analysisData.printPointsData();
+        //System.out.println("Max Score Data: ");
+        //analysisData.printNumberOfMaxScorePlays();
     }
 
     @Override
