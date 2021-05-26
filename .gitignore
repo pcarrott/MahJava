@@ -33,5 +33,5 @@ build/
 ### VS Code ###
 .vscode/
 
-### Properties ###
-/MahJavaServer/src/main/resources/application.properties
+### CSV Files ###
+/csv_files/*

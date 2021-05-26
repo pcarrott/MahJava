@@ -21,15 +21,18 @@ import java.util.Optional;
  */
 public class Mixed implements Profile {
 
-    private final String playerName;
+    private Player player;
     private final Deque<Profile> choices = new ArrayDeque<>();
     private boolean canSwitch = false;
 
-    public Mixed(String playerName) {
-        this.playerName = playerName;
+    public Mixed() {
         choices.add(new Eager());
         choices.add(new Composed());
         choices.add(new Concealed());
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
     }
 
     /*
@@ -39,12 +42,12 @@ public class Mixed implements Profile {
      */
     @Override
     public void seeClaimedTile(@Nullable Player discarded, Tile tile, List<Player> claimed) {
-        if (discarded == null && claimed.stream().noneMatch(p -> p.getName().equals(this.playerName))) {
+        if (discarded == null && claimed.stream().noneMatch(p -> p.equals(this.player))) {
             // We lost the round
             this.choices.addLast(this.choices.pop());
             this.canSwitch = false;
 
-        } else if (discarded != null && discarded.getName().equals(this.playerName)) {
+        } else if (discarded != null && discarded.equals(this.player)) {
             if (this.canSwitch) {
                 // The second time we discard a claimed tile
                 this.choices.addLast(this.choices.pop());
@@ -54,7 +57,7 @@ public class Mixed implements Profile {
                 // The first time we discard a claimed tile
                 this.canSwitch = true;
             }
-        } else if (claimed.stream().anyMatch(p -> p.getName().equals(this.playerName))) {
+        } else if (claimed.stream().anyMatch(p -> p.equals(this.player))) {
             // We won the round, so we stick to the strategy for the next round
             this.canSwitch = false;
         }
