@@ -38,7 +38,10 @@ public class Player {
     }
 
     static public Player MixedPlayer(String name) {
-        return new Player(name, new Mixed(name));
+        Mixed mixed = new Mixed();
+        Player player = new Player(name, mixed);
+        mixed.setPlayer(player);
+        return player;
     }
 
     public void seeClaimedTile(@Nullable Player discarded, Tile tile, List<Player> claimed) {
@@ -106,19 +109,6 @@ public class Player {
 
     public void setSeatWind(PlayerTurn seatWind) {
         this.seatWind = seatWind;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Player player = (Player) o;
-        return Objects.equals(this.name, player.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.name);
     }
 
     @Override
