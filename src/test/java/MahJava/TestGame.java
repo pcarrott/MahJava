@@ -51,7 +51,7 @@ public class TestGame {
         data.printNumberOfMaxScorePlays();
 
         System.out.println("----------- RESULTING CALCULATIONS -----------");
-        data.printDataCalculations(1);
+        data.printDataCalculations(10);
         System.out.println("----------- List of All points per Game -----------");
         for(Map.Entry<String,List<Integer>> entry : this.pointsPerGame.entrySet()) {
             System.out.println(entry);
@@ -321,7 +321,7 @@ public class TestGame {
     }
 
     
-    @Test(dataProvider = "allPlayerMatchUps", invocationCount=1)
+    @Test(dataProvider = "allPlayerMatchUps", invocationCount=10)
     public void testAllPlayerMatchUps(Player p1, Player p2, Player p3, Player p4) {
         List<Player> players = Arrays.asList(p1,p2,p3,p4);
 
@@ -329,7 +329,7 @@ public class TestGame {
         game.gameLoop();
     }
 
-    @Test(invocationCount=1)
+    @Test(invocationCount=10)
     public void testMain() {
         //String[] names = {"Leonardo", "Raphael", "Donatello", "Michelangelo"};
         String[] names = {"EAGER", "COMPOSED", "CONCEALED", "MIXED"};

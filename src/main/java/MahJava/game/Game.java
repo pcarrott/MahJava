@@ -122,8 +122,8 @@ public class Game {
             if(v == finalMaxScore) {
                 if(!winningPlayers.isEmpty()) {
                     if(winningPlayers.size() == 1) {
-                        analysisData.getWinsOf(winningPlayers.get(0).getName()).get("TOTAL").add(0);
-                        analysisData.getWinsOf(winningPlayers.get(0).getName()).get("TOTAL").add(0);
+                        analysisData.getWinsOf(winningPlayers.get(0).getName()).get("TOTAL").remove(analysisData.getWinsOf(winningPlayers.get(0).getName()).get("TOTAL").size()-1);
+                        analysisData.getWinsOf(winningPlayers.get(0).getName()).get("DRAW").add(1);
                     }
                     winningPlayers.add(k);
                     analysisData.getWinsOf(k.getName()).get("DRAW").add(1);
@@ -207,7 +207,7 @@ public class Game {
                 continue;
             }
 
-            //System.out.println("\t(Discard Phase) Player to Play: " + playerToPlay.getSeatWind());
+            System.out.println("\t(Discard Phase) Player to Play: " + playerToPlay.getName() + ", seat wind:" + playerToPlay.getSeatWind());
             // Query the player on which tile to discard
             Tile tileToDiscard = playerToPlay.chooseTileToDiscard();
             // We need to check if this is even possible, meaning that we need to check
@@ -215,8 +215,8 @@ public class Game {
             assert playerToPlay.hasTile(tileToDiscard, 1);
             playerToPlay.removeTile(tileToDiscard);
 
-            //System.out.println("\t\tPlayer discarded " + tileToDiscard);
-            //System.out.println("\t(Stealing phase)");
+            System.out.println("\t\t" + playerToPlay.getName() +" discarded " + tileToDiscard + " tile");
+            System.out.println("\t(Stealing phase)");
             // Then we probe all other players, to see if anyone wants the discarded tile for a combination
             Map<Player, Optional<Combination>> wantsDiscardedTile = otherPlayers.stream()
                     .collect(Collectors.toMap(
@@ -314,7 +314,7 @@ public class Game {
             }
 
             if (playerWithCombination != null) {
-                //System.out.println("\t\tPlayer " + this.playerTurn + " has stolen " + tileToDiscard + " to make a " + possibleCombination);
+                System.out.println("\t\tPlayer " + this.playerTurn + " has stolen " + tileToDiscard + " to make a " + playerCombination);
                 // We claim the tile associated with the correct combination.
                 playerWithCombination.claimTile(tileToDiscard, playerCombination);
                 for (Player p : this.players.values())
@@ -326,7 +326,7 @@ public class Game {
             } else {
                 // If no player has stolen the tile, then we need to actually record the discarding, and update the next
                 // player.
-                //System.out.println("\tNo one stole anything what a ripoff");
+                System.out.println("\tNo one stole anything. Moving on");
                 this.open.addDiscardedTile(playerToPlay, tileToDiscard);
                 this.playerTurn = this.playerTurn.next();
             }
